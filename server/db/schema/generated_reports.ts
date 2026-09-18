@@ -14,6 +14,9 @@ export const generatedReports = pgTable('generated_reports', {
   contentMarkdown: text('content_markdown').notNull(),
   generatedBy: varchar('generated_by', { length: 36 }),
   generatedAt: timestamp('generated_at', { withTimezone: true }).defaultNow().notNull(),
+  // Story 16.4 — AI translation (never overwrites source content)
+  translationMarkdown: text('translation_markdown'),
+  translationLanguage: varchar('translation_language', { length: 10 }),
 }, (table) => [
   index('generated_reports_type_generated_idx').on(table.type, table.generatedAt),
 ]);

@@ -16,3 +16,5 @@ export * from './incident_events.ts';
 export * from './sprints.ts';
 export * from './milestones.ts';
 export * from './kb_articles.ts';
+export * from './ai_scans.ts';
+export * from './ai_recommendations.ts';

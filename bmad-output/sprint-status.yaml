@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-18T14:30:00Z"
+last_updated: "2026-09-18T17:10:00Z"
 
 epics:
   - id: "epic-1"
@@ -668,7 +668,7 @@ stories:
   - id: "epic-16"
     title: "AI Codebase Intelligence Real (Gemini)"
     description: "Snapshot scan, finding lifecycle tervalidasi manusia, rekomendasi jadi work item, terjemahan laporan"
-    status: backlog
+    status: done
     story_ids:
       - "16.1.ai-scan-snapshots"
       - "16.2.finding-lifecycle"
@@ -742,7 +742,7 @@ stories:
   - id: "16.1.ai-scan-snapshots"
     title: "AI Scan Snapshots (persist live & demo) + History"
     epic_id: "epic-16"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/16.1.ai-scan-snapshots.story.md"
     parallel_set: 14
     dependencies:
@@ -758,7 +758,7 @@ stories:
   - id: "16.2.finding-lifecycle"
     title: "AI Finding Lifecycle State Machine + Audit"
     epic_id: "epic-16"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/16.2.finding-lifecycle.story.md"
     parallel_set: 14
     dependencies:
@@ -772,7 +772,7 @@ stories:
   - id: "16.3.recommendation-to-work-item"
     title: "Recommendation → Work Item Conversion (human approval, idempotent)"
     epic_id: "epic-16"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/16.3.recommendation-to-work-item.story.md"
     parallel_set: 14
     dependencies:
@@ -786,7 +786,7 @@ stories:
   - id: "16.4.ai-report-translate"
     title: "AI Report Translation EN-ID via Gemini (graceful 503)"
     epic_id: "epic-16"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/16.4.ai-report-translate.story.md"
     parallel_set: 14
     dependencies:

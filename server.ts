@@ -13,6 +13,8 @@ import { authenticateToken, AuthenticatedRequest } from "./server/middlewares/au
 import { requirePermission, requireRole } from "./server/middlewares/rbac.ts";
 import { loginRateLimiter } from "./server/middlewares/rateLimit.ts";
 import { buildStaticDemoPreview } from "./server/modules/ai/ai.fallback.ts";
+import { aiService } from "./server/modules/ai/ai.service.ts";
+import { aiIntelRouter } from "./server/modules/ai/ai-intel.routes.ts";
 import helmet from "helmet";
 import { buildHelmetOptions } from "./server/config/security.ts";
 import { authRouter } from "./server/modules/auth/auth.routes.ts";
@@ -89,6 +91,7 @@ app.use("/api/v1/sprints", authenticateToken, sprintRouter);
 app.use("/api/v1/milestones", authenticateToken, milestoneRouter);
 app.use("/api/v1/kb", authenticateToken, kbRouter);
 app.use("/api/v1/search", authenticateToken, searchRouter);
+app.use("/api/v1/ai", authenticateToken, aiIntelRouter);
 
 // Public sanitized user directory metadata (profiles without password hashes)
 const PUBLIC_USERS = [
@@ -241,9 +244,27 @@ app.post(
 
     if (!ai) {
       // SEC-05 (Story 8.3): fallback is explicitly and honestly labeled as demo data
+      const demo = buildStaticDemoPreview();
+      // Epic 16 (FR-019): demo scans are persisted too — with honest labeling
+      let scanRef: string | undefined;
+      try {
+        const snapshot = await aiService.persistScan({
+          mode: "STATIC_DEMO_PREVIEW",
+          model: "heuristic-demo",
+          projectName: projectName || null,
+          focusArea: focusArea || null,
+          findings: demo.findings,
+          recommendations: demo.recommendations,
+          scannedBy: req.user?.name ?? "unknown",
+        });
+        scanRef = snapshot.scanRef;
+      } catch (persistErr: any) {
+        console.warn("[AI Scan] snapshot persist skipped:", persistErr?.message);
+      }
       return res.json({
         success: true,
-        ...buildStaticDemoPreview(),
+        ...demo,
+        ...(scanRef ? { scanRef } : {}),
         scannedBy: req.user?.name,
         role: req.user?.role
       });
@@ -296,7 +317,21 @@ Respond ONLY with valid JSON in this exact structure:
       });
 
       const parsed = JSON.parse(response.text || "{}");
-      res.json({ success: true, mode: "LIVE_ANALYSIS", scannedBy: req.user?.name, ...parsed });
+      try {
+        const snapshot = await aiService.persistScan({
+          mode: "LIVE_ANALYSIS",
+          model: "gemini-3.8-flash",
+          projectName: projectName || null,
+          focusArea: focusArea || null,
+          findings: parsed.findings ?? [],
+          recommendations: parsed.recommendations ?? [],
+          scannedBy: req.user?.name ?? "unknown",
+        });
+        res.json({ success: true, mode: "LIVE_ANALYSIS", scanRef: snapshot.scanRef, scannedBy: req.user?.name, ...parsed });
+      } catch (persistErr: any) {
+        console.warn("[AI Scan] live snapshot persist skipped:", persistErr?.message);
+        res.json({ success: true, mode: "LIVE_ANALYSIS", scannedBy: req.user?.name, ...parsed });
+      }
     } catch (error: any) {
       console.error("AI Scan Error:", error);
       res.status(500).json({ error: error.message || "Failed to execute AI scan" });

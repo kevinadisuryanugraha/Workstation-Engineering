@@ -4,6 +4,7 @@ import { requirePermission } from '../../middlewares/rbac.ts';
 import { buildPeriodSummary } from './reports.repository.ts';
 import { generateIdReport } from './idGenerator.ts';
 import { generatedReportsService, REPORT_TYPES, ReportType } from './generated-reports.service.ts';
+import { reportTranslationService, SUPPORTED_TARGET_LANGUAGES, AiNotConfiguredError, TranslationFailedError, TargetLanguage } from './translate.service.ts';
 import { safeAsync } from '../../middlewares/safeAsync.ts';
 
 /**
@@ -134,6 +135,38 @@ reportsRouter.post(
 ));
 
 // GET /api/v1/reports/history — archived report list (metadata + preview)
+// POST /api/v1/reports/:id/translate — AI translation of archived report (Story 16.4)
+reportsRouter.post(
+  '/:id/translate',
+  requirePermission('PERM_AI_TRANSLATE'),
+  safeAsync(async (req: AuthenticatedRequest, res: Response) => {
+    const { targetLanguage } = req.body as { targetLanguage?: string };
+    if (!targetLanguage || !SUPPORTED_TARGET_LANGUAGES.includes(targetLanguage as TargetLanguage)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_FAILED', message: `targetLanguage must be one of: ${SUPPORTED_TARGET_LANGUAGES.join(', ')}` },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    try {
+      const result = await reportTranslationService.translateArchived(req.params.id, targetLanguage as TargetLanguage);
+      if (!result) {
+        return res.status(404).json({ success: false, error: { code: 'NOT_FOUND', message: 'Report archive not found' }, timestamp: new Date().toISOString() });
+      }
+      return res.json({ success: true, data: result, timestamp: new Date().toISOString() });
+    } catch (err) {
+      if (err instanceof AiNotConfiguredError) {
+        return res.status(503).json({ success: false, error: { code: 'AI_NOT_CONFIGURED', message: err.message }, timestamp: new Date().toISOString() });
+      }
+      if (err instanceof TranslationFailedError) {
+        return res.status(502).json({ success: false, error: { code: 'AI_TRANSLATION_FAILED', message: err.message }, timestamp: new Date().toISOString() });
+      }
+      throw err;
+    }
+  })
+);
+
 reportsRouter.get(
   '/history',
   requirePermission('PERM_AUDIT_LOGS_VIEW'),

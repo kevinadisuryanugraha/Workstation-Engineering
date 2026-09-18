@@ -5,6 +5,14 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-18 — Fase V2 Tuntas: Epic 14/15/16 selesai dieksekusi (Wave 12-14)
+- **Decision:** Seluruh 8 story Fase V2 dieksekusi & diuji: **Wave 12** (Epic 14 — sprints/milestones + aturan satu-ACTIVE + sprint board explainable + SprintPanel), **Wave 13** (Epic 15 — KB versioning append-only + draft dari tiket resolved + global search 4 entitas), **Wave 14** (Epic 16 — snapshot scan persisten, finding lifecycle tervalidasi manusia, konversi rekomendasi→work item idempoten (E2E: WRK-6), terjemahan laporan graceful 503).
+- **Rationale:** Eksekusi penuh Fase V2 sesuai Master PRD §11/§30; keputusan AI DISETUJUI dengan prinsip "AI as analyst, not authority".
+- **Impact:** Total 43/43 story done (100%); test suite 144 → 178; migrasi 0011-0014.
+- **In-progress stories affected:** none.
+- **Made by:** bmad-prd → bmad-correct-course → bmad-epics-and-stories → dev execution loop
+- **Supersedes:** none
+
 ### 2026-09-18 — KEPUTUSAN: Fitur AI DISETUJUI untuk Fase V2 (menghapus status PENDING)
 - **Decision:** Keputusan posisi fitur AI (yang sebelumnya PENDING) resmi: **DISETUJUI** — AI masuk scope Fase V2 sesuai Master PRD §11 & §30: AI code scan nyata (Gemini), finding lifecycle dengan validasi manusia, recommendation→work item, dan terjemahan laporan.
 - **Rationale:** Prinsip Master PRD "AI as analyst, not authority" terpenuhi: AI menghasilkan temuan/rekomendasi, manusia memvalidasi (state machine finding + approval konversi). Tanpa GEMINI_API_KEY sistem tetap berfungsi (STATIC_DEMO_PREVIEW, SEC-05) dan biaya nol. Kunci dapat ditempelkan ke `.env` kapan pun tanpa perubahan kode.

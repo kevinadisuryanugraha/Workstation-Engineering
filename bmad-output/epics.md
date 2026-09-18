@@ -464,10 +464,10 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 16.1 | ai-scan-snapshots | Snapshot scan persisten (live & demo) + riwayat | ready-for-dev |
-| 16.2 | finding-lifecycle | Finding individual + state machine + audit | ready-for-dev |
-| 16.3 | recommendation-to-work-item | Konversi rekomendasi → work item (approval manusia, idempoten) | ready-for-dev |
-| 16.4 | ai-report-translate | Terjemahan EN↔ID arsip laporan via Gemini (503 bersih tanpa key) | ready-for-dev |
+| 16.1 | ai-scan-snapshots | Snapshot scan persisten (live & demo) + riwayat | done |
+| 16.2 | finding-lifecycle | Finding individual + state machine + audit | done |
+| 16.3 | recommendation-to-work-item | Konversi rekomendasi → work item (approval manusia, idempoten) | done |
+| 16.4 | ai-report-translate | Terjemahan EN↔ID arsip laporan via Gemini (503 bersih tanpa key) | done |
 
 **Dependencies:** Blocked by Epic 7 (audit), Epic 2 (work items) · Blocks: V2.1 analytics
 

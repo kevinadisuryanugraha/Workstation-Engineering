@@ -1,0 +1,98 @@
+import { eq } from 'drizzle-orm';
+import { db } from '../../db/client.ts';
+import { generatedReports } from '../../db/schema/generated_reports.ts';
+import { GoogleGenAI } from '@google/genai';
+
+/**
+ * AI report translation (Story 16.4 — FR-021, NFR-006).
+ * Without GEMINI_API_KEY: no network call at all, clean 503 (cost = 0).
+ * Source markdown is never overwritten — translation stored separately.
+ */
+
+export const SUPPORTED_TARGET_LANGUAGES = ['en', 'id'] as const;
+export type TargetLanguage = (typeof SUPPORTED_TARGET_LANGUAGES)[number];
+
+export class AiNotConfiguredError extends Error {
+  constructor() {
+    super('GEMINI_API_KEY is not configured — AI translation is unavailable');
+    this.name = 'AiNotConfiguredError';
+  }
+}
+
+export class TranslationFailedError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'TranslationFailedError';
+  }
+}
+
+const LANGUAGE_LABELS: Record<TargetLanguage, string> = {
+  en: 'English',
+  id: 'Bahasa Indonesia',
+};
+
+/** Pure prompt builder — exported for tests. */
+export function buildTranslationPrompt(markdown: string, target: TargetLanguage): string {
+  return [
+    `Translate the following management report into ${LANGUAGE_LABELS[target]}.`,
+    `STRICT RULES:`,
+    `- Keep the Markdown structure (headings, lists, tables, bold) exactly as-is.`,
+    `- Keep all numbers, percentages, dates, codes (INC-, SCAN-, WRK-), and table layout unchanged.`,
+    `- Translate only the narrative text.`,
+    ``,
+    `REPORT:`,
+    markdown,
+  ].join('\n');
+}
+
+let client: GoogleGenAI | null = null;
+
+function getClient(): GoogleGenAI {
+  if (!client) {
+    const key = process.env.GEMINI_API_KEY;
+    if (!key || key.trim().length === 0) throw new AiNotConfiguredError();
+    client = new GoogleGenAI({ apiKey: key.trim() });
+  }
+  return client;
+}
+
+/** Calls Gemini to translate; injectable for tests via `aiClient`. */
+export async function translateMarkdown(
+  markdown: string,
+  target: TargetLanguage,
+  aiClient?: { models: { generateContent: (args: any) => Promise<{ text: string }> } }
+): Promise<string> {
+  const ai = aiClient ?? getClient(); // throws AiNotConfiguredError when no key & no injection
+  const response = await ai.models.generateContent({
+    model: 'gemini-3.8-flash',
+    contents: buildTranslationPrompt(markdown, target),
+    config: { temperature: 0.2 },
+  });
+  const text = (response.text ?? '').trim();
+  if (!text) throw new TranslationFailedError('Gemini returned an empty translation');
+  return text;
+}
+
+export class ReportTranslationService {
+  /** Translates an archived report and stores the translation alongside the source (AC 16.4.1, 16.4.2). */
+  async translateArchived(
+    reportId: string,
+    target: TargetLanguage,
+    aiClient?: { models: { generateContent: (args: any) => Promise<{ text: string }> } }
+  ): Promise<{ id: string; translationMarkdown: string; translationLanguage: string; sourcePreserved: true } | null> {
+    const rows = await db.select().from(generatedReports).where(eq(generatedReports.id, reportId)).limit(1);
+    if (rows.length === 0) return null;
+    const report = rows[0];
+
+    const translated = await translateMarkdown(report.contentMarkdown, target, aiClient);
+
+    await db
+      .update(generatedReports)
+      .set({ translationMarkdown: translated, translationLanguage: target })
+      .where(eq(generatedReports.id, reportId));
+
+    return { id: report.id, translationMarkdown: translated, translationLanguage: target, sourcePreserved: true };
+  }
+}
+
+export const reportTranslationService = new ReportTranslationService();
