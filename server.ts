@@ -14,6 +14,7 @@ import { requirePermission, requireRole } from "./server/middlewares/rbac.ts";
 import { loginRateLimiter } from "./server/middlewares/rateLimit.ts";
 import { buildStaticDemoPreview } from "./server/modules/ai/ai.fallback.ts";
 import helmet from "helmet";
+import { buildHelmetOptions } from "./server/config/security.ts";
 import { authRouter } from "./server/modules/auth/auth.routes.ts";
 import { loginHandler } from "./server/modules/auth/auth.controller.ts";
 import { projectRouter } from "./server/modules/projects/project.routes.ts";
@@ -49,7 +50,12 @@ const PORT = 3000;
 
 // ===== HTTP Hardening (Story 8.1 — SEC-02, SEC-03, SEC-04) =====
 app.disable("x-powered-by"); // Hide framework fingerprint (SEC-03)
-app.use(helmet()); // Standard security headers: CSP, nosniff, X-Frame-Options, etc. (SEC-03)
+
+// CSP disesuaikan kebutuhan nyata aplikasi (fix manual-check 2026-09-18):
+// - Dev (Vite): butuh inline script (React preamble/HMR) + ws:// untuk HMR websocket
+// - Prod: script-src ketat 'self' (bundle eksternal, tanpa inline)
+// - Google Fonts dipakai index.html (fonts.googleapis.com + fonts.gstatic.com)
+app.use(helmet(buildHelmetOptions(process.env.NODE_ENV ?? "development"))); // Standard security headers (SEC-03)
 
 app.use(cors());
 app.use(express.json({ limit: "500kb" })); // Tightened from 10mb — DoS resistance (SEC-04)

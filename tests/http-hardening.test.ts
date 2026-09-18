@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import express, { Express } from 'express';
 import helmet from 'helmet';
 import { createLoginRateLimiter, resolveRateLimitConfig, RATE_LIMIT_DEFAULTS } from '../server/middlewares/rateLimit.ts';
+import { buildHelmetOptions } from '../server/config/security.ts';
 
 /**
  * Story 8.1 — HTTP Hardening Integration Tests (SEC-02, SEC-03, SEC-04)
@@ -14,7 +15,7 @@ const TEST_BODY_LIMIT = '500kb';
 function buildHardenedApp(): Express {
   const app = express();
   app.disable('x-powered-by');
-  app.use(helmet());
+  app.use(helmet(buildHelmetOptions('development')));
   app.use(express.json({ limit: TEST_BODY_LIMIT }));
   app.post('/api/v1/auth/login', createLoginRateLimiter(), (_req, res) => {
     // Simulate credential check: invalid credentials → 401 (failure), valid → 200
@@ -62,6 +63,10 @@ describe('HTTP Hardening (Story 8.1)', () => {
     expect(res.headers.get('x-content-type-options')).toBe('nosniff');
     expect(res.headers.get('x-frame-options')).toBeDefined();
     expect(res.headers.get('content-security-policy')).toBeDefined();
+    // CSP harus mengizinkan font Google + HMR websocket dev (regresi manual-check)
+    const csp = res.headers.get('content-security-policy') ?? '';
+    expect(csp).toContain('fonts.googleapis.com');
+    expect(csp).toContain('ws:');
     // Framework fingerprint removed
     expect(res.headers.get('x-powered-by')).toBeNull();
   });
