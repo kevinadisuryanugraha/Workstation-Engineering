@@ -326,6 +326,23 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
                           >
                             {inc.severity}
                           </Badge>
+                          {/* Story 13.2/13.3 — SLA badge: hijau MET, merah BREACHED, abu PENDING */}
+                          {inc.sla && (
+                            <span
+                              title={`SLA tanggap ${inc.sla.response.status} · SLA penyelesaian ${inc.sla.resolution.status}`}
+                              className={cn(
+                                "text-[10px] font-mono font-black px-1.5 py-0.5 rounded border",
+                                inc.sla.response.status === "BREACHED" || inc.sla.resolution.status === "BREACHED"
+                                  ? "bg-red-50 text-red-700 border-red-200"
+                                  : inc.sla.response.status === "MET" && inc.sla.resolution.status !== "PENDING"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : "bg-slate-50 text-slate-500 border-slate-200"
+                              )}
+                            >
+                              SLA {inc.sla.response.status}/{inc.sla.resolution.status}
+                              {inc.sla.resolution.status === "PENDING" && inc.sla.response.overdueMinutes > 0 ? ` +${inc.sla.response.overdueMinutes}m` : ""}
+                            </span>
+                          )}
                         </div>
                         <Badge
                           variant={isResolved ? "success" : "cyan"}
