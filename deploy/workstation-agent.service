@@ -1,0 +1,19 @@
+[Unit]
+Description=WORKSTATION Linux Server Agent (CPU/RAM/Disk/Services telemetry)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/workstation
+EnvironmentFile=/opt/workstation/.env
+ExecStart=/usr/bin/node node_modules/tsx/dist/cli.mjs agent/index.ts
+Restart=always
+RestartSec=10
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

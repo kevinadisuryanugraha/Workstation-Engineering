@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Type check (strict)
+        run: bun run lint
+
+      - name: Test suite
+        run: bun run test
+        env:
+          JWT_SECRET: ci-secret-min-32-characters-long-for-testing-only
+          AGENT_INGEST_TOKEN: ci-agent-token

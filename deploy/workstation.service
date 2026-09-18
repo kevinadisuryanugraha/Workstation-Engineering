@@ -1,0 +1,20 @@
+[Unit]
+Description=WORKSTATION Engineering Intelligence & Operations API
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/workstation
+EnvironmentFile=/opt/workstation/.env
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node dist/server.cjs
+Restart=always
+RestartSec=5
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
