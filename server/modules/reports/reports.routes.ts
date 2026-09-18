@@ -4,6 +4,7 @@ import { requirePermission } from '../../middlewares/rbac.ts';
 import { buildPeriodSummary } from './reports.repository.ts';
 import { generateIdReport } from './idGenerator.ts';
 import { generatedReportsService, REPORT_TYPES, ReportType } from './generated-reports.service.ts';
+import { safeAsync } from '../../middlewares/safeAsync.ts';
 
 /**
  * Reports routes (Story 10.1 / 10.2).
@@ -57,7 +58,7 @@ export const reportsRouter = Router();
 reportsRouter.get(
   '/summary',
   requirePermission('PERM_AUDIT_LOGS_VIEW'),
-  async (req: AuthenticatedRequest, res: Response) => {
+  safeAsync(async (req: AuthenticatedRequest, res: Response) => {
     const period = resolvePeriod(req.query as { from?: string; to?: string; days?: string });
     if ('error' in period) {
       return res.status(400).json({
@@ -74,12 +75,12 @@ reportsRouter.get(
       timestamp: new Date().toISOString(),
     });
   }
-);
+));
 
 reportsRouter.get(
   '/summary/text',
   requirePermission('PERM_AUDIT_LOGS_VIEW'),
-  async (req: AuthenticatedRequest, res: Response) => {
+  safeAsync(async (req: AuthenticatedRequest, res: Response) => {
     const period = resolvePeriod(req.query as { from?: string; to?: string; days?: string });
     if ('error' in period) {
       return res.status(400).json({
@@ -105,7 +106,7 @@ reportsRouter.get(
       timestamp: new Date().toISOString(),
     });
   }
-);
+));
 
 // ===== Scheduled report archives (Story 12.1) =====
 
@@ -113,7 +114,7 @@ reportsRouter.get(
 reportsRouter.post(
   '/generate',
   requirePermission('PERM_AUDIT_LOGS_VIEW'),
-  async (req: AuthenticatedRequest, res: Response) => {
+  safeAsync(async (req: AuthenticatedRequest, res: Response) => {
     const { type } = req.body as { type?: string };
     if (!type || !REPORT_TYPES.includes(type as ReportType)) {
       return res.status(400).json({
@@ -130,13 +131,13 @@ reportsRouter.post(
       timestamp: new Date().toISOString(),
     });
   }
-);
+));
 
 // GET /api/v1/reports/history — archived report list (metadata + preview)
 reportsRouter.get(
   '/history',
   requirePermission('PERM_AUDIT_LOGS_VIEW'),
-  async (req: AuthenticatedRequest, res: Response) => {
+  safeAsync(async (req: AuthenticatedRequest, res: Response) => {
     const typeParam = req.query.type as string | undefined;
     if (typeParam && !REPORT_TYPES.includes(typeParam as ReportType)) {
       return res.status(400).json({
@@ -156,13 +157,13 @@ reportsRouter.get(
       timestamp: new Date().toISOString(),
     });
   }
-);
+));
 
 // GET /api/v1/reports/history/:id — full archived report
 reportsRouter.get(
   '/history/:id',
   requirePermission('PERM_AUDIT_LOGS_VIEW'),
-  async (req: AuthenticatedRequest, res: Response) => {
+  safeAsync(async (req: AuthenticatedRequest, res: Response) => {
     const report = await generatedReportsService.byId(req.params.id);
     if (!report) {
       return res.status(404).json({
@@ -173,4 +174,4 @@ reportsRouter.get(
     }
     return res.json({ success: true, data: report, timestamp: new Date().toISOString() });
   }
-);
+));

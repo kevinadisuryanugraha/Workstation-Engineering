@@ -35,6 +35,12 @@ export { authenticateToken, requirePermission, requireRole };
 
 dotenv.config();
 
+// Degraded-mode hardening: a failed DB query must never kill the process.
+// Services already log & fall back; this is the last-resort safety net.
+process.on("unhandledRejection", (reason) => {
+  console.error("[Server] Unhandled rejection (server kept alive):", reason);
+});
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

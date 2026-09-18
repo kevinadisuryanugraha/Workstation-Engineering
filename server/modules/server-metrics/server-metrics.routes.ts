@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from '../../middlewares/authenticate.ts';
 import { requirePermission } from '../../middlewares/rbac.ts';
 import { agentAuth } from '../../middlewares/agentAuth.ts';
 import { serverMetricsService, ValidationError } from './server-metrics.service.ts';
+import { safeAsync } from '../../middlewares/safeAsync.ts';
 
 /**
  * Server metrics routes (Story 9.2 / Story 9.3).
@@ -46,7 +47,7 @@ agentIngestRouter.post('/metrics', agentAuth, async (req: Request, res: Response
 });
 
 // ===== Read APIs (RBAC-protected) =====
-serverMetricsRouter.get('/', requirePermission('PERM_SERVER_TELEMETRY'), async (_req: AuthenticatedRequest, res: Response) => {
+serverMetricsRouter.get('/', requirePermission('PERM_SERVER_TELEMETRY'), safeAsync(async (_req: AuthenticatedRequest, res: Response) => {
   const staleAfterMs = Number.parseInt(process.env.AGENT_INTERVAL_SECONDS || '', 10) > 0
     ? Number.parseInt(process.env.AGENT_INTERVAL_SECONDS!, 10) * 2 * 1000
     : DEFAULT_AGENT_INTERVAL_MS * 2;
@@ -72,9 +73,9 @@ serverMetricsRouter.get('/', requirePermission('PERM_SERVER_TELEMETRY'), async (
     },
     timestamp: new Date().toISOString(),
   });
-});
+}));
 
-serverMetricsRouter.get('/:serverName/history', requirePermission('PERM_SERVER_TELEMETRY'), async (req: AuthenticatedRequest, res: Response) => {
+serverMetricsRouter.get('/:serverName/history', requirePermission('PERM_SERVER_TELEMETRY'), safeAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { serverName } = req.params;
   let hours = Number.parseInt((req.query.hours as string) || '24', 10);
   if (!Number.isFinite(hours) || hours <= 0) {
@@ -102,4 +103,4 @@ serverMetricsRouter.get('/:serverName/history', requirePermission('PERM_SERVER_T
     },
     timestamp: new Date().toISOString(),
   });
-});
+}));

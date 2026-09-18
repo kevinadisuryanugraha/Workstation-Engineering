@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { AuthenticatedRequest } from '../../middlewares/authenticate.ts';
 import { requirePermission } from '../../middlewares/rbac.ts';
 import { incidentService, InvalidTransitionError, IncidentNotFoundError } from './incident.service.ts';
+import { safeAsync } from '../../middlewares/safeAsync.ts';
 import { incidentEventsService } from './incident.events.ts';
 import { computeIncidentSla } from './incident.sla.ts';
 
@@ -32,7 +33,7 @@ function actor(req: AuthenticatedRequest) {
 
 export const incidentRouter = Router();
 
-incidentRouter.post('/', requirePermission('PERM_INCIDENT_DECLARE'), async (req: AuthenticatedRequest, res: Response) => {
+incidentRouter.post('/', requirePermission('PERM_INCIDENT_DECLARE'), safeAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { title, severity, environment, serverName, impact, relatedTicketCode, runbookUrl, detectedAt } = req.body ?? {};
 
   const missing = ['title', 'severity', 'environment', 'impact'].filter((f) => !(req.body as any)?.[f]);
@@ -89,9 +90,9 @@ incidentRouter.post('/', requirePermission('PERM_INCIDENT_DECLARE'), async (req:
       timestamp: new Date().toISOString(),
     });
   }
-});
+}));
 
-incidentRouter.patch('/:id/status', requirePermission('PERM_INCIDENT_COMMAND'), async (req: AuthenticatedRequest, res: Response) => {
+incidentRouter.patch('/:id/status', requirePermission('PERM_INCIDENT_COMMAND'), safeAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { status } = req.body as { status?: string };
   if (!status || !INCIDENT_STATUSES.includes(status as any)) {
     return res.status(400).json({
@@ -121,9 +122,9 @@ incidentRouter.patch('/:id/status', requirePermission('PERM_INCIDENT_COMMAND'), 
     }
     throw err;
   }
-});
+}));
 
-incidentRouter.get('/', requirePermission('PERM_VIEW_DASHBOARD'), async (req: AuthenticatedRequest, res: Response) => {
+incidentRouter.get('/', requirePermission('PERM_VIEW_DASHBOARD'), safeAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { status, severity, page, limit } = req.query as Record<string, string | undefined>;
   const result = await incidentService.list({
     status,
@@ -132,9 +133,9 @@ incidentRouter.get('/', requirePermission('PERM_VIEW_DASHBOARD'), async (req: Au
     limit: limit ? Number.parseInt(limit, 10) : undefined,
   });
   return res.json({ success: true, data: { ...result, items: result.items.map(withSla) }, timestamp: new Date().toISOString() });
-});
+}));
 
-incidentRouter.get('/:id', requirePermission('PERM_VIEW_DASHBOARD'), async (req: AuthenticatedRequest, res: Response) => {
+incidentRouter.get('/:id', requirePermission('PERM_VIEW_DASHBOARD'), safeAsync(async (req: AuthenticatedRequest, res: Response) => {
   const incident = await incidentService.byId(req.params.id);
   if (!incident) {
     return res.status(404).json({
@@ -144,16 +145,16 @@ incidentRouter.get('/:id', requirePermission('PERM_VIEW_DASHBOARD'), async (req:
     });
   }
   return res.json({ success: true, data: withSla(incident), timestamp: new Date().toISOString() });
-});
+}));
 
 // GET /api/v1/incidents/:id/events — immutable chronological timeline (Story 13.3 / AC #3)
-incidentRouter.get('/:id/events', requirePermission('PERM_VIEW_DASHBOARD'), async (req: AuthenticatedRequest, res: Response) => {
+incidentRouter.get('/:id/events', requirePermission('PERM_VIEW_DASHBOARD'), safeAsync(async (req: AuthenticatedRequest, res: Response) => {
   const events = await incidentEventsService.list(req.params.id);
   return res.json({ success: true, data: { events, count: events.length }, timestamp: new Date().toISOString() });
-});
+}));
 
 // POST /api/v1/incidents/:id/events — append a manual note (Story 13.3 / AC #2)
-incidentRouter.post('/:id/events', requirePermission('PERM_VIEW_DASHBOARD'), async (req: AuthenticatedRequest, res: Response) => {
+incidentRouter.post('/:id/events', requirePermission('PERM_VIEW_DASHBOARD'), safeAsync(async (req: AuthenticatedRequest, res: Response) => {
   const { message, type } = req.body as { message?: string; type?: string };
   if (!message || message.trim().length === 0 || message.length > 500) {
     return res.status(400).json({
@@ -179,4 +180,4 @@ incidentRouter.post('/:id/events', requirePermission('PERM_VIEW_DASHBOARD'), asy
     correlationId: (req.correlationId as string) || 'system',
   });
   return res.status(201).json({ success: true, data: created, timestamp: new Date().toISOString() });
-});
+}));
