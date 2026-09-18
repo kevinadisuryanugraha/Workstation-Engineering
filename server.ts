@@ -1,6 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
 import path from "path";
-import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import dotenv from "dotenv";
 import crypto from "crypto";
@@ -47,8 +46,9 @@ process.on("unhandledRejection", (reason) => {
   console.error("[Server] Unhandled rejection (server kept alive):", reason);
 });
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Deploy-safe: import.meta.url tidak tersedia di bundle CJS (dist/server.cjs) —
+// systemd WorkingDirectory menjamin cwd = root project.
+const __dirname = process.cwd();
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000; // konfigurabel untuk deploy (VPS: 3020)
