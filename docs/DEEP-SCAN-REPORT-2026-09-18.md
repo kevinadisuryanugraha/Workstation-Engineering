@@ -28,6 +28,7 @@
 | 7 | **ke-7** | **18 Sep 2026** | **PRODUKSI LIVE** — Deploy VPS Kontabo (systemd + PostgreSQL + agent telemetri), AI Gemini aktif, GitHub + CI, domain `workstation.zamzami.or.id` (Cloudflare), HTTPS Let's Encrypt + auto-renew, hardening kredensial (rotasi root SSH + 7 akun app + tutup port 3020 publik) | `f09b3c9` |
 | 8 | **ke-8** | **18 Sep 2026** | **Backup otomatis DB produksi** — pg_dump harian 02:30 via cron, kompresi gzip, retensi 14 hari, config ikut dibackup, uji restore nyata: hasil identik 100% (27 tabel · 7 users · 67 metrics) | `backup-db.sh` |
 | 9 | **ke-9** | **18 Sep 2026** | **Purge kredensial plaintext dari UI & bundle produksi** — LoginView (peta 7 password + pre-fill admin123 + panel directory) dibersihkan total, seed hash dirotasi tanpa komentar pengungkap, lazy-import @google/genai memperbaiki 3 test suite · 178/178 hijau · bundle produksi terverifikasi bebas kredensial | `65b7eed`, `4e82086` |
+| **ke-10** | **18 Sep 2026** | **Re-set password 7 akun produksi atas permintaan owner** — nilai baru hanya di file lokal rahasia (git-ignored) · verifikasi login baru OK / lama 401 | `fadc72f` |
 
 ---
 
@@ -435,12 +436,37 @@ gunzip -c /opt/workstation/backups/workstation_db_<TIMESTAMP>.sql.gz | \
 | 1 | URL Login | `https://workstation.zamzami.or.id` |
 | 2 | Metode autentikasi | bcrypt cost-12 + JWT HMAC-SHA256 (server-authoritative RBAC) |
 | 3 | Password | Satu password terpusat untuk seluruh 7 akun — **lihat password manager / file lokal `docs/AKUN-PRODUKSI-RAHASIA.md`** (tidak dicetak di dokumen ini) |
-| 4 | Riwayat rotasi | 18 Sep 2026 — seluruh akun dirotasi + `token_version` dinaikkan (Blok 7-5 & Blok 9) |
+| 4 | Riwayat rotasi | 18 Sep 2026 — rotasi hardening (Blok 7-5 & Blok 9), lalu re-set ke password pilihan owner (Blok 10) — nilai terkini di file lokal rahasia |
 | 5 | Rotasi berikutnya | Hubungi Super Admin, atau eksekusi ulang prosedur rotasi terdokumentasi (Blok 7-5) |
 | 6 | Akses server (SSH root VPS) | Password rotasi-18 Sep — **file lokal `docs/AKUN-PRODUKSI-RAHASIA.md`** + SSH key `~/.ssh/id_ed25519_github` |
 | 7 | Akses database | User `workstation` · container `workstation-db` (bind `127.0.0.1:5433`) · password di VPS `.dbpass-workstation` (600) |
 
 ---
+
+---
+
+### 📦 BLOK 10 — RE-SET PASSWORD SELURUH AKUN PRODUKSI (ATAS PERMINTAAN OWNER)
+**📅 18 September 2026 · Status: 🟢 SELESAI** · Komit: `fadc72f`
+
+**1. Aksi**
+
+| No. | Aksi | Detail |
+|:---:|---|---|
+| 1 | Owner meminta password semua akun diganti ke password pilihan sendiri (mudah diketik) | Nilai password **hanya** dicatat di `docs/AKUN-PRODUKSI-RAHASIA.md` (git-ignored) — tidak di repo & tidak di dokumen ini |
+| 2 | `UPDATE users` produksi — 7 akun, bcrypt cost-12, `token_version`+1 (semua sesi lama mati) | `UPDATE 7` |
+| 3 | Sinkron source seed (`auth.service.ts` — hash saja, tanpa plaintext) | Commit `fadc72f` |
+| 4 | File rahasia lokal diperbarui | `docs/AKUN-PRODUKSI-RAHASIA.md` |
+| 5 | Rebuild + restart produksi | ✅ Active · bundle terverifikasi bersih dari plaintext |
+
+**2. Verifikasi Nyata**
+
+| No. | Uji | Hasil |
+|:---:|---|:---:|
+| 1 | Login password baru (semua 7 akun memakai satu nilai) | 🟢 BERHASIL — Super Admin |
+| 2 | Password random sebelumnya | 🟢 HTTP 401 (ditolak) |
+| 3 | Grep plaintext di source & bundle `dist/` | 🟢 0 temuan |
+
+> 🔐 **Catatan keamanan:** password pilihan owner lebih pendek dari random-24 — acceptable untuk tool internal, namun disarankan tetap aktifkan rate-limit bawaan (aktif ✓) dan pertimbangkan 2FA di V2.2.
 
 ---
 
