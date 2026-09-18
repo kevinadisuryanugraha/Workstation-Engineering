@@ -374,7 +374,7 @@
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
 | 12.1 | generated-reports-storage | Tabel `generated_reports`, POST generate DAILY/WEEKLY/MONTHLY, riwayat & detail arsip | done |
-| 12.2 | executive-narrative-trends | Paragraf eksekutif Bahasa manajemen + tren vs periode sebelumnya (delta otomatis) | ready-for-dev |
+| 12.2 | executive-narrative-trends | Paragraf eksekutif Bahasa manajemen + tren vs periode sebelumnya (delta otomatis) | done |
 
 **Cross-epic dependencies:** Blocked by Epic 10 · Blocks: None
 
@@ -402,7 +402,7 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 13.1 | incident-schema-lifecycle | Skema `incidents` + API deklarasi & transisi status tervalidasi mesin status | ready-for-dev |
+| 13.1 | incident-schema-lifecycle | Skema `incidents` + API deklarasi & transisi status tervalidasi mesin status | done |
 | 13.2 | incident-sla-engine | Target SLA tanggap/resolve per severity, perhitungan status MET/BREACHED/PENDING | ready-for-dev |
 | 13.3 | incident-immutable-timeline-ui | Tabel `incident_events` append-only + wiring IncidentRoomView ke API nyata | ready-for-dev |
 
@@ -415,9 +415,9 @@
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
 - **Total Stories:** 35 (20 MVP + 8 Fase V1 gel.1 + 7 Fase V1 gel.2)
-- **Done:** 31 (MVP + gelombang 1 + Wave 9)
-- **Remaining:** 4 (12.2, 13.1, 13.2, 13.3)
-- **Completion Rate:** 89% (31 / 35)
+- **Done:** 33
+- **Remaining:** 2 (13.2, 13.3)
+- **Completion Rate:** 94% (33 / 35)
 
 ## Sequencing & Wave Plan
 

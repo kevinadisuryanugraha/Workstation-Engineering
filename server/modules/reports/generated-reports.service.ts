@@ -2,6 +2,7 @@ import { desc, eq } from 'drizzle-orm';
 import { db } from '../../db/client.ts';
 import { generatedReports, GeneratedReport } from '../../db/schema/generated_reports.ts';
 import { buildPeriodSummary } from './reports.repository.ts';
+import type { PeriodReportSummary } from './reports.repository.ts';
 import { generateIdReport } from './idGenerator.ts';
 
 /**
@@ -28,11 +29,19 @@ export function resolveReportPeriod(type: ReportType, now: Date = new Date()): {
 }
 
 export class GeneratedReportsService {
-  /** Generates, archives, and returns a report for the given type. */
-  async generate(type: ReportType, generatedBy?: string, now: Date = new Date()): Promise<GeneratedReport> {
+  /** Generates, archives, and returns a report for the given type (with previous-period trends — Story 12.2). */
+  async generate(
+    type: ReportType,
+    generatedBy?: string,
+    now: Date = new Date()
+  ): Promise<GeneratedReport & { previousPeriod?: PeriodReportSummary }> {
     const { from, to } = resolveReportPeriod(type, now);
-    const summary = await buildPeriodSummary(from, to);
-    const contentMarkdown = generateIdReport(summary);
+    const durationMs = to.getTime() - from.getTime();
+    const [summary, previous] = await Promise.all([
+      buildPeriodSummary(from, to),
+      buildPeriodSummary(new Date(from.getTime() - durationMs), from),
+    ]);
+    const contentMarkdown = generateIdReport(summary, { previous });
 
     const rows = await db
       .insert(generatedReports)
@@ -46,7 +55,7 @@ export class GeneratedReportsService {
       })
       .returning();
 
-    return rows[0];
+    return { ...rows[0], previousPeriod: previous };
   }
 
   /** Newest archives for a type (or all types when omitted) — metadata + preview only. */

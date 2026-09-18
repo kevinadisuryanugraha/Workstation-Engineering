@@ -64,6 +64,13 @@
       "when": 1789717248404,
       "tag": "0008_add_generated_reports",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1789717699719,
+      "tag": "0009_add_incidents",
+      "breakpoints": true
     }
   ]
 }

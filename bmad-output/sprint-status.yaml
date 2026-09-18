@@ -588,7 +588,7 @@ stories:
   - id: "12.2.executive-narrative-trends"
     title: "Executive Narrative Enrichment & Period-over-Period Trends"
     epic_id: "epic-12"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/12.2.executive-narrative-trends.story.md"
     parallel_set: 10
     dependencies:
@@ -601,7 +601,7 @@ stories:
   - id: "13.1.incident-schema-lifecycle"
     title: "Incidents Schema, Declaration API & Status Lifecycle Machine"
     epic_id: "epic-13"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/13.1.incident-schema-lifecycle.story.md"
     parallel_set: 10
     dependencies:
