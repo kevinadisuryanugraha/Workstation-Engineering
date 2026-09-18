@@ -26,6 +26,7 @@
 | ke-5 | 18 Sep 2026 | MVP 20/20 story tuntas · Full Workflow Testing (7 alur lulus) · Audit OWASP → 5 temuan baru SEC-01..05 | `e3c6803`, `1705709` |
 | ke-6 | 18 Sep 2026 | **FASE V1 TUNTAS 100%** — SEC-01..05 tertutup (Epic 8), Server Agent (Epic 9), Reporting Engine (Epic 10) · 23/23 temuan selesai · 98/98 test lulus | `678802a` |
 | **ke-7** | **18 Sep 2026** | **PRODUKSI LIVE** — Deploy VPS Kontabo (systemd + PostgreSQL + agent telemetri), AI Gemini aktif, GitHub + CI, domain `workstation.zamzami.or.id` (Cloudflare), HTTPS Let's Encrypt + auto-renew, hardening kredensial (rotasi root SSH + 7 akun app + tutup port 3020 publik) | `f09b3c9` |
+| **ke-8** | **18 Sep 2026** | **Backup otomatis DB produksi** — pg_dump harian 02:30 via cron, kompresi gzip, retensi 14 hari, config ikut dibackup, uji restore nyata: hasil identik 100% (27 tabel · 7 users · 67 metrics) | `backup-db.sh` |
 
 ---
 
@@ -339,6 +340,44 @@ $ vitest run
 | 2 | *(Opsional)* Rotasi `GEMINI_API_KEY` di Google AI Studio | Pemilik → Tim | Key baru tinggal dipasang ke `.env` server (±1 menit) |
 | 3 | *(Opsional)* Rotasi password DB PostgreSQL | Tim | Risiko rendah — DB hanya bind `127.0.0.1`, butuh restart container ±10 detik |
 | 4 | Simpan kredensial baru di password manager + ganti password default setelah login pertama | Pemilik & tim | — |
+
+---
+
+## 12. PEMBARUAN KE-8 — BACKUP OTOMATIS DATABASE PRODUKSI
+
+> **Tanggal:** 18 September 2026 · **Tujuan:** menutup risiko terbesar yang tersisa — kehilangan data produksi. Sepenuhnya *additive*, nol dampak ke aplikasi yang berjalan.
+
+### 12.1 Desain Backup
+
+| Aspek | Detail |
+|---|---|
+| Metode | `pg_dump` (plain SQL) via `docker exec` → kompresi gzip langsung (tanpa file temp) |
+| Jadwal | Harian **02:30** via `/etc/cron.d/workstation-backup` |
+| Lokasi | `/opt/workstation/backups/` (chmod 700, dump chmod 600) |
+| Retensi | **14 hari** (auto-purge via `find -mtime`) |
+| Ikutan dibackup | Config `.env` + `.dbpass-workstation` (tar, chmod 600) |
+| Log | `/var/log/workstation-backup.log` |
+| Guard integritas | `gzip -t` + threshold ukuran minimum; script exit non-zero bila dump abnormal |
+
+### 12.2 Prosedur Restore (dokumen resmi)
+
+```bash
+# Restore penuh ke database:
+gunzip -c /opt/workstation/backups/workstation_db_<TIMESTAMP>.sql.gz | \
+  docker exec -i workstation-db psql -U workstation -d workstation
+```
+
+### 12.3 Hasil Verifikasi Nyata (18 September 2026)
+
+| Uji | Hasil |
+|---|:---:|
+| Backup pertama dijalankan manual | 🟢 `workstation_db_20260918_133951.sql.gz` (15,5 KB, 28 statement CREATE TABLE) |
+| Integritas arsip (`gzip -t`) | 🟢 LULUS |
+| **Uji restore nyata** ke DB temporer `restore_test` | 🟢 **IDENTIK 100%** — produksi vs restore: `tabel=27 · users=7 · metrics=67` (sama persis) |
+| Produksi tersentuh selama uji? | 🟢 TIDAK — sanity check pasca-uji: 7 users utuh |
+| Cron terpasang | 🟢 `/etc/cron.d/workstation-backup` aktif |
+
+---
 
 ---
 
