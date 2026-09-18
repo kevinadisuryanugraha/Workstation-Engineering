@@ -16,6 +16,9 @@ import { projectRouter } from "./server/modules/projects/project.routes.ts";
 import { workItemRouter } from "./server/modules/work-items/work-item.routes.ts";
 import { ticketRouter } from "./server/modules/tickets/ticket.routes.ts";
 import { gitWebhookRouter } from "./server/modules/git/git.routes.ts";
+import { deploymentRouter } from "./server/modules/deployments/deployment.routes.ts";
+import { auditRouter } from "./server/modules/audit/audit.routes.ts";
+import { myWorkRouter } from "./server/modules/my-work/my-work.routes.ts";
 import { UserRole, Permission, SERVER_ROLE_PERMISSIONS } from "./server/constants/permissions.ts";
 
 export type { UserRole, Permission, AuthenticatedRequest };
@@ -41,6 +44,9 @@ app.use("/api/v1/projects", projectRouter);
 app.use("/api/v1/work-items", workItemRouter);
 app.use("/api/v1/tickets", ticketRouter);
 app.use("/api/v1/webhooks", gitWebhookRouter);
+app.use("/api/v1/deployments", deploymentRouter);
+app.use("/api/v1/audit-logs", auditRouter);
+app.use("/api/v1/my-work", myWorkRouter);
 
 // Public sanitized user directory metadata (profiles without password hashes)
 const PUBLIC_USERS = [

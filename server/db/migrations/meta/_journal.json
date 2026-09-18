@@ -29,6 +29,13 @@
       "when": 1789702617891,
       "tag": "0003_absent_amazoness",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789703150060,
+      "tag": "0004_flaky_silver_fox",
+      "breakpoints": true
     }
   ]
 }

@@ -8,6 +8,8 @@ import {
   linkWorkItemHandler,
   createWorkItemFromTicketHandler,
   getTicketEvidenceHandler,
+  addTicketCommentHandler,
+  getTicketTimelineHandler,
 } from './ticket.controller.ts';
 import { authenticateToken } from '../../middlewares/authenticate.ts';
 import { requirePermission } from '../../middlewares/rbac.ts';
@@ -36,5 +38,9 @@ router.post('/:id/resolve', requirePermission('PERM_TICKET_RESOLVE'), resolveTic
 router.get('/:id/evidence', getTicketEvidenceHandler);
 router.post('/:id/link-work-item', requirePermission('PERM_TICKET_UPDATE'), linkWorkItemHandler);
 router.post('/:id/create-work-item', requirePermission('PERM_WORK_ITEM_CREATE'), createWorkItemFromTicketHandler);
+
+// Comments & Timeline Sub-routes (Story 4.3)
+router.get('/:id/timeline', getTicketTimelineHandler);
+router.post('/:id/comments', requirePermission('PERM_TICKET_UPDATE'), addTicketCommentHandler);
 
 export const ticketRouter = router;

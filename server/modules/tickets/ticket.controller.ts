@@ -4,6 +4,7 @@ import { ticketService } from './ticket.service.ts';
 import { createTicketSchema, triageTicketSchema, filterTicketSchema, resolveTicketSchema } from './ticket.schema.ts';
 import { NotFoundError } from '../projects/project.service.ts';
 import { evidenceService } from './evidence.service.ts';
+import { commentsService } from './comments.service.ts';
 
 export async function listTicketsHandler(req: AuthenticatedRequest, res: Response) {
   try {
@@ -253,6 +254,66 @@ export async function getTicketEvidenceHandler(req: AuthenticatedRequest, res: R
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message },
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+export async function addTicketCommentHandler(req: AuthenticatedRequest, res: Response) {
+  try {
+    const ticketId = req.params.id as string;
+    const { content } = req.body;
+    if (!content || typeof content !== 'string' || content.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_FAILED', message: 'Comment content is required' },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const authorId = req.user?.userId || 'unknown';
+    const comment = await commentsService.addComment(ticketId, authorId, content.trim());
+    res.status(201).json({
+      success: true,
+      data: comment,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    if (error instanceof NotFoundError) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: error.message },
+        timestamp: new Date().toISOString(),
+      });
+    }
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message },
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+export async function getTicketTimelineHandler(req: AuthenticatedRequest, res: Response) {
+  try {
+    const ticketId = req.params.id as string;
+    const timeline = await commentsService.getTimeline(ticketId);
+    res.json({
+      success: true,
+      data: timeline,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    if (error instanceof NotFoundError) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: error.message },
+        timestamp: new Date().toISOString(),
+      });
+    }
     res.status(500).json({
       success: false,
       error: { code: 'SERVER_ERROR', message: error.message },
