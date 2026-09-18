@@ -103,7 +103,7 @@ stories:
   - id: "1.3.secure-auth-engine"
     title: "Hardened Authentication Engine (bcrypt + Stateless JWT)"
     epic_id: "epic-1"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/1.3.secure-auth-engine.story.md"
     parallel_set: 2
     dependencies:
@@ -119,7 +119,7 @@ stories:
   - id: "1.4.server-rbac-middleware"
     title: "Server-Side RBAC Enforcement & Frontend Sanitization"
     epic_id: "epic-1"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/1.4.server-rbac-middleware.story.md"
     parallel_set: 2
     dependencies:
@@ -134,7 +134,7 @@ stories:
   - id: "7.1.append-only-audit-middleware"
     title: "Append-Only Audit Logging Middleware with Correlation IDs"
     epic_id: "epic-7"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/7.1.append-only-audit-middleware.story.md"
     parallel_set: 2
     dependencies:
@@ -149,7 +149,7 @@ stories:
   - id: "1.5.org-and-project-api"
     title: "Organization & Project Management API"
     epic_id: "epic-1"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/1.5.org-and-project-api.story.md"
     parallel_set: 3
     dependencies:
@@ -163,7 +163,7 @@ stories:
   - id: "2.1.work-items-crud-api"
     title: "Work Items Schema & CRUD API"
     epic_id: "epic-2"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/2.1.work-items-crud-api.story.md"
     parallel_set: 3
     dependencies:
@@ -176,7 +176,7 @@ stories:
   - id: "4.1.ticket-lifecycle-api"
     title: "Ticketing / ITSM Lifecycle & Triage API"
     epic_id: "epic-4"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/4.1.ticket-lifecycle-api.story.md"
     parallel_set: 3
     dependencies:

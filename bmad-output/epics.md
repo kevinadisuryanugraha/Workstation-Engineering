@@ -37,8 +37,8 @@
 |----|------|--------|--------|
 | 1.1 | git-init-and-toolchain | Inisialisasi git, strict tsconfig, dan testing toolchain (DS-07, DS-11) | done |
 | 1.2 | postgres-drizzle-setup | Konfigurasi Drizzle ORM, skema inti (users, orgs, projects), dan migrasi SQL (DS-09) | done |
-| 1.3 | secure-auth-engine | Rombak auth: bcrypt hashing, stateless JWT HMAC, fail-fast env secret (DS-01, DS-04, DS-06) | ready-for-dev |
-| 1.4 | server-rbac-middleware | Penegakan RBAC server-side, hapus auto-admin klien & password hints (DS-02, DS-03, DS-05) | ready-for-dev |
+| 1.3 | secure-auth-engine | Rombak auth: bcrypt hashing, stateless JWT HMAC, fail-fast env secret (DS-01, DS-04, DS-06) | done |
+| 1.4 | server-rbac-middleware | Penegakan RBAC server-side, hapus auto-admin klien & password hints (DS-02, DS-03, DS-05) | done |
 | 1.5 | org-and-project-api | CRUD Organization & Project API ber-RBAC dengan key generation unik | ready-for-dev |
 
 **Cross-epic dependencies:**
@@ -216,7 +216,7 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 7.1 | append-only-audit-middleware | Middleware correlation ID UUIDv7 & service pencatatan event append-only | ready-for-dev |
+| 7.1 | append-only-audit-middleware | Middleware correlation ID UUIDv7 & service pencatatan event append-only | done |
 | 7.2 | audit-log-viewer-api | Endpoint pembacaan audit log dengan filter aktor, rentang tanggal, dan pagination | ready-for-dev |
 
 **Cross-epic dependencies:**
@@ -230,9 +230,9 @@
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
 - **Total Stories:** 20
-- **Done:** 2
-- **Remaining:** 18
-- **Completion Rate:** 10% (2 / 20)
+- **Done:** 5
+- **Remaining:** 15
+- **Completion Rate:** 25% (5 / 20)
 
 ## Sequencing & Wave Plan
 
