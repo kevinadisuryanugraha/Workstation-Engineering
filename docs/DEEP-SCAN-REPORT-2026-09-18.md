@@ -29,6 +29,7 @@
 | 8 | **ke-8** | **18 Sep 2026** | **Backup otomatis DB produksi** — pg_dump harian 02:30 via cron, kompresi gzip, retensi 14 hari, config ikut dibackup, uji restore nyata: hasil identik 100% (27 tabel · 7 users · 67 metrics) | `backup-db.sh` |
 | 9 | **ke-9** | **18 Sep 2026** | **Purge kredensial plaintext dari UI & bundle produksi** — LoginView (peta 7 password + pre-fill admin123 + panel directory) dibersihkan total, seed hash dirotasi tanpa komentar pengungkap, lazy-import @google/genai memperbaiki 3 test suite · 178/178 hijau · bundle produksi terverifikasi bebas kredensial | `65b7eed`, `4e82086` |
 | **ke-10** | **18 Sep 2026** | **Re-set password 7 akun produksi atas permintaan owner** — nilai baru hanya di file lokal rahasia (git-ignored) · verifikasi login baru OK / lama 401 | `fadc72f` |
+| **ke-11** | **18 Sep 2026** | **Audit UI menyeluruh 15 halaman** (skill better-interface + runtime Playwright) — 15 temuan sistemik: 4 HIGH (markdown mentah, reduced-motion, metrik kontradiktif, kontras) · 10 MEDIUM · 1 LOW · detail: `docs/UI-AUDIT-2026-09-18.md` | `0 console error` |
 
 ---
 
@@ -467,6 +468,35 @@ gunzip -c /opt/workstation/backups/workstation_db_<TIMESTAMP>.sql.gz | \
 | 3 | Grep plaintext di source & bundle `dist/` | 🟢 0 temuan |
 
 > 🔐 **Catatan keamanan:** password pilihan owner lebih pendek dari random-24 — acceptable untuk tool internal, namun disarankan tetap aktifkan rate-limit bawaan (aktif ✓) dan pertimbangkan 2FA di V2.2.
+
+---
+
+### 📦 BLOK 11 — AUDIT TAMPILAN MENYELURUH 15 HALAMAN (SKILL `better-interface`)
+**📅 18 September 2026 · Status: 🟢 AUDIT SELESAI — MENUNGGU GREEN-LIGHT PERBAIKAN**
+
+**1. Lingkup & Metode**
+
+| No. | Aspek | Detail |
+|:---:|---|---|
+| 1 | Cakupan runtime | 15/15 halaman produksi ter-screenshot (Playwright Chromium 1366×850) — **0 console/page error** |
+| 2 | Cakupan source | 19 file view (`src/components/`) — scan pola a11y/layout/typography/writing |
+| 3 | Metodologi | Skill `better-interface` — temuan sistemik terkonsolidasi, severity berdasar dampak user |
+| 4 | Laporan lengkap | `docs/UI-AUDIT-2026-09-18.md` (bukti screenshot `.pi/ui-audit/*.png`) |
+
+**2. Hasil Ringkas**
+
+| No. | Severity | Temuan Utama |
+|:---:|:---:|---|
+| 1 | 🔴 HIGH ×4 | Markdown mentah di Laporan/Blueprint · `prefers-reduced-motion` diabaikan · metrik Explainable Progress kontradiktif (81,3% vs 50%) · kontras `text-slate-400` di krem ≈ 2,1:1 (36+ lokasi) |
+| 2 | 🟡 MEDIUM ×10 | RAM % vs absolut kontradiktif · versi v2.8.1 vs v1.4.2 bertabrakan · konten demo lintas-konteks (POS/Laravel di proyek LMS) · modal tanpa focus-trap/Escape · 29 input tanpa label · konten terpotong (sidebar/chip/placeholder) · fake URL `workstation.local` · event ledger tak urut · klaim retensi 365 hari vs keputusan "selamanya" · empty state sprint buntu |
+| 3 | 🔵 LOW ×1 | Mixed ID/EN tanpa kebijakan + format waktu non-standar |
+
+**3. Verdict**
+
+| No. | Pernyataan |
+|:---:|---|
+| 1 | Kualitas dasar kuat: 0 console error, design system konsisten, telemetri live nyata, provenance chips |
+| 2 | 4 HIGH bersifat sistemik namun fixable upaya rendah–sedang; urutan sarankan: **H-1 → H-4 → H-3 → M-6 → M-4** → sisanya |
 
 ---
 

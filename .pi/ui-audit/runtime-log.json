@@ -1,0 +1,77 @@
+[
+  {
+    "type": "shot",
+    "page": "01-overview",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "02-project360",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "03-workitems",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "04-ticketing",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "05-incident",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "06-git",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "07-deployments",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "08-infrastructure",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "09-ai",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "10-security",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "11-reports",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "12-laporan",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "13-blueprint",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "14-knowledge",
+    "ok": true
+  },
+  {
+    "type": "shot",
+    "page": "15-audit",
+    "ok": true
+  }
+]
