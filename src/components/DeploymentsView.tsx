@@ -64,7 +64,7 @@ export const DeploymentsView: React.FC<DeploymentsViewProps> = ({
 
           <div className="flex items-center gap-2 shrink-0">
             <Badge variant="success" size="md" pulse>
-              Production: v2.8.1 Healthy
+              Production: v1.4.2 Healthy
             </Badge>
           </div>
         </div>

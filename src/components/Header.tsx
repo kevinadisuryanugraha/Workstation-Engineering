@@ -187,7 +187,7 @@ export const Header: React.FC<HeaderProps> = ({
               <span>{currentUser.role}</span>
             </div>
           </div>
-          <Key className="w-3 h-3 text-slate-400 group-hover:text-slate-900 transition-colors hidden sm:block shrink-0" />
+          <Key className="w-3 h-3 text-slate-600 group-hover:text-slate-900 transition-colors hidden sm:block shrink-0" />
         </button>
 
         {/* Explicit Sign Out Button */}

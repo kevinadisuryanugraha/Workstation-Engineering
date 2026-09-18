@@ -415,7 +415,8 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
                         }
                       }}
                       className="bg-[#FAF7EE] text-xs font-mono font-black text-slate-950 px-3 py-1.5 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] focus:outline-none cursor-pointer"
-                    >
+                  aria-label="Ubah status insiden"
+                >
                       <option value="INVESTIGATING">INVESTIGATING</option>
                       <option value="IDENTIFIED">IDENTIFIED</option>
                       <option value="MONITORING">MONITORING</option>
@@ -551,7 +552,8 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
                       value={timelineMessage}
                       onChange={(e) => setTimelineMessage(e.target.value)}
                       className="flex-1 bg-[#FAF7EE] text-xs font-mono font-bold text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 focus:outline-none shadow-[2px_2px_0px_#18181b]"
-                    />
+                aria-label="Post live war room update or mitigation action"
+              />
                     <button
                       type="submit"
                       disabled={!timelineMessage.trim()}
@@ -624,7 +626,7 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
             </>
           ) : (
             <KokonutCard variant="default" className="p-8 text-center" interactive={false}>
-              <ShieldAlert className="w-10 h-10 text-slate-400 mx-auto mb-3" />
+              <ShieldAlert className="w-10 h-10 text-slate-600 mx-auto mb-3" />
               <h3 className="text-sm font-mono font-black text-slate-950">Select an Incident</h3>
               <p className="text-xs font-mono text-slate-600 mt-1">
                 Choose an active or historical incident from the left stream to inspect live chronology, blast radius, and war room telemetry.
@@ -669,7 +671,8 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     className="w-full bg-[#FAF7EE] text-xs font-mono font-bold text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 focus:outline-none shadow-[2px_2px_0px_#18181b]"
-                  />
+                aria-label="e.g. POS printer socket connection deadlock"
+              />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
@@ -681,7 +684,8 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
                       value={newSeverity}
                       onChange={(e) => setNewSeverity(e.target.value as Incident["severity"])}
                       className="w-full bg-[#FAF7EE] text-xs font-mono font-bold text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 focus:outline-none shadow-[2px_2px_0px_#18181b]"
-                    >
+                  aria-label="Severity insiden baru"
+                >
                       <option value="CRITICAL">CRITICAL (SEV-1)</option>
                       <option value="MAJOR">MAJOR (SEV-2)</option>
                       <option value="MINOR">MINOR (SEV-3)</option>
@@ -696,7 +700,8 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
                       value={newEnvironment}
                       onChange={(e) => setNewEnvironment(e.target.value as Incident["environment"])}
                       className="w-full bg-[#FAF7EE] text-xs font-mono font-bold text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 focus:outline-none shadow-[2px_2px_0px_#18181b]"
-                    >
+                  aria-label="Environment insiden baru"
+                >
                       <option value="Production">Production</option>
                       <option value="Staging">Staging</option>
                     </select>
@@ -725,7 +730,8 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
                     value={newImpact}
                     onChange={(e) => setNewImpact(e.target.value)}
                     className="w-full bg-[#FAF7EE] text-xs font-mono font-semibold text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 focus:outline-none shadow-[2px_2px_0px_#18181b]"
-                  />
+                aria-label="Describe user-facing symptoms and system impact"
+              />
                 </div>
 
                 <div className="flex justify-end gap-2 pt-3 border-t-2 border-slate-900/10">

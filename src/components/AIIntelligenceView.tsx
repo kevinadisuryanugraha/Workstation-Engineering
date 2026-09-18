@@ -347,7 +347,7 @@ public function exportDailyReceipts(Request $request) {
                 </h2>
                 <button
                   onClick={() => setShowScanModal(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="p-1 rounded-lg text-slate-600 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -364,6 +364,7 @@ public function exportDailyReceipts(Request $request) {
                   value={scanSnippet}
                   onChange={(e) => setScanSnippet(e.target.value)}
                   className="w-full bg-slate-50 font-mono text-xs text-slate-900 p-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono leading-relaxed"
+                  aria-label="Snippet kode untuk dipindai AI"
                 />
               </div>
 

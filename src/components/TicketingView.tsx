@@ -433,7 +433,7 @@ export const TicketingView: React.FC<TicketingViewProps> = ({
                 <h2 className="text-base font-mono font-bold text-slate-900">Create New Engineering / Support Ticket</h2>
                 <button
                   onClick={() => setShowCreateModal(false)}
-                  className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                  className="p-1 rounded-lg text-slate-600 hover:text-slate-700 hover:bg-slate-100 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -449,7 +449,8 @@ export const TicketingView: React.FC<TicketingViewProps> = ({
                     value={newTitle}
                     onChange={(e) => setNewTitle(e.target.value)}
                     className="w-full bg-white text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans"
-                  />
+                aria-label="e.g. POS printer timeout during cashier checkout"
+              />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -459,7 +460,8 @@ export const TicketingView: React.FC<TicketingViewProps> = ({
                       value={newType}
                       onChange={(e) => setNewType(e.target.value as any)}
                       className="w-full bg-white text-slate-900 px-2 py-2 rounded-xl border border-slate-200 focus:outline-none font-mono"
-                    >
+                  aria-label="Tipe tiket baru"
+                >
                       <option value="BUG">Bug</option>
                       <option value="INCIDENT">Incident</option>
                       <option value="FEATURE_REQUEST">Feature Request</option>
@@ -473,7 +475,8 @@ export const TicketingView: React.FC<TicketingViewProps> = ({
                       value={newSeverity}
                       onChange={(e) => setNewSeverity(e.target.value as any)}
                       className="w-full bg-white text-slate-900 px-2 py-2 rounded-xl border border-slate-200 focus:outline-none font-mono"
-                    >
+                  aria-label="Severity tiket baru"
+                >
                       <option value="Critical">Critical</option>
                       <option value="Major">Major</option>
                       <option value="Minor">Minor</option>
@@ -487,7 +490,8 @@ export const TicketingView: React.FC<TicketingViewProps> = ({
                       value={newPriority}
                       onChange={(e) => setNewPriority(e.target.value as any)}
                       className="w-full bg-white text-slate-900 px-2 py-2 rounded-xl border border-slate-200 focus:outline-none font-mono"
-                    >
+                  aria-label="Prioritas tiket baru"
+                >
                       <option value="P1">P1 (Immediate)</option>
                       <option value="P2">P2 (High)</option>
                       <option value="P3">P3 (Normal)</option>
@@ -505,7 +509,8 @@ export const TicketingView: React.FC<TicketingViewProps> = ({
                     value={newDescription}
                     onChange={(e) => setNewDescription(e.target.value)}
                     className="w-full bg-white text-slate-900 px-3 py-2 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 font-sans"
-                  />
+                aria-label="Detail the exact issue, error logs, and environment"
+              />
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">

@@ -4,6 +4,7 @@ import { useIdReport } from "../hooks/api/useReport";
 import { KokonutCard } from "./ui/KokonutCard";
 import { Badge } from "./ui/Badge";
 import { cn } from "../lib/utils";
+import { MarkdownView } from "./ui/MarkdownView";
 
 /**
  * Story 10.2 — Laporan Manajemen (Bahasa Indonesia) view.
@@ -103,9 +104,10 @@ export const ReportView: React.FC<ReportViewProps> = ({ isManagementView }) => {
           )}
 
           {data && !isLoading && (
-            <pre className="whitespace-pre-wrap font-mono text-[13px] leading-relaxed text-slate-800 bg-slate-50 rounded-xl p-5 border border-slate-100">
-              {data.report}
-            </pre>
+            <MarkdownView
+              content={data.report}
+              className="text-[13px] bg-slate-50 rounded-xl p-5 border border-slate-100"
+            />
           )}
         </div>
       </KokonutCard>

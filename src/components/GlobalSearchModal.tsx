@@ -81,7 +81,8 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             className="w-full bg-transparent text-slate-950 text-sm focus:outline-none placeholder:text-slate-500 font-mono font-bold"
-          />
+                aria-label="Search by ID (ENR-024, TK-182, DEP-502, INC-00042) or keywords"
+              />
           <button
             onClick={onClose}
             className="px-2 py-0.5 text-xs bg-white hover:bg-slate-100 border-2 border-slate-900 rounded-lg text-slate-950 font-mono font-bold shadow-[1px_1px_0px_#18181b] transition-all cursor-pointer active:translate-x-0.5 active:translate-y-0.5"

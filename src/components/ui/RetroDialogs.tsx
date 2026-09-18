@@ -1,8 +1,18 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, Check, ArrowRight, Heart, Star, Disc, HardDrive, AlertTriangle, HelpCircle } from "lucide-react";
 
 // 1. Retro Error / Alert Dialog (From image.png top-left & top-middle)
+
+// UI-Audit M-4: Escape menutup dialog
+const useEscapeClose = (onClose: () => void) => {
+  useEffect(() => {
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [onClose]);
+};
+
 interface RetroErrorDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -18,6 +28,7 @@ export const RetroErrorDialog: React.FC<RetroErrorDialogProps> = ({
   code = "404",
   message = "PAGE NOT FOUND / INCIDENT TRIGGERED"
 }) => {
+  useEscapeClose(onClose);
   if (!isOpen) return null;
 
   return (
@@ -164,6 +175,7 @@ export const RetroLoginDialog: React.FC<RetroLoginDialogProps> = ({
   currentUser,
   onConfirm
 }) => {
+  useEscapeClose(onClose);
   const [nickname, setNickname] = useState(currentUser);
 
   if (!isOpen) return null;
@@ -202,7 +214,8 @@ export const RetroLoginDialog: React.FC<RetroLoginDialogProps> = ({
               onChange={(e) => setNickname(e.target.value)}
               placeholder="Your Nickname Here"
               className="w-full px-3 py-2 bg-white border-2 border-slate-900 rounded-lg text-xs font-mono font-bold text-slate-900 shadow-[2px_2px_0px_#18181b] focus:outline-none"
-            />
+                aria-label="Your Nickname Here"
+              />
           </div>
 
           <div className="space-y-1.5">
@@ -210,8 +223,7 @@ export const RetroLoginDialog: React.FC<RetroLoginDialogProps> = ({
             <input
               type="password"
               autoComplete="new-password"
-              className="w-full px-3 py-2 bg-white border-2 border-slate-900 rounded-lg text-xs font-mono font-bold text-slate-900 shadow-[2px_2px_0px_#18181b] focus:outline-none"
-            />
+              className="w-full px-3 py-2 bg-white border-2 border-slate-900 rounded-lg text-xs font-mono font-bold text-slate-900 shadow-[2px_2px_0px_#18181b] focus:outline-none" aria-label="Password" />
           </div>
 
           <div className="pt-2 flex justify-end">
@@ -248,7 +260,7 @@ export const RetroReactions: React.FC = () => {
           >
             <Heart
               className={`w-4 h-4 stroke-[2.5] ${
-                h <= hearts ? "fill-[#ff70a6] text-slate-900" : "fill-transparent text-slate-400"
+                h <= hearts ? "fill-[#ff70a6] text-slate-900" : "fill-transparent text-slate-600"
               }`}
             />
           </button>
@@ -265,7 +277,7 @@ export const RetroReactions: React.FC = () => {
           >
             <Star
               className={`w-4 h-4 stroke-[2.5] ${
-                s <= stars ? "fill-[#f6ae2d] text-slate-900" : "fill-transparent text-slate-400"
+                s <= stars ? "fill-[#f6ae2d] text-slate-900" : "fill-transparent text-slate-600"
               }`}
             />
           </button>

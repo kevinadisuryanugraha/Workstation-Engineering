@@ -11,7 +11,9 @@ interface AuditLogViewProps {
   isManagementView: boolean;
 }
 
-export const AuditLogView: React.FC<AuditLogViewProps> = ({ events, isManagementView }) => {
+export const AuditLogView: React.FC<AuditLogViewProps> = ({ events: rawEvents, isManagementView }) => {
+  // UI-Audit M-8: audit trail harus urut waktu (terbaru dulu)
+  const events = [...rawEvents].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
   return (
     <div className="space-y-6 pb-12">
       <KokonutCard variant="default" className="p-5" interactive={false}>
@@ -33,7 +35,7 @@ export const AuditLogView: React.FC<AuditLogViewProps> = ({ events, isManagement
 
           <div className="text-right shrink-0">
             <Badge variant="success" size="md">
-              Audit Retention: 365 Days Guaranteed
+              Audit Retention: Permanent (Management Decision)
             </Badge>
           </div>
         </div>

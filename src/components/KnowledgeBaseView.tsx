@@ -50,7 +50,8 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({ articles, 
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-[#FAF7EE] text-xs text-slate-950 pl-9 pr-3 py-2 rounded-xl border-2 border-slate-900 focus:outline-none font-mono font-semibold shadow-[2px_2px_0px_#18181b]"
-            />
+                aria-label="Search runbooks, tags"
+              />
           </div>
         </div>
       </KokonutCard>

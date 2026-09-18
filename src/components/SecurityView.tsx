@@ -282,7 +282,7 @@ export const SecurityView: React.FC<SecurityViewProps> = ({
             </div>
 
             {/* Category Filter Pills */}
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-mono">
+            <div className="flex flex-wrap items-center gap-2 pb-1 text-xs font-mono">
               <span className="text-slate-500 font-bold text-[11px] mr-1">Filter:</span>
               {categories.map((cat) => (
                 <button

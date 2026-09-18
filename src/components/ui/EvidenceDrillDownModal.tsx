@@ -34,7 +34,7 @@ export const EvidenceDrillDownModal: React.FC<EvidenceDrillDownModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition-colors"
+            className="text-slate-600 hover:text-white p-1 rounded hover:bg-slate-800 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>

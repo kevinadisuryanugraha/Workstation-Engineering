@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { MotionConfig } from "motion/react";
 import { Header } from "./components/Header";
 import { Sidebar, ActiveTab } from "./components/Sidebar";
 import { OverviewView } from "./components/OverviewView";
@@ -697,6 +698,7 @@ export default function App() {
   }
 
   return (
+    <MotionConfig reducedMotion="user">
     <RetroDesktopShell
       activeTab={activeTab}
       onSelectTab={setActiveTab}
@@ -926,6 +928,7 @@ export default function App() {
         }}
       />
     </RetroDesktopShell>
+    </MotionConfig>
   );
 }
 

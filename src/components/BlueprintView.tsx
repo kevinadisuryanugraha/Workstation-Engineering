@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { MarkdownView } from "./ui/MarkdownView";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Code2,
@@ -70,7 +71,7 @@ export const BlueprintView: React.FC = () => {
               Technical Architecture, Database Schema (ERD), Protocols & Workflows
             </h1>
             <p className="text-xs text-slate-600 font-mono mt-0.5">
-              Comprehensive architectural specifications: Laravel backend schemas, trust models, and agent daemons.
+              Comprehensive architectural specifications: REST API backend schemas, trust models, and agent daemons.
             </p>
           </div>
 
@@ -123,7 +124,8 @@ export const BlueprintView: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="bg-[#FAF7EE] text-xs text-slate-950 pl-8 pr-3 py-1.5 rounded-xl border-2 border-slate-900 focus:outline-none w-full font-mono font-semibold"
-          />
+                aria-label="Search specs (e.g. ERD, Agent)"
+              />
         </div>
       </div>
 
@@ -159,7 +161,7 @@ export const BlueprintView: React.FC = () => {
                   </div>
                   <p className="text-[11px] text-slate-600 line-clamp-2 leading-relaxed font-mono font-medium">{sec.summary}</p>
                 </div>
-                <ChevronRight className="w-4 h-4 text-slate-400 shrink-0 mt-1" />
+                <ChevronRight className="w-4 h-4 text-slate-600 shrink-0 mt-1" />
               </button>
             ))}
           </div>
@@ -190,9 +192,10 @@ export const BlueprintView: React.FC = () => {
           </div>
 
           {/* Rendered content */}
-          <div className="prose max-w-none text-xs leading-relaxed text-slate-950 space-y-4 whitespace-pre-wrap font-mono bg-[#FAF7EE] p-5 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
-            {selectedSection.contentMarkdown}
-          </div>
+          <MarkdownView
+            content={selectedSection.contentMarkdown}
+            className="max-w-none text-xs leading-relaxed text-slate-950 bg-[#FAF7EE] p-5 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]"
+          />
         </KokonutCard>
       </div>
     </div>

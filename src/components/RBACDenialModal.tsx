@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import { ShieldAlert, Lock, ArrowRight, X, AlertTriangle } from "lucide-react";
 import { User, Permission } from "../types";
@@ -24,12 +24,22 @@ export const RBACDenialModal: React.FC<RBACDenialModalProps> = ({
   actionName = "Operasi Sistem",
   onOpenAuthModal
 }) => {
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    closeBtnRef.current?.focus();
+    const h = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", h);
+    return () => window.removeEventListener("keydown", h);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const permInfo = requiredPermission ? PERMISSION_DESCRIPTIONS[requiredPermission] : null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-label="Akses ditolak">
       <motion.div
         initial={{ opacity: 0, scale: 0.95, y: 10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -52,6 +62,8 @@ export const RBACDenialModal: React.FC<RBACDenialModalProps> = ({
             </div>
           </div>
           <button
+            ref={closeBtnRef}
+            aria-label="Tutup dialog"
             onClick={onClose}
             className="w-7 h-7 rounded-lg bg-white hover:bg-slate-100 text-slate-950 border-2 border-slate-900 flex items-center justify-center font-bold text-xs shadow-[1.5px_1.5px_0px_#18181b] cursor-pointer"
           >

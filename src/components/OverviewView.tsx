@@ -92,8 +92,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {/* Metric 1 */}
         <KokonutCard variant="default" glowColor="emerald" className="p-4">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400">
+          <div className="flex items-center justify-between text-slate-600 mb-2">
+            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-600">
               Active Projects
             </span>
             <Layers className="w-4 h-4 text-emerald-400" />
@@ -109,13 +109,13 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             </div>
             <LiveSparkline data={[2, 2, 3, 3, 3]} color="emerald" width={60} height={20} />
           </div>
-          <p className="text-[11px] text-slate-400 mt-2 font-mono">LMS • POS Retail • ERP Ledger</p>
+          <p className="text-[11px] text-slate-600 mt-2 font-mono">LMS • POS Retail • ERP Ledger</p>
         </KokonutCard>
 
         {/* Metric 2 */}
         <KokonutCard variant="default" glowColor="amber" className="p-4">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400">
+          <div className="flex items-center justify-between text-slate-600 mb-2">
+            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-600">
               Open Tickets
             </span>
             <Activity className="w-4 h-4 text-amber-400" />
@@ -131,13 +131,13 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             </div>
             <LiveSparkline data={[45, 38, 40, 35, 32]} color="amber" width={60} height={20} />
           </div>
-          <p className="text-[11px] text-slate-400 mt-2 font-mono">94.2% within SLA target</p>
+          <p className="text-[11px] text-slate-600 mt-2 font-mono">94.2% within SLA target</p>
         </KokonutCard>
 
         {/* Metric 3 */}
         <KokonutCard variant="default" glowColor="blue" className="p-4">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400">
+          <div className="flex items-center justify-between text-slate-600 mb-2">
+            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-600">
               Deployments
             </span>
             <Rocket className="w-4 h-4 text-blue-400" />
@@ -153,13 +153,13 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             </div>
             <LiveSparkline data={[12, 15, 17, 19, 21]} color="blue" width={60} height={20} />
           </div>
-          <p className="text-[11px] text-slate-400 mt-2 font-mono">Latest: v2.8.1 on Kontabo</p>
+          <p className="text-[11px] text-slate-600 mt-2 font-mono">Latest: v1.4.2 on Kontabo</p>
         </KokonutCard>
 
         {/* Metric 4 */}
         <KokonutCard variant="default" glowColor="rose" className="p-4">
-          <div className="flex items-center justify-between text-slate-400 mb-2">
-            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-400">
+          <div className="flex items-center justify-between text-slate-600 mb-2">
+            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-600">
               Critical Incidents
             </span>
             <ShieldAlert className="w-4 h-4 text-rose-400" />
@@ -175,7 +175,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             </div>
             <LiveSparkline data={[3, 2, 2, 1, 1]} color="rose" width={60} height={20} />
           </div>
-          <p className="text-[11px] text-slate-400 mt-2 font-mono">INC-00042 PIR complete</p>
+          <p className="text-[11px] text-slate-600 mt-2 font-mono">INC-00042 PIR complete</p>
         </KokonutCard>
       </div>
 
@@ -189,7 +189,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                 <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
                 Project Delivery & Evidence Progress
               </h2>
-              <p className="text-[11px] text-slate-400 mt-0.5">
+              <p className="text-[11px] text-slate-600 mt-0.5">
                 Calculated mathematically from deliverables, verified test passes, and deployments
               </p>
             </div>
@@ -218,7 +218,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                       <h3 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">
                         {proj.name}
                       </h3>
-                      <p className="text-[11px] text-slate-400 font-mono">{proj.currentSprint}</p>
+                      <p className="text-[11px] text-slate-600 font-mono">{proj.currentSprint}</p>
                     </div>
                   </div>
                   <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2">
@@ -230,7 +230,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                         Health: {proj.health}/100
                       </Badge>
                     </div>
-                    <span className="text-[10px] text-slate-400 font-mono">{proj.latestRelease}</span>
+                    <span className="text-[10px] text-slate-600 font-mono">{proj.latestRelease}</span>
                   </div>
                 </div>
 
@@ -246,7 +246,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                   />
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 font-mono">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600 font-mono">
                   <span>Open: {proj.openTickets}</span>
                   <span>Blockers: {proj.blockersCount}</span>
                   <span className="text-emerald-400">● {proj.productionStatus}</span>
@@ -268,7 +268,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                   <Server className="w-3.5 h-3.5 text-blue-400" />
                   Telemetry Nodes
                 </h2>
-                <p className="text-[11px] text-slate-400">Workstation Linux Agents</p>
+                <p className="text-[11px] text-slate-600">Workstation Linux Agents</p>
               </div>
               <button
                 onClick={() => onNavigateTab("infrastructure")}
@@ -352,7 +352,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
               <span>AI Codebase Intelligence</span>
             </div>
             <p className="text-[11px] text-slate-900 leading-relaxed font-mono">
-              8 findings detected (1 High HMAC nonce, 1 Medium N+1 query in OrderController). 12 recommendations ready.
+              8 findings detected (1 High HMAC nonce, 1 Medium N+1 query in enrollment listing). 12 recommendations ready.
             </p>
             <button
               onClick={() => onNavigateTab("ai")}

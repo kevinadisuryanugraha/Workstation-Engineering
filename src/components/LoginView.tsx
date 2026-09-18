@@ -119,7 +119,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="user@workstation.io"
                   className="w-full pl-9 pr-3 py-2 bg-white border-2 border-slate-900 rounded-lg text-xs font-mono font-bold text-slate-900 shadow-[2px_2px_0px_#18181b] focus:outline-none focus:ring-2 focus:ring-teal-400"
-                />
+                aria-label="user@workstation.io"
+              />
               </div>
             </div>
 
@@ -139,7 +140,8 @@ export const LoginView: React.FC<LoginViewProps> = ({ onLoginSuccess }) => {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
                   className="w-full pl-9 pr-10 py-2 bg-white border-2 border-slate-900 rounded-lg text-xs font-mono font-bold text-slate-900 shadow-[2px_2px_0px_#18181b] focus:outline-none focus:ring-2 focus:ring-teal-400"
-                />
+                aria-label="••••••••••••"
+              />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}

@@ -43,7 +43,7 @@ export const Project360View: React.FC<Project360ViewProps> = ({
     { name: "Delivery Velocity", score: 82, status: "On Track", desc: "Sprint burnup on schedule, 2 active blockers", angle: 0 },
     { name: "Code Quality", score: 87, status: "Healthy", desc: "Low defect escape rate, zero regressions", angle: 51.4 },
     { name: "Security Posture", score: 92, status: "Verified", desc: "No critical CVEs, HMAC authentication active", angle: 102.8 },
-    { name: "Performance", score: 78, status: "Review", desc: "N+1 query detected in OrderController iteration", angle: 154.2 },
+    { name: "Performance", score: 78, status: "Review", desc: "N+1 query detected in enrollment listing iteration", angle: 154.2 },
     { name: "Test Coverage", score: 69, status: "Attention", desc: "84% pass rate, seat reservation needs race test", angle: 205.7 },
     { name: "Documentation", score: 74, status: "Fair", desc: "API specs current, runbook updated for POS", angle: 257.1 },
     { name: "Infrastructure", score: 96, status: "Optimal", desc: "Kontabo VPS 99.98% uptime, memory 64%", angle: 308.5 }
@@ -79,7 +79,7 @@ export const Project360View: React.FC<Project360ViewProps> = ({
               </Badge>
             </div>
             <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">{project.tagline}</p>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 pt-1 font-mono">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 pt-1 font-mono">
               <span>Owner: <strong className="text-slate-200">{project.owner}</strong></span>
               <span className="text-slate-600">•</span>
               <span>Tech Lead: <strong className="text-slate-200">{project.techLead}</strong></span>
@@ -94,19 +94,19 @@ export const Project360View: React.FC<Project360ViewProps> = ({
               <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-400">
                 <AnimatedCounter value={project.progress} suffix="%" />
               </div>
-              <div className="text-[10px] uppercase font-mono font-semibold text-slate-400 mt-0.5">Progress</div>
+              <div className="text-[10px] uppercase font-mono font-semibold text-slate-600 mt-0.5">Progress</div>
             </div>
             <div className="h-8 w-px bg-slate-800" />
             <div className="text-center px-3">
               <div className="text-2xl sm:text-3xl font-bold font-mono text-blue-400">
                 <AnimatedCounter value={project.health} />
               </div>
-              <div className="text-[10px] uppercase font-mono font-semibold text-slate-400 mt-0.5">Health Index</div>
+              <div className="text-[10px] uppercase font-mono font-semibold text-slate-600 mt-0.5">Health Index</div>
             </div>
             <div className="h-8 w-px bg-slate-800" />
             <div className="text-center px-3">
               <div className="text-xl sm:text-2xl font-bold font-mono text-purple-400">{project.latestRelease}</div>
-              <div className="text-[10px] uppercase font-mono font-semibold text-slate-400 mt-0.5">Release</div>
+              <div className="text-[10px] uppercase font-mono font-semibold text-slate-600 mt-0.5">Release</div>
             </div>
           </div>
         </div>
@@ -120,7 +120,7 @@ export const Project360View: React.FC<Project360ViewProps> = ({
               <FileCheck className="w-4 h-4 text-emerald-400" />
               Explainable Progress Calculation Engine
             </h2>
-            <p className="text-[11px] text-slate-400 mt-0.5">
+            <p className="text-[11px] text-slate-600 mt-0.5">
               Prinsip mutlak: Progress bukan angka subjektif yang diinput manual. Dihitung langsung dari evidence deliverable.
             </p>
           </div>
@@ -233,7 +233,7 @@ export const Project360View: React.FC<Project360ViewProps> = ({
                 <Activity className="w-4 h-4 text-blue-400" />
                 7-Dimensional Health Radar
               </h2>
-              <p className="text-[11px] text-slate-400">Health ≠ Progress. High progress can still bear operational risk.</p>
+              <p className="text-[11px] text-slate-600">Health ≠ Progress. High progress can still bear operational risk.</p>
             </div>
             <Badge variant="cyan" size="sm">
               Index: {project.health}/100
@@ -302,7 +302,7 @@ export const Project360View: React.FC<Project360ViewProps> = ({
                 <div className="flex items-center justify-between text-xs mb-1">
                   <span className="font-semibold text-white">{dim.name}</span>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-slate-400 font-mono">{dim.score}/100</span>
+                    <span className="text-[11px] text-slate-600 font-mono">{dim.score}/100</span>
                     <Badge
                       size="sm"
                       variant={
@@ -325,7 +325,7 @@ export const Project360View: React.FC<Project360ViewProps> = ({
                     style={{ width: `${dim.score}%` }}
                   />
                 </div>
-                <p className="text-[10px] text-slate-400 font-mono">{dim.desc}</p>
+                <p className="text-[10px] text-slate-600 font-mono">{dim.desc}</p>
               </div>
             ))}
           </div>

@@ -161,7 +161,7 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
                     <div className="flex items-center gap-1.5 truncate">
                       <span className="text-xs sm:text-sm shrink-0">🌐</span>
                       <span className="truncate text-[10px] sm:text-xs font-semibold">
-                        workstation.local/{projectKey.toLowerCase()}/{activeTab}
+                        {window.location.hostname || "workstation.local"}/{projectKey.toLowerCase()}/{activeTab}
                       </span>
                     </div>
                     <span className="text-[10px] text-slate-500 hidden md:inline ml-1">&gt;&gt; ☰</span>

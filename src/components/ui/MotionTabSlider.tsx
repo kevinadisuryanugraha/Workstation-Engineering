@@ -40,7 +40,7 @@ export function MotionTabSlider<T extends string = string>({
             onClick={() => onChange(tab.id)}
             className={cn(
               "relative px-3.5 py-1.5 rounded-lg text-xs font-medium transition-colors flex items-center gap-2 select-none outline-none focus-visible:ring-1 focus-visible:ring-emerald-500",
-              isActive ? "text-white font-semibold" : "text-slate-400 hover:text-slate-200"
+              isActive ? "text-white font-semibold" : "text-slate-600 hover:text-slate-200"
             )}
           >
             {isActive && (
@@ -59,7 +59,7 @@ export function MotionTabSlider<T extends string = string>({
                     "text-[10px] px-1.5 py-0.2 rounded-full font-mono font-bold",
                     isActive
                       ? "bg-slate-700 text-slate-100"
-                      : "bg-slate-800 text-slate-400"
+                      : "bg-slate-800 text-slate-600"
                   )}
                 >
                   {tab.count}

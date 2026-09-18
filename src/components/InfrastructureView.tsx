@@ -116,7 +116,7 @@ export const InfrastructureView: React.FC<InfrastructureViewProps> = ({
                 <Badge variant="success" size="sm" pulse>
                   {srv.status}
                 </Badge>
-                <p className="text-[10px] text-slate-400 font-mono mt-1">{srv.lastHeartbeat}</p>
+                <p className="text-[10px] text-slate-600 font-mono mt-1">{srv.lastHeartbeat}</p>
               </div>
             </div>
 
@@ -208,7 +208,7 @@ export const InfrastructureView: React.FC<InfrastructureViewProps> = ({
                 className="bg-blue-500 h-full rounded-full"
               />
             </div>
-            <p className="text-[11px] text-slate-500 font-mono">10.5 GB Used / 16.0 GB Total</p>
+            <p className="text-[11px] text-slate-500 font-mono">{(selectedServer.ramUsage / 100 * 7.75).toFixed(1)} GB Used / 7.75 GB Total</p>
           </div>
 
           {/* NVMe Gauge */}

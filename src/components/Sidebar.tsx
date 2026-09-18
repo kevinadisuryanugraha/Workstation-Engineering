@@ -76,7 +76,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const opsNav = [
     { id: "git", label: "Git Intelligence", icon: GitBranch, badge: "4 Commits", badgeType: "default" },
-    { id: "deployments", label: "Deployments", icon: Rocket, badge: "v2.8.1", badgeType: "emerald" },
+    { id: "deployments", label: "Deployments", icon: Rocket, badge: "v1.4.2", badgeType: "emerald" },
     { id: "infrastructure", label: "Infrastructure (Nodes)", icon: Server, badge: "2 Live", badgeType: "cyan" },
     {
       id: "ai",
@@ -138,7 +138,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     isActive ? "text-slate-950" : "text-slate-700 group-hover:text-slate-950"
                   )}
                 />
-                <span className="truncate">{item.label}</span>
+                <span className="truncate" title={item.label}>{item.label}</span>
               </div>
               {item.badge && (
                 <span className="relative z-10 shrink-0 ml-auto pl-1">
