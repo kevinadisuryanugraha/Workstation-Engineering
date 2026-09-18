@@ -63,14 +63,24 @@ export async function translateMarkdown(
   aiClient?: { models: { generateContent: (args: any) => Promise<{ text: string }> } }
 ): Promise<string> {
   const ai = aiClient ?? getClient(); // throws AiNotConfiguredError when no key & no injection
-  const response = await ai.models.generateContent({
-    model: 'gemini-3.8-flash',
-    contents: buildTranslationPrompt(markdown, target),
-    config: { temperature: 0.2 },
-  });
-  const text = (response.text ?? '').trim();
-  if (!text) throw new TranslationFailedError('Gemini returned an empty translation');
-  return text;
+  const MODEL_CHAIN = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.8-flash'];
+  let lastError: unknown = null;
+  for (const model of MODEL_CHAIN) {
+    try {
+      const response = await ai.models.generateContent({
+        model,
+        contents: buildTranslationPrompt(markdown, target),
+        config: { temperature: 0.2 },
+      });
+      const text = (response.text ?? '').trim();
+      if (!text) throw new TranslationFailedError('Gemini returned an empty translation');
+      return text;
+    } catch (err) {
+      lastError = err;
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
+  throw new TranslationFailedError(`Semua model AI gagal: ${lastError instanceof Error ? lastError.message : String(lastError)}`);
 }
 
 export class ReportTranslationService {

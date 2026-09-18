@@ -270,7 +270,46 @@ app.post(
       });
     }
 
-    try {
+    const MODEL_CHAIN = ["gemini-3.8-flash", "gemini-flash-latest", "gemini-3.8-flash", "gemini-3.8-flash"];
+    for (const model of MODEL_CHAIN) {
+      try {
+        const { parsed } = await runScanWithModel(ai, model, { projectName, codeSnippet, focusArea });
+        let liveRef: string | undefined;
+        try {
+          const snapshot = await aiService.persistScan({
+            mode: "LIVE_ANALYSIS",
+            model,
+            projectName: projectName || null,
+            focusArea: focusArea || null,
+            findings: parsed.findings ?? [],
+            recommendations: parsed.recommendations ?? [],
+            scannedBy: req.user?.name ?? "unknown",
+          });
+          liveRef = snapshot.scanRef;
+        } catch (persistErr: any) {
+          console.warn("[AI Scan] live snapshot persist skipped:", persistErr?.message);
+        }
+        return res.json({
+          success: true,
+          mode: "LIVE_ANALYSIS",
+          model,
+          ...(liveRef ? { scanRef: liveRef } : {}),
+          scannedBy: req.user?.name,
+          ...parsed
+        });
+      } catch (err: any) {
+        console.warn(`[AI Scan] model ${model} gagal (${err?.status ?? "?"}), mencoba fallback...`);
+        await new Promise((r) => setTimeout(r, 1500)); // jeda sebelum retry (503 high-demand biasanya transien)
+      }
+    }
+    // FR-019 AC: kegagalan AI = pesan bersih, bukan crash
+    return res.status(503).json({
+      success: false,
+      error: { code: "AI_UNAVAILABLE", message: "Layanan AI sedang sibuk/tidak tersedia. Coba lagi nanti." },
+      timestamp: new Date().toISOString()
+    });
+
+    async function runScanWithModel(aiClient: GoogleGenAI, model: string, ctx: { projectName?: string; codeSnippet?: string; focusArea?: string }) {
       const prompt = `You are the AI Codebase Intelligence engine of WORKSTATION.
 Analyze the following project code context:
 Project: ${projectName || "Enterprise Module"}
@@ -308,8 +347,8 @@ Respond ONLY with valid JSON in this exact structure:
   ]
 }`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3.8-flash",
+      const response = await aiClient.models.generateContent({
+        model,
         contents: prompt,
         config: {
           responseMimeType: "application/json"
@@ -317,24 +356,7 @@ Respond ONLY with valid JSON in this exact structure:
       });
 
       const parsed = JSON.parse(response.text || "{}");
-      try {
-        const snapshot = await aiService.persistScan({
-          mode: "LIVE_ANALYSIS",
-          model: "gemini-3.8-flash",
-          projectName: projectName || null,
-          focusArea: focusArea || null,
-          findings: parsed.findings ?? [],
-          recommendations: parsed.recommendations ?? [],
-          scannedBy: req.user?.name ?? "unknown",
-        });
-        res.json({ success: true, mode: "LIVE_ANALYSIS", scanRef: snapshot.scanRef, scannedBy: req.user?.name, ...parsed });
-      } catch (persistErr: any) {
-        console.warn("[AI Scan] live snapshot persist skipped:", persistErr?.message);
-        res.json({ success: true, mode: "LIVE_ANALYSIS", scannedBy: req.user?.name, ...parsed });
-      }
-    } catch (error: any) {
-      console.error("AI Scan Error:", error);
-      res.status(500).json({ error: error.message || "Failed to execute AI scan" });
+      return { parsed };
     }
   }
 );
