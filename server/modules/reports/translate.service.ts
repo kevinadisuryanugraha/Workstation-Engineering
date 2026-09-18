@@ -1,7 +1,9 @@
 import { eq } from 'drizzle-orm';
 import { db } from '../../db/client.ts';
 import { generatedReports } from '../../db/schema/generated_reports.ts';
-import { GoogleGenAI } from '@google/genai';
+// Type-only import: erased at runtime — prevents @google/genai from loading during
+// module import (vitest partial-mocks crashed on its bundled ESM output).
+import type { GoogleGenAI } from '@google/genai';
 
 /**
  * AI report translation (Story 16.4 — FR-021, NFR-006).
@@ -47,10 +49,12 @@ export function buildTranslationPrompt(markdown: string, target: TargetLanguage)
 
 let client: GoogleGenAI | null = null;
 
-function getClient(): GoogleGenAI {
+async function getClient(): Promise<GoogleGenAI> {
   if (!client) {
     const key = process.env.GEMINI_API_KEY;
     if (!key || key.trim().length === 0) throw new AiNotConfiguredError();
+    // Dynamic import: loads the SDK only when a real API call is needed.
+    const { GoogleGenAI } = await import('@google/genai');
     client = new GoogleGenAI({ apiKey: key.trim() });
   }
   return client;
@@ -62,7 +66,7 @@ export async function translateMarkdown(
   target: TargetLanguage,
   aiClient?: { models: { generateContent: (args: any) => Promise<{ text: string }> } }
 ): Promise<string> {
-  const ai = aiClient ?? getClient(); // throws AiNotConfiguredError when no key & no injection
+  const ai = aiClient ?? (await getClient()); // throws AiNotConfiguredError when no key & no injection
   const MODEL_CHAIN = ['gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.8-flash', 'gemini-flash-latest', 'gemini-3.8-flash'];
   let lastError: unknown = null;
   for (const model of MODEL_CHAIN) {

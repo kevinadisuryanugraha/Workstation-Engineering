@@ -209,7 +209,7 @@ export const RetroLoginDialog: React.FC<RetroLoginDialogProps> = ({
             <label className="text-xs font-mono font-bold text-slate-800">Password:</label>
             <input
               type="password"
-              defaultValue="admin123"
+              autoComplete="new-password"
               className="w-full px-3 py-2 bg-white border-2 border-slate-900 rounded-lg text-xs font-mono font-bold text-slate-900 shadow-[2px_2px_0px_#18181b] focus:outline-none"
             />
           </div>
