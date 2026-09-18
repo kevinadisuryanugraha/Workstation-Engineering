@@ -167,7 +167,11 @@ export class AuthManager {
         return { success: false, error: errorMsg };
       }
     } catch (error: any) {
-      return { success: false, error: error.message || "Network error: Unable to reach authentication server" };
+      const isConnectionError = error?.message?.includes("fetch") || error?.name === "TypeError";
+      const errorMsg = isConnectionError
+        ? "Koneksi ke backend terputus: Server belum aktif di port 3000. Pastikan 'bun run dev' sedang berjalan di terminal."
+        : (error.message || "Network error: Unable to reach authentication server");
+      return { success: false, error: errorMsg };
     }
   }
 
