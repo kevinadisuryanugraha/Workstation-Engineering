@@ -75,7 +75,7 @@ stories:
   - id: "1.1.git-init-and-toolchain"
     title: "Git Repository Initialization & Quality Toolchain"
     epic_id: "epic-1"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/1.1.git-init-and-toolchain.story.md"
     parallel_set: 1
     dependencies: []
