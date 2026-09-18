@@ -99,9 +99,9 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 3.1 | my-work-aggregation-api | Endpoint agregasi tugas, tiket, dan PR aktif khusus pengguna login | ready-for-dev |
-| 3.2 | client-store-decomposition | Dekomposisi 13 state di `src/App.tsx` ke Zustand store & React Query hooks | ready-for-dev |
-| 3.3 | quick-status-and-evidence-ui | Aksi status 1-klik dan komponen kartu progres yang bisa di-drill down | ready-for-dev |
+| 3.1 | my-work-aggregation-api | Endpoint agregasi tugas, tiket, dan PR aktif khusus pengguna login | done |
+| 3.2 | client-store-decomposition | Dekomposisi 13 state di `src/App.tsx` ke Zustand store & React Query hooks | done |
+| 3.3 | quick-status-and-evidence-ui | Aksi status 1-klik dan komponen kartu progres yang bisa di-drill down | done |
 
 **Cross-epic dependencies:**
 - Blocked by: Epic 1, Epic 2, Epic 4
@@ -131,7 +131,7 @@
 |----|------|--------|--------|
 | 4.1 | ticket-lifecycle-api | Skema Drizzle tickets, endpoint CRUD, workflow status, dan triase | done |
 | 4.2 | ticket-work-item-linking | Mekanisme penautan dua arah Tiket ↔ Work Item dan validasi resolusi | done |
-| 4.3 | ticket-comments-timeline | Komentar tiket berbasis markdown dan timeline perubahan status | ready-for-dev |
+| 4.3 | ticket-comments-timeline | Komentar tiket berbasis markdown dan timeline perubahan status | done |
 
 **Cross-epic dependencies:**
 - Blocked by: Epic 1, Epic 2
@@ -160,7 +160,7 @@
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
 | 5.1 | github-webhook-receiver | Endpoint receiver webhook dengan verifikasi signature HMAC-SHA256 & idempotensi | done |
-| 5.2 | git-entity-auto-linker | Parser regex kunci entitas (`WRK-101`) & penautan commit/PR ke evidence_links | ready-for-dev |
+| 5.2 | git-entity-auto-linker | Parser regex kunci entitas (`WRK-101`) & penautan commit/PR ke evidence_links | done |
 
 **Cross-epic dependencies:**
 - Blocked by: Epic 1, Epic 2, Epic 4
@@ -188,8 +188,8 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 6.1 | deployment-recording-api | Skema deployments, endpoint pencatatan manual & runner API | ready-for-dev |
-| 6.2 | rollback-authorization-ops | Endpoint otorisasi rollback ber-RBAC dengan tanda tangan audit kriptografis | ready-for-dev |
+| 6.1 | deployment-recording-api | Skema deployments, endpoint pencatatan manual & runner API | done |
+| 6.2 | rollback-authorization-ops | Endpoint otorisasi rollback ber-RBAC dengan tanda tangan audit kriptografis | done |
 
 **Cross-epic dependencies:**
 - Blocked by: Epic 1, Epic 5
@@ -217,7 +217,7 @@
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
 | 7.1 | append-only-audit-middleware | Middleware correlation ID UUIDv7 & service pencatatan event append-only | done |
-| 7.2 | audit-log-viewer-api | Endpoint pembacaan audit log dengan filter aktor, rentang tanggal, dan pagination | ready-for-dev |
+| 7.2 | audit-log-viewer-api | Endpoint pembacaan audit log dengan filter aktor, rentang tanggal, dan pagination | done |
 
 **Cross-epic dependencies:**
 - Blocked by: Epic 1

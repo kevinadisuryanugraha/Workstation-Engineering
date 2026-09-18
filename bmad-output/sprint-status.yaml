@@ -11,7 +11,7 @@ epics:
   - id: "epic-1"
     title: "Core Platform Foundation, Security & Database"
     description: "Inisialisasi Git, migrasi PostgreSQL 16 + Drizzle, dan hardening Auth/RBAC"
-    status: in-progress
+    status: done
     story_ids:
       - "1.1.git-init-and-toolchain"
       - "1.2.postgres-drizzle-setup"
@@ -22,7 +22,7 @@ epics:
   - id: "epic-2"
     title: "Work Items & Task Management"
     description: "Siklus hidup item kerja, kriteria selesai, dan dependensi antar tugas"
-    status: backlog
+    status: done
     story_ids:
       - "2.1.work-items-crud-api"
       - "2.2.acceptance-criteria-engine"
@@ -31,7 +31,7 @@ epics:
   - id: "epic-3"
     title: "Developer Experience & My Work Workspace"
     description: "Ruang kerja developer terpadu, state decomposition, dan aksi status 1-klik"
-    status: backlog
+    status: done
     story_ids:
       - "3.1.my-work-aggregation-api"
       - "3.2.client-store-decomposition"
@@ -40,7 +40,7 @@ epics:
   - id: "epic-4"
     title: "Ticketing & ITSM Issue Resolution"
     description: "Intake bug & insiden, pemisahan severity vs priority, dan penautan dua arah ke tugas"
-    status: backlog
+    status: done
     story_ids:
       - "4.1.ticket-lifecycle-api"
       - "4.2.ticket-work-item-linking"
@@ -49,7 +49,7 @@ epics:
   - id: "epic-5"
     title: "Git Intelligence & Webhook Engine"
     description: "Receiver webhook resmi GitHub dan auto-linking artefak commit/PR berbasis regex"
-    status: backlog
+    status: done
     story_ids:
       - "5.1.github-webhook-receiver"
       - "5.2.git-entity-auto-linker"
@@ -57,7 +57,7 @@ epics:
   - id: "epic-6"
     title: "Release & Deployment Operations"
     description: "Pencatatan deployment per server/environment dan otorisasi rollback darurat"
-    status: backlog
+    status: done
     story_ids:
       - "6.1.deployment-recording-api"
       - "6.2.rollback-authorization-ops"
@@ -65,7 +65,7 @@ epics:
   - id: "epic-7"
     title: "Audit Trail & System Governance"
     description: "Pencatatan log transaksi sistem append-only dengan correlation ID UUIDv7"
-    status: backlog
+    status: done
     story_ids:
       - "7.1.append-only-audit-middleware"
       - "7.2.audit-log-viewer-api"
@@ -248,7 +248,7 @@ stories:
   - id: "4.3.ticket-comments-timeline"
     title: "Ticket Comments & Chronological Activity Timeline"
     epic_id: "epic-4"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/4.3.ticket-comments-timeline.story.md"
     parallel_set: 5
     dependencies:
@@ -263,7 +263,7 @@ stories:
   - id: "5.2.git-entity-auto-linker"
     title: "Git Entity Auto-Linker & Evidence Attachment Engine"
     epic_id: "epic-5"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/5.2.git-entity-auto-linker.story.md"
     parallel_set: 5
     dependencies:
@@ -278,7 +278,7 @@ stories:
   - id: "6.1.deployment-recording-api"
     title: "Release & Deployment Recording API"
     epic_id: "epic-6"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/6.1.deployment-recording-api.story.md"
     parallel_set: 5
     dependencies:
@@ -292,7 +292,7 @@ stories:
   - id: "6.2.rollback-authorization-ops"
     title: "Rollback Authorization Operations & Tamper-Evident Audit"
     epic_id: "epic-6"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/6.2.rollback-authorization-ops.story.md"
     parallel_set: 5
     dependencies:
@@ -306,7 +306,7 @@ stories:
   - id: "7.2.audit-log-viewer-api"
     title: "Audit Log Viewer API & Filtering Engine"
     epic_id: "epic-7"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/7.2.audit-log-viewer-api.story.md"
     parallel_set: 5
     dependencies:
@@ -321,7 +321,7 @@ stories:
   - id: "3.1.my-work-aggregation-api"
     title: "Developer 'My Work' Aggregation Endpoint & Workspace Data Feed"
     epic_id: "epic-3"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/3.1.my-work-aggregation-api.story.md"
     parallel_set: 5
     dependencies:
@@ -335,7 +335,7 @@ stories:
   - id: "3.2.client-store-decomposition"
     title: "Client-Side Store Decomposition & REST Integration"
     epic_id: "epic-3"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/3.2.client-store-decomposition.story.md"
     parallel_set: 5
     dependencies:
@@ -352,7 +352,7 @@ stories:
   - id: "3.3.quick-status-and-evidence-ui"
     title: "Quick Status 1-Click Action & Interactive Evidence Drill-Down UI"
     epic_id: "epic-3"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/3.3.quick-status-and-evidence-ui.story.md"
     parallel_set: 5
     dependencies:
