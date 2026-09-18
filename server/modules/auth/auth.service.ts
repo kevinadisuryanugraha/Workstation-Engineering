@@ -27,7 +27,7 @@ export const VERIFIED_ENTERPRISE_USERS: User[] = [
     organizationId: null,
     email: 'vibelab.kd@gmail.com',
     name: 'System Security Admin',
-    passwordHash: '$2b$12$8bCAafwgGCsMJEuXqHTcfukaj3PFSJe7B1hFdpG.rn2gi4bBkIQey', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
+    passwordHash: '$2b$12$iNFMKVgmOFqpEl8ysqTTGOpla45m5B4Z5qBUc4ef0AAUwKu4Z8XwO', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
     role: 'Super Admin',
     avatar: 'SA',
     tokenVersion: 1,
@@ -40,7 +40,7 @@ export const VERIFIED_ENTERPRISE_USERS: User[] = [
     organizationId: null,
     email: 'rina@workstation.io',
     name: 'Rina Wijaya',
-    passwordHash: '$2b$12$8bCAafwgGCsMJEuXqHTcfukaj3PFSJe7B1hFdpG.rn2gi4bBkIQey', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
+    passwordHash: '$2b$12$iNFMKVgmOFqpEl8ysqTTGOpla45m5B4Z5qBUc4ef0AAUwKu4Z8XwO', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
     role: 'Tech Lead',
     avatar: 'RW',
     tokenVersion: 1,
@@ -53,7 +53,7 @@ export const VERIFIED_ENTERPRISE_USERS: User[] = [
     organizationId: null,
     email: 'kevin@workstation.io',
     name: 'Kevin Santoso',
-    passwordHash: '$2b$12$8bCAafwgGCsMJEuXqHTcfukaj3PFSJe7B1hFdpG.rn2gi4bBkIQey', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
+    passwordHash: '$2b$12$iNFMKVgmOFqpEl8ysqTTGOpla45m5B4Z5qBUc4ef0AAUwKu4Z8XwO', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
     role: 'Developer',
     avatar: 'KS',
     tokenVersion: 1,
@@ -66,7 +66,7 @@ export const VERIFIED_ENTERPRISE_USERS: User[] = [
     organizationId: null,
     email: 'budi@workstation.io',
     name: 'Budi Pratama',
-    passwordHash: '$2b$12$8bCAafwgGCsMJEuXqHTcfukaj3PFSJe7B1hFdpG.rn2gi4bBkIQey', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
+    passwordHash: '$2b$12$iNFMKVgmOFqpEl8ysqTTGOpla45m5B4Z5qBUc4ef0AAUwKu4Z8XwO', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
     role: 'Project Manager',
     avatar: 'BP',
     tokenVersion: 1,
@@ -79,7 +79,7 @@ export const VERIFIED_ENTERPRISE_USERS: User[] = [
     organizationId: null,
     email: 'citra@workstation.io',
     name: 'Citra Dewi',
-    passwordHash: '$2b$12$8bCAafwgGCsMJEuXqHTcfukaj3PFSJe7B1hFdpG.rn2gi4bBkIQey', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
+    passwordHash: '$2b$12$iNFMKVgmOFqpEl8ysqTTGOpla45m5B4Z5qBUc4ef0AAUwKu4Z8XwO', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
     role: 'Manager',
     avatar: 'CD',
     tokenVersion: 1,
@@ -92,7 +92,7 @@ export const VERIFIED_ENTERPRISE_USERS: User[] = [
     organizationId: null,
     email: 'andi@workstation.io',
     name: 'Andi Saputra',
-    passwordHash: '$2b$12$8bCAafwgGCsMJEuXqHTcfukaj3PFSJe7B1hFdpG.rn2gi4bBkIQey', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
+    passwordHash: '$2b$12$iNFMKVgmOFqpEl8ysqTTGOpla45m5B4Z5qBUc4ef0AAUwKu4Z8XwO', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
     role: 'QA',
     avatar: 'AS',
     tokenVersion: 1,
@@ -105,7 +105,7 @@ export const VERIFIED_ENTERPRISE_USERS: User[] = [
     organizationId: null,
     email: 'maya@workstation.io',
     name: 'Maya Putri',
-    passwordHash: '$2b$12$8bCAafwgGCsMJEuXqHTcfukaj3PFSJe7B1hFdpG.rn2gi4bBkIQey', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
+    passwordHash: '$2b$12$iNFMKVgmOFqpEl8ysqTTGOpla45m5B4Z5qBUc4ef0AAUwKu4Z8XwO', // rotated 2026-09-18 — lihat laporan keamanan (tidak ada plaintext)
     role: 'Viewer',
     avatar: 'MP',
     tokenVersion: 1,
