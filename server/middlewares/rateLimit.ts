@@ -80,7 +80,9 @@ export function createLoginRateLimiter(config: RateLimitConfig = resolveRateLimi
     limit: config.limit,
     standardHeaders: 'draft-7',
     legacyHeaders: false,
-    skipSuccessfulRequests: false,
+    // SEC-02 wording: "5 kali KEGAGALAN login per 15 menit per IP" —
+    // successful logins must not consume the brute-force budget.
+    skipSuccessfulRequests: true,
     handler: limitHandler,
   });
 }

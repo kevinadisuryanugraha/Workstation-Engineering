@@ -17,7 +17,12 @@ function buildHardenedApp(): Express {
   app.use(helmet());
   app.use(express.json({ limit: TEST_BODY_LIMIT }));
   app.post('/api/v1/auth/login', createLoginRateLimiter(), (_req, res) => {
-    res.json({ success: true });
+    // Simulate credential check: invalid credentials → 401 (failure), valid → 200
+    if (_req.body?.password === 'correct-horse') {
+      res.json({ success: true });
+    } else {
+      res.status(401).json({ success: false });
+    }
   });
   app.post('/api/v1/work-items', (_req, res) => {
     res.json({ success: true });
@@ -71,7 +76,7 @@ describe('HTTP Hardening (Story 8.1)', () => {
     expect(res.status).toBe(413);
   });
 
-  it('SEC-02: blocks the 6th login attempt from the same IP with HTTP 429', async () => {
+  it('SEC-02: blocks the 6th FAILED login attempt from the same IP with HTTP 429', async () => {
     const url = `${baseUrl}/api/v1/auth/login`;
     const attempts: number[] = [];
     for (let i = 0; i < 6; i++) {
@@ -86,8 +91,44 @@ describe('HTTP Hardening (Story 8.1)', () => {
         expect(body.error.code).toBe('RATE_LIMIT_EXCEEDED');
       }
     }
-    expect(attempts.slice(0, 5)).toEqual([200, 200, 200, 200, 200]);
+    expect(attempts.slice(0, 5)).toEqual([401, 401, 401, 401, 401]);
     expect(attempts[5]).toBe(429);
+  });
+
+  it('SEC-02: successful logins do NOT consume the brute-force budget', async () => {
+    // Fresh app = fresh in-memory limiter (isolated from the previous test's budget)
+    const freshApp = buildHardenedApp();
+    let freshServer: any;
+    const freshUrl = await new Promise<string>((resolve) => {
+      freshServer = freshApp.listen(0, '127.0.0.1', () => {
+        const addr = freshServer.address();
+        resolve(`http://127.0.0.1:${typeof addr === 'object' && addr ? addr.port : 0}`);
+      });
+    });
+
+    try {
+      const url = `${freshUrl}/api/v1/auth/login`;
+      const statuses: number[] = [];
+      for (let i = 0; i < 4; i++) {
+        const ok = await fetch(url, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email: 'victim@workstation.io', password: 'correct-horse' }),
+        });
+        statuses.push(ok.status);
+        const fail = await fetch(url, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email: 'victim@workstation.io', password: 'wrong' }),
+        });
+        statuses.push(fail.status);
+      }
+      // 4 successes (200) interleaved with 4 failures (401) — budget untouched, nothing locked
+      expect(statuses.filter((c) => c === 200)).toHaveLength(4);
+      expect(statuses.filter((c) => c === 401)).toHaveLength(4);
+    } finally {
+      await new Promise<void>((resolve) => freshServer.close(() => resolve()));
+    }
   });
 
   it('exposes env-tunable configuration with safe defaults', () => {
