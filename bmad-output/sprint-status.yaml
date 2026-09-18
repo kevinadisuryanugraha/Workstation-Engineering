@@ -89,7 +89,7 @@ stories:
   - id: "1.2.postgres-drizzle-setup"
     title: "PostgreSQL Schema & Drizzle ORM Setup"
     epic_id: "epic-1"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/1.2.postgres-drizzle-setup.story.md"
     parallel_set: 1
     dependencies:
@@ -103,7 +103,7 @@ stories:
   - id: "1.3.secure-auth-engine"
     title: "Hardened Authentication Engine (bcrypt + Stateless JWT)"
     epic_id: "epic-1"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/1.3.secure-auth-engine.story.md"
     parallel_set: 2
     dependencies:
@@ -119,7 +119,7 @@ stories:
   - id: "1.4.server-rbac-middleware"
     title: "Server-Side RBAC Enforcement & Frontend Sanitization"
     epic_id: "epic-1"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/1.4.server-rbac-middleware.story.md"
     parallel_set: 2
     dependencies:
@@ -134,7 +134,7 @@ stories:
   - id: "7.1.append-only-audit-middleware"
     title: "Append-Only Audit Logging Middleware with Correlation IDs"
     epic_id: "epic-7"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/7.1.append-only-audit-middleware.story.md"
     parallel_set: 2
     dependencies:
