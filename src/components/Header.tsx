@@ -9,7 +9,8 @@ import {
   ChevronDown,
   Menu,
   ShieldCheck,
-  Key
+  Key,
+  LogOut
 } from "lucide-react";
 import { Project, User } from "../types";
 import { Badge } from "./ui/Badge";
@@ -24,6 +25,7 @@ interface HeaderProps {
   onOpenSearch: () => void;
   currentUser: User;
   onOpenAuth?: () => void;
+  onLogout?: () => void;
   onTriggerAIScanModal?: () => void;
   onOpenMobileMenu?: () => void;
 }
@@ -37,6 +39,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
   currentUser,
   onOpenAuth,
+  onLogout,
   onTriggerAIScanModal,
   onOpenMobileMenu
 }) => {
@@ -186,6 +189,17 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
           <Key className="w-3 h-3 text-slate-400 group-hover:text-slate-900 transition-colors hidden sm:block shrink-0" />
         </button>
+
+        {/* Explicit Sign Out Button */}
+        {onLogout && (
+          <button
+            onClick={onLogout}
+            className="p-1.5 sm:p-2 rounded-xl bg-red-50 hover:bg-red-100 border-2 border-slate-900 text-red-900 shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer shrink-0"
+            title="Sign Out / Lock Workspace"
+          >
+            <LogOut className="w-4 h-4 stroke-[2.5]" />
+          </button>
+        )}
       </div>
     </header>
   );

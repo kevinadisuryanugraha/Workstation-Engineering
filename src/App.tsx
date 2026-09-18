@@ -19,6 +19,7 @@ import { GlobalSearchModal } from "./components/GlobalSearchModal";
 import { RetroDesktopShell } from "./components/ui/RetroDesktopShell";
 import { MobileBottomBar } from "./components/MobileBottomBar";
 import { RBACDenialModal } from "./components/RBACDenialModal";
+import { LoginView } from "./components/LoginView";
 import { authManager, authFetch, DIRECTORY_USERS } from "./lib/auth";
 import { hasPermission } from "./lib/rbac";
 
@@ -658,6 +659,22 @@ export default function App() {
     ]);
   };
 
+  // Dedicated Professional Auth Gateway (Story 1.4 & ADR-003)
+  // When unauthenticated, render the full-screen LoginView rather than auto-opening the dashboard
+  if (!session || !session.user) {
+    return (
+      <LoginView
+        onLoginSuccess={() => {
+          const freshSession = authManager.getSession();
+          setSession(freshSession);
+          if (freshSession?.user) {
+            setCurrentUser(freshSession.user);
+          }
+        }}
+      />
+    );
+  }
+
   return (
     <RetroDesktopShell
       activeTab={activeTab}
@@ -677,6 +694,10 @@ export default function App() {
         onOpenSearch={() => setIsSearchOpen(true)}
         currentUser={currentUser}
         onOpenAuth={() => setActiveTab("security")}
+        onLogout={async () => {
+          await authManager.logout();
+          setSession(null);
+        }}
         onTriggerAIScanModal={() => setActiveTab("ai")}
         onOpenMobileMenu={() => setIsMobileNavOpen(true)}
       />

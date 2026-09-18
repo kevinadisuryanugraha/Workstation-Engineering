@@ -31,9 +31,13 @@ export class AuditService {
       };
 
       await db.insert(auditLogs).values(record);
-    } catch (error) {
-      // In development or when DB is not reachable, log to console but ensure error is surfaced
-      console.error('[AuditService Error] Failed to write audit log to database:', error);
+    } catch (error: any) {
+      // In development or when DB is not reachable, warn cleanly
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`[AuditService Warning] Database write skipped (${error?.message || 'DB disconnected'}). Action: ${entry.action}`);
+      } else {
+        console.error('[AuditService Error] Failed to write audit log to database:', error);
+      }
     }
   }
 }
