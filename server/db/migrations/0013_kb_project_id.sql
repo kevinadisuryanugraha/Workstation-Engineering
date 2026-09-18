@@ -1,0 +1,1 @@
+ALTER TABLE "kb_articles" ADD COLUMN "project_id" varchar(36);

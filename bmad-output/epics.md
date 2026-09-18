@@ -444,8 +444,8 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 15.1 | kb-articles-versioning | Skema kb_articles + versions, CRUD, draft dari tiket resolved | ready-for-dev |
-| 15.2 | global-search | Endpoint pencarian lintas tiket/work item/KB/insiden + panel hasil | ready-for-dev |
+| 15.1 | kb-articles-versioning | Skema kb_articles + versions, CRUD, draft dari tiket resolved | done |
+| 15.2 | global-search | Endpoint pencarian lintas tiket/work item/KB/insiden + panel hasil | done |
 
 **Dependencies:** Blocked by Epic 4 · Blocks: None
 

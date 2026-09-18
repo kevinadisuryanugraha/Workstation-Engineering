@@ -660,7 +660,7 @@ stories:
   - id: "epic-15"
     title: "Knowledge Base & Global Search (Penuntasan V1)"
     description: "Artikel KB versioning + draft dari tiket resolved + pencarian global"
-    status: backlog
+    status: done
     story_ids:
       - "15.1.kb-articles-versioning"
       - "15.2.global-search"
@@ -711,7 +711,7 @@ stories:
   - id: "15.1.kb-articles-versioning"
     title: "KB Articles, Versioning & Draft from Resolved Ticket"
     epic_id: "epic-15"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/15.1.kb-articles-versioning.story.md"
     parallel_set: 13
     dependencies:
@@ -727,7 +727,7 @@ stories:
   - id: "15.2.global-search"
     title: "Global Search API across Tickets/Work Items/KB/Incidents"
     epic_id: "epic-15"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/15.2.global-search.story.md"
     parallel_set: 13
     dependencies:

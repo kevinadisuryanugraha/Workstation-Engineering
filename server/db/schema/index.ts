@@ -15,3 +15,4 @@ export * from './incidents.ts';
 export * from './incident_events.ts';
 export * from './sprints.ts';
 export * from './milestones.ts';
+export * from './kb_articles.ts';

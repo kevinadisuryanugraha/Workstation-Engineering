@@ -29,6 +29,8 @@ import { serverMetricsRouter } from "./server/modules/server-metrics/server-metr
 import { agentIngestRouter } from "./server/modules/server-metrics/server-metrics.routes.ts";
 import { reportsRouter } from "./server/modules/reports/reports.routes.ts";
 import { sprintRouter, milestoneRouter } from "./server/modules/sprints/sprint.routes.ts";
+import { kbRouter } from "./server/modules/kb/kb.routes.ts";
+import { searchRouter } from "./server/modules/search/search.routes.ts";
 import { incidentRouter } from "./server/modules/incidents/incident.routes.ts";
 import { UserRole, Permission, SERVER_ROLE_PERMISSIONS } from "./server/constants/permissions.ts";
 
@@ -85,6 +87,8 @@ app.use("/api/v1/reports", authenticateToken, reportsRouter);
 app.use("/api/v1/incidents", authenticateToken, incidentRouter);
 app.use("/api/v1/sprints", authenticateToken, sprintRouter);
 app.use("/api/v1/milestones", authenticateToken, milestoneRouter);
+app.use("/api/v1/kb", authenticateToken, kbRouter);
+app.use("/api/v1/search", authenticateToken, searchRouter);
 
 // Public sanitized user directory metadata (profiles without password hashes)
 const PUBLIC_USERS = [
