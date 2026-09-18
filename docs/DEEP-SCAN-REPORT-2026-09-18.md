@@ -412,6 +412,38 @@ gunzip -c /opt/workstation/backups/workstation_db_<TIMESTAMP>.sql.gz | \
 
 ---
 
+## 🔑 LAMPIRAN A — DAFTAR AKUN & AKSES PRODUKSI
+
+> **Prinsip keamanan:** identitas akun dicatat di dokumen ini (ikut Git), sedangkan **password TIDAK ditulis di sini** — tersimpan di password manager + file lokal `docs/AKUN-PRODUKSI-RAHASIA.md` yang **di-gitignore** (tidak ikut push ke GitHub). Alasan: dokumen masuk git history permanen & dapat terbaca publik bila repo terbuka.
+
+**A. Akun Pengguna (7 akun enterprise — semua aktif)**
+
+| No. | Nama | Email (Login) | Role | Team | Status |
+|:---:|---|---|---|---|:---:|
+| 1 | System Security Admin | `vibelab.kd@gmail.com` | Super Admin | Platform Security | 🟢 Aktif |
+| 2 | Rina Wijaya | `rina@workstation.io` | Tech Lead | Core Engineering | 🟢 Aktif |
+| 3 | Kevin Santoso | `kevin@workstation.io` | Developer | Web Team | 🟢 Aktif |
+| 4 | Budi Pratama | `budi@workstation.io` | Project Manager | Product Delivery | 🟢 Aktif |
+| 5 | Citra Dewi | `citra@workstation.io` | Manager | Operations & Exec | 🟢 Aktif |
+| 6 | Andi Saputra | `andi@workstation.io` | QA | Quality Assurance | 🟢 Aktif |
+| 7 | Maya Putri | `maya@workstation.io` | Viewer | Stakeholder Relations | 🟢 Aktif |
+
+**B. Informasi Akses**
+
+| No. | Aspek | Detail |
+|:---:|---|---|
+| 1 | URL Login | `https://workstation.zamzami.or.id` |
+| 2 | Metode autentikasi | bcrypt cost-12 + JWT HMAC-SHA256 (server-authoritative RBAC) |
+| 3 | Password | Satu password terpusat untuk seluruh 7 akun — **lihat password manager / file lokal `docs/AKUN-PRODUKSI-RAHASIA.md`** (tidak dicetak di dokumen ini) |
+| 4 | Riwayat rotasi | 18 Sep 2026 — seluruh akun dirotasi + `token_version` dinaikkan (Blok 7-5 & Blok 9) |
+| 5 | Rotasi berikutnya | Hubungi Super Admin, atau eksekusi ulang prosedur rotasi terdokumentasi (Blok 7-5) |
+| 6 | Akses server (SSH root VPS) | Password rotasi-18 Sep — **file lokal `docs/AKUN-PRODUKSI-RAHASIA.md`** + SSH key `~/.ssh/id_ed25519_github` |
+| 7 | Akses database | User `workstation` · container `workstation-db` (bind `127.0.0.1:5433`) · password di VPS `.dbpass-workstation` (600) |
+
+---
+
+---
+
 *Laporan ini telah diperbarui pada 18 September 2026 (Pembaruan ke-7) berdasarkan hasil eksekusi nyata Full System Workflow Testing, Audit Keamanan Menyeluruh, Deployment Produksi VPS, setup Domain HTTPS, dan Hardening Keamanan Kredensial menggunakan metodologi BMAD dan standar OWASP. Seluruh temuan, hasil uji, dan verifikasi produksi telah dicek langsung pada basis kode aktif dan server produksi.*
 
 **Disusun oleh:** Tim Teknis (pi · BMAD) · **Diperiksa oleh:** _______________ · **Disetujui oleh:** _______________
