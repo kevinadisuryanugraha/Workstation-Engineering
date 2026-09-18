@@ -4,6 +4,14 @@ import { CreateWorkItemInput, UpdateWorkItemInput, FilterWorkItemInput } from '.
 import { WorkItem, NewWorkItem } from '../../db/schema/work_items.ts';
 import { auditService } from '../audit/audit.service.ts';
 import { NotFoundError } from '../projects/project.service.ts';
+import { acceptanceCriteriaService } from './acceptance-criteria.service.ts';
+
+export class GateValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'GateValidationError';
+  }
+}
 
 export class WorkItemService {
   constructor(private repo: WorkItemRepository = workItemRepository) {}
@@ -70,7 +78,31 @@ export class WorkItemService {
   ): Promise<WorkItem> {
     const existing = await this.getWorkItemById(id);
 
-    const updated = await this.repo.update(id, input);
+    // Gate validation for DONE status (Story 2.2)
+    if (input.status === 'DONE' && existing.status !== 'DONE') {
+      const acCheck = await acceptanceCriteriaService.areAllCriteriaCompleted(id);
+      if (!acCheck.allPassed) {
+        const override = input.overrideReason;
+        if (!override || typeof override !== 'string' || override.trim().length < 10) {
+          throw new GateValidationError(
+            `Cannot mark work item as DONE: ${acCheck.incompleteCount} of ${acCheck.totalCount} acceptance criteria are incomplete. An authorized overrideReason (min 10 characters) is required.`
+          );
+        }
+
+        await auditService.logEvent({
+          actorId,
+          actorName,
+          action: 'WORK_ITEM_STATUS_OVERRIDE',
+          targetEntity: 'work_items',
+          targetId: id,
+          details: { overrideReason: override, incompleteCount: acCheck.incompleteCount },
+          correlationId,
+        });
+      }
+    }
+
+    const { overrideReason, ...dataToUpdate } = input;
+    const updated = await this.repo.update(id, dataToUpdate);
     if (!updated) {
       throw new NotFoundError(`Work item with ID '${id}' not found`);
     }

@@ -22,6 +22,13 @@
       "when": 1789702483908,
       "tag": "0002_dear_king_bedlam",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789702617891,
+      "tag": "0003_absent_amazoness",
+      "breakpoints": true
     }
   ]
 }

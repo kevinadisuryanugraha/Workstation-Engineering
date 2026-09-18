@@ -5,6 +5,9 @@ import {
   createTicketHandler,
   triageTicketHandler,
   resolveTicketHandler,
+  linkWorkItemHandler,
+  createWorkItemFromTicketHandler,
+  getTicketEvidenceHandler,
 } from './ticket.controller.ts';
 import { authenticateToken } from '../../middlewares/authenticate.ts';
 import { requirePermission } from '../../middlewares/rbac.ts';
@@ -28,5 +31,10 @@ router.patch('/:id/triage', requirePermission('PERM_TICKET_UPDATE'), triageTicke
 
 // POST /api/v1/tickets/:id/resolve - resolve ticket (requires PERM_TICKET_RESOLVE)
 router.post('/:id/resolve', requirePermission('PERM_TICKET_RESOLVE'), resolveTicketHandler);
+
+// Evidence & Linking Sub-routes (Story 4.2)
+router.get('/:id/evidence', getTicketEvidenceHandler);
+router.post('/:id/link-work-item', requirePermission('PERM_TICKET_UPDATE'), linkWorkItemHandler);
+router.post('/:id/create-work-item', requirePermission('PERM_WORK_ITEM_CREATE'), createWorkItemFromTicketHandler);
 
 export const ticketRouter = router;

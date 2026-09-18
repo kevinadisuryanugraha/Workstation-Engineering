@@ -19,6 +19,7 @@ export const updateWorkItemSchema = z.object({
   status: z.enum(['BACKLOG', 'READY', 'IN_PROGRESS', 'IN_REVIEW', 'READY_FOR_TEST', 'DONE', 'CANCELLED']).optional(),
   assigneeId: z.string().optional().nullable(),
   estimateHours: z.number().int().min(0).max(1000).optional(),
+  overrideReason: z.string().min(10).optional(),
 });
 
 export const filterWorkItemSchema = z.object({

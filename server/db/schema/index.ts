@@ -4,3 +4,8 @@ export * from './projects.ts';
 export * from './audit_logs.ts';
 export * from './work_items.ts';
 export * from './tickets.ts';
+export * from './acceptance_criteria.ts';
+export * from './work_item_dependencies.ts';
+export * from './evidence_links.ts';
+export * from './repositories.ts';
+export * from './webhook_deliveries.ts';

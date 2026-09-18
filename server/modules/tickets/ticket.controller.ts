@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from '../../middlewares/authenticate.ts';
 import { ticketService } from './ticket.service.ts';
 import { createTicketSchema, triageTicketSchema, filterTicketSchema, resolveTicketSchema } from './ticket.schema.ts';
 import { NotFoundError } from '../projects/project.service.ts';
+import { evidenceService } from './evidence.service.ts';
 
 export async function listTicketsHandler(req: AuthenticatedRequest, res: Response) {
   try {
@@ -170,6 +171,88 @@ export async function resolveTicketHandler(req: AuthenticatedRequest, res: Respo
         timestamp: new Date().toISOString(),
       });
     }
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message },
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+export async function linkWorkItemHandler(req: AuthenticatedRequest, res: Response) {
+  try {
+    const ticketId = req.params.id as string;
+    const { workItemId } = req.body;
+
+    if (!workItemId || typeof workItemId !== 'string') {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_FAILED', message: 'workItemId is required' },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const link = await evidenceService.linkTicketToWorkItem(ticketId, workItemId);
+    res.status(201).json({
+      success: true,
+      data: link,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    if (error instanceof NotFoundError) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: error.message },
+        timestamp: new Date().toISOString(),
+      });
+    }
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message },
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+export async function createWorkItemFromTicketHandler(req: AuthenticatedRequest, res: Response) {
+  try {
+    const ticketId = req.params.id as string;
+    const actorId = req.user?.userId || 'unknown';
+    const actorName = req.user?.name || 'System';
+    const correlationId = req.correlationId || 'system';
+
+    const result = await evidenceService.createWorkItemFromTicket(ticketId, actorId, actorName, correlationId);
+    res.status(201).json({
+      success: true,
+      data: result,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    if (error instanceof NotFoundError) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: error.message },
+        timestamp: new Date().toISOString(),
+      });
+    }
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message },
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+export async function getTicketEvidenceHandler(req: AuthenticatedRequest, res: Response) {
+  try {
+    const ticketId = req.params.id as string;
+    const evidence = await evidenceService.getTicketEvidence(ticketId);
+    res.json({
+      success: true,
+      data: evidence,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error: any) {
     res.status(500).json({
       success: false,
       error: { code: 'SERVER_ERROR', message: error.message },
