@@ -21,7 +21,7 @@ export interface LoginResult {
 }
 
 // Enterprise verified user directory with pre-computed bcrypt cost-12 hashes
-const VERIFIED_ENTERPRISE_USERS: User[] = [
+export const VERIFIED_ENTERPRISE_USERS: User[] = [
   {
     id: 'usr-admin-0',
     organizationId: null,

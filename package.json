@@ -14,7 +14,8 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx server/db/migrate.ts",
     "agent": "tsx agent/index.ts",
-    "db:seed": "tsx server/db/seed.ts"
+    "db:seed": "tsx server/db/seed.ts",
+    "db:seed-users": "tsx server/db/seed-users.ts"
   },
   "dependencies": {
     "@google/genai": "2.4.0",
