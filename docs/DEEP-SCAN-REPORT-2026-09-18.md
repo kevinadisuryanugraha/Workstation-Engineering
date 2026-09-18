@@ -13,7 +13,19 @@
 | **Basis Pemeriksaan** | Hasil eksekusi Sprint Wave 1 s.d. Wave 5 Final + Full E2E Workflow & Security Audit (Komit `f42bfd4`) |
 | **Hasil Temuan Awal** | **15 dari 18 temuan awal tuntas (83% Selesai)** · 100% Celah Kritis DS-01 s.d. DS-07 Tertutup |
 | **Temuan Baru Audit** | **5 Rekomendasi Penguatan Keamanan Lanjutan (SEC-01 s.d. SEC-05)** — ✅ SELURUHNYA TUNTAS via Epic 8 (Fase V1) |
-| **Status Laporan** | 🟢 **Pembaruan ke-7 (PRODUKSI LIVE + HTTPS + HARDENING)** — Epic 8/9/10 tuntas · Deploy VPS Kontabo · `https://workstation.zamzami.or.id` · Rotasi kredensial tuntas |
+| **Status Laporan** | 🟢 **Pembaruan ke-7 (PRODUKSI LIVE + HTTPS + HARDENING)** — riwayat lengkap semua pembaruan ada di tabel **Riwayat Pembaruan** di bawah (prinsip catatan: hanya DITAMBAH, tidak pernah ditimpa) |
+
+### 📜 Riwayat Pembaruan (Kumulatif — Append-Only)
+
+| Pembaruan | Tanggal | Isi Ringkas | Komit |
+|:---:|---|---|---|
+| Awal | 18 Sep 2026 | Laporan Deep Scan pertama — 18 temuan awal teridentifikasi | `8261536` |
+| ke-2 | 18 Sep 2026 | Wave 1 & 2 selesai — 11/18 temuan tuntas | `0f8071f` |
+| ke-3 | 18 Sep 2026 | Wave 3 selesai (Story 1.5, 2.1, 4.1) | `a6ff542` |
+| ke-4 | 18 Sep 2026 | Wave 4 selesai (Story 2.2, 2.3, 4.2, 5.1) | `de496c2` |
+| ke-5 | 18 Sep 2026 | MVP 20/20 story tuntas · Full Workflow Testing (7 alur lulus) · Audit OWASP → 5 temuan baru SEC-01..05 | `e3c6803`, `1705709` |
+| ke-6 | 18 Sep 2026 | **FASE V1 TUNTAS 100%** — SEC-01..05 tertutup (Epic 8), Server Agent (Epic 9), Reporting Engine (Epic 10) · 23/23 temuan selesai · 98/98 test lulus | `678802a` |
+| **ke-7** | **18 Sep 2026** | **PRODUKSI LIVE** — Deploy VPS Kontabo (systemd + PostgreSQL + agent telemetri), AI Gemini aktif, GitHub + CI, domain `workstation.zamzami.or.id` (Cloudflare), HTTPS Let's Encrypt + auto-renew, hardening kredensial (rotasi root SSH + 7 akun app + tutup port 3020 publik) | `f09b3c9` |
 
 ---
 
