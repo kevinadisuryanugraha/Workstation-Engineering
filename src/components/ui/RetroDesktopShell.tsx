@@ -23,7 +23,7 @@ import {
   Download
 } from "lucide-react";
 import { ActiveTab } from "../Sidebar";
-import { RetroErrorDialog, RetroLoadingDialog, RetroLoginDialog, RetroReactions } from "./RetroDialogs";
+import { RetroErrorDialog, RetroLoadingDialog, RetroReactions } from "./RetroDialogs";
 import { PWAInstallButton } from "./PWAInstallButton";
 import { OfflineIndicator } from "./OfflineIndicator";
 
@@ -54,7 +54,6 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
   // Retro Dialog States (from image.png)
   const [showErrorModal, setShowErrorModal] = useState(false);
   const [showLoadingModal, setShowLoadingModal] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -101,8 +100,7 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
             <button onClick={() => onSelectTab("overview")} className="hover:text-slate-950 cursor-pointer">File</button>
             <button onClick={onOpenSearch} className="hover:text-slate-950 cursor-pointer">Search (Cmd+K)</button>
             <button onClick={() => onSelectTab("project360")} className="hover:text-slate-950 cursor-pointer">View</button>
-            <button onClick={() => setShowLoadingModal(true)} className="hover:text-slate-950 cursor-pointer text-[#2ec4b6]">Simulate Load</button>
-            <button onClick={() => setShowErrorModal(true)} className="hover:text-slate-950 cursor-pointer text-[#ff70a6]">404 Dialog</button>
+            <button onClick={() => onSelectTab("security")} className="hover:text-slate-950 cursor-pointer text-[#2ec4b6]">Security Clearance</button>
           </div>
         </div>
 
@@ -115,9 +113,9 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
           </div>
 
           <button
-            onClick={() => setShowLoginModal(true)}
+            onClick={() => onSelectTab("security")}
             className="px-2 py-1 rounded-md bg-white hover:bg-slate-100 border border-slate-900 font-mono text-[10px] sm:text-[11px] font-bold cursor-pointer retro-shadow-sm flex items-center gap-1 shrink-0"
-            title="Switch user"
+            title="View User Clearance"
           >
             <span>👤</span>
             <span className="hidden sm:inline max-w-[80px] truncate">{userName}</span>
@@ -186,8 +184,8 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
                     {isMaximized ? "❐" : "□"}
                   </button>
                   <button
-                    onClick={() => setShowErrorModal(true)}
-                    title="Close Window (Simulate Error)"
+                    onClick={() => setIsMinimized(true)}
+                    title="Minimize Window"
                     className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-[#ff70a6] text-white border-[1.5px] border-slate-900 flex items-center justify-center font-mono font-black text-[10px] sm:text-xs hover:bg-[#ff5d8f] cursor-pointer shadow-[1px_1px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5"
                   >
                     ✕
@@ -408,17 +406,17 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
                 </button>
               </div>
 
-              {/* Start Menu Footer with PWA installer */}
+              {/* Start Menu Footer with User Clearance Navigation */}
               <div className="p-2 bg-[#FAF7EE] border-t-2 border-slate-900 flex items-center justify-between text-[11px] font-bold">
                 <span className="text-slate-600 truncate max-w-[120px]">User: {userName}</span>
                 <button
                   onClick={() => {
-                    setShowLoginModal(true);
+                    onSelectTab("security");
                     setIsStartOpen(false);
                   }}
-                  className="px-2 py-0.5 bg-white border border-slate-900 rounded-md hover:bg-slate-100 cursor-pointer shadow-xs shrink-0"
+                  className="px-2 py-0.5 bg-white border border-slate-900 rounded-md hover:bg-slate-100 cursor-pointer shadow-xs shrink-0 text-slate-900 font-mono"
                 >
-                  Switch User
+                  Clearance
                 </button>
               </div>
             </motion.div>
@@ -439,15 +437,6 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
         onClose={() => setShowLoadingModal(false)}
         title="SYNCHRONIZING REPOSITORY AND SERVER STATE..."
         progressPercent={70}
-      />
-
-      <RetroLoginDialog
-        isOpen={showLoginModal}
-        onClose={() => setShowLoginModal(false)}
-        currentUser={userName}
-        onConfirm={() => {
-          // updated user name
-        }}
       />
     </div>
   );

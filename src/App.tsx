@@ -850,15 +850,9 @@ export default function App() {
           {activeTab === "security" && (
             <SecurityView
               currentSession={session}
-              onLogin={async (email, password) => {
-                const res = await authManager.login(email, password);
-                return res.success;
-              }}
               onLogout={async () => {
                 await authManager.logout();
-              }}
-              onSwitchUser={async (user) => {
-                await authManager.switchRole(user);
+                setSession(null);
               }}
               isManagementView={isManagementView}
             />
