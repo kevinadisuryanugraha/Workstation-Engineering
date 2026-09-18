@@ -318,8 +318,8 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 10.1 | report-aggregation-api | Endpoint agregasi KPI operasional per periode (tiket, work item, deployment, audit) | ready-for-dev |
-| 10.2 | id-report-generator | Generator narasi ringkasan manajemen Bahasa Indonesia dari data agregasi | ready-for-dev |
+| 10.1 | report-aggregation-api | Endpoint agregasi KPI operasional per periode (tiket, work item, deployment, audit) | done |
+| 10.2 | id-report-generator | Generator narasi ringkasan manajemen Bahasa Indonesia dari data agregasi | done |
 
 **Cross-epic dependencies:**
 - Blocked by: Epic 2, Epic 4, Epic 6, Epic 7 (sumber data agregasi)
@@ -332,9 +332,9 @@
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
 - **Total Stories:** 28 (20 MVP + 8 Fase V1)
-- **Done:** 26 (MVP + Epic 8 + Epic 9 tuntas)
-- **Remaining:** 2 (Epic 10 — Fase V1)
-- **Completion Rate:** 93% (26 / 28)
+- **Done:** 28 (100% — MVP + Fase V1 Epic 8/9/10 tuntas)
+- **Remaining:** 0
+- **Completion Rate:** 100% (28 / 28)
 
 ## Sequencing & Wave Plan
 

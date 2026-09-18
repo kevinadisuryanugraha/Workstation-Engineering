@@ -32,6 +32,7 @@ export type ActiveTab =
   | "infrastructure"
   | "ai"
   | "reports"
+  | "report-id"
   | "blueprint"
   | "knowledge"
   | "audit"
@@ -90,6 +91,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const deliveryNav = [
     { id: "security", label: "Security & RBAC", icon: ShieldCheck, badge: "Validasi Ketat", badgeType: "emerald" },
     { id: "reports", label: "Reports & Daily Logs", icon: FileText, badge: "Today", badgeType: "default" },
+    { id: "report-id", label: "Laporan Manajemen (ID)", icon: FileText, badge: "Auto", badgeType: "emerald" },
     { id: "blueprint", label: "Blueprint 01–21 (Specs)", icon: Code2, badge: "v1.0", badgeType: "default" },
     { id: "knowledge", label: "Knowledge Base", icon: BookOpen, badge: null },
     { id: "audit", label: "Event Bus & Audit", icon: History, badge: null }

@@ -11,6 +11,7 @@ import { DeploymentsView } from "./components/DeploymentsView";
 import { InfrastructureView } from "./components/InfrastructureView";
 import { AIIntelligenceView } from "./components/AIIntelligenceView";
 import { ReportsView } from "./components/ReportsView";
+import { ReportView } from "./components/ReportView";
 import { BlueprintView } from "./components/BlueprintView";
 import { KnowledgeBaseView } from "./components/KnowledgeBaseView";
 import { AuditLogView } from "./components/AuditLogView";
@@ -832,6 +833,10 @@ export default function App() {
               onRunScan={handleRunScan}
               isManagementView={isManagementView}
             />
+          )}
+
+          {activeTab === "report-id" && (
+            <ReportView isManagementView={isManagementView} />
           )}
 
           {activeTab === "reports" && (

@@ -78,6 +78,7 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
     infrastructure: "Infrastructure Nodes",
     ai: "AI Code Scanner",
     reports: "Automated Reports",
+    "report-id": "Laporan Manajemen (ID)",
     blueprint: "Blueprint 01–21",
     knowledge: "Knowledge Runbooks",
     audit: "Audit Event Ledger",

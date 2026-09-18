@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-18T10:30:00Z"
+last_updated: "2026-09-18T14:30:00Z"
 
 epics:
   - id: "epic-1"
@@ -92,7 +92,7 @@ epics:
   - id: "epic-10"
     title: "Dual-Language Reporting Engine"
     description: "Agregasi KPI operasional dan generator ringkasan manajemen otomatis Bahasa Indonesia"
-    status: backlog
+    status: done
     story_ids:
       - "10.1.report-aggregation-api"
       - "10.2.id-report-generator"
@@ -480,7 +480,7 @@ stories:
   - id: "10.1.report-aggregation-api"
     title: "Operational Report Aggregation API"
     epic_id: "epic-10"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/10.1.report-aggregation-api.story.md"
     parallel_set: 8
     dependencies:
@@ -496,7 +496,7 @@ stories:
   - id: "10.2.id-report-generator"
     title: "Bahasa Indonesia Management Summary Generator"
     epic_id: "epic-10"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/10.2.id-report-generator.story.md"
     parallel_set: 8
     dependencies:
