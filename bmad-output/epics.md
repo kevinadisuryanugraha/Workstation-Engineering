@@ -285,9 +285,9 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 9.1 | agent-metrics-daemon | Daemon pengumpul CPU/RAM/Disk dengan polling interval, buffer, dan retry | ready-for-dev |
+| 9.1 | agent-metrics-daemon | Daemon pengumpul CPU/RAM/Disk dengan polling interval, buffer, dan retry | done |
 | 9.2 | agent-ingestion-api | Endpoint ingest telemetri ber-auth token agen + skema `server_metrics` | ready-for-dev |
-| 9.3 | server-health-view | Dashboard kesehatan server: kartu status live + riwayat metrik | ready-for-dev |
+| 9.3 | server-health-view | Dashboard kesehatan server: kartu status live + riwayat metrik | done |
 
 **Cross-epic dependencies:**
 - Blocked by: Epic 1 (auth & DB foundation)
@@ -332,9 +332,9 @@
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
 - **Total Stories:** 28 (20 MVP + 8 Fase V1)
-- **Done:** 23 (MVP 100% + Epic 8 tuntas)
-- **Remaining:** 5 (Epic 9, 10 — Fase V1)
-- **Completion Rate:** 82% (23 / 28)
+- **Done:** 26 (MVP + Epic 8 + Epic 9 tuntas)
+- **Remaining:** 2 (Epic 10 — Fase V1)
+- **Completion Rate:** 93% (26 / 28)
 
 ## Sequencing & Wave Plan
 

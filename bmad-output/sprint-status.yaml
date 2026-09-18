@@ -83,7 +83,7 @@ epics:
   - id: "epic-9"
     title: "Workstation Linux Server Agent"
     description: "Daemon pemantauan CPU/RAM/Disk server kantor & Kontabo VPS dengan ingest API dan dashboard kesehatan"
-    status: backlog
+    status: done
     story_ids:
       - "9.1.agent-metrics-daemon"
       - "9.2.agent-ingestion-api"
@@ -436,7 +436,7 @@ stories:
   - id: "9.1.agent-metrics-daemon"
     title: "Workstation Agent Metrics Daemon (CPU/RAM/Disk Collector)"
     epic_id: "epic-9"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/9.1.agent-metrics-daemon.story.md"
     parallel_set: 7
     dependencies: []
@@ -449,7 +449,7 @@ stories:
   - id: "9.2.agent-ingestion-api"
     title: "Agent Telemetry Ingestion API & server_metrics Schema"
     epic_id: "epic-9"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/9.2.agent-ingestion-api.story.md"
     parallel_set: 7
     dependencies:
@@ -465,7 +465,7 @@ stories:
   - id: "9.3.server-health-view"
     title: "Server Health Dashboard View"
     epic_id: "epic-9"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/9.3.server-health-view.story.md"
     parallel_set: 7
     dependencies:

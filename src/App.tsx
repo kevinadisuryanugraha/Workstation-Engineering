@@ -21,6 +21,7 @@ import { MobileBottomBar } from "./components/MobileBottomBar";
 import { RBACDenialModal } from "./components/RBACDenialModal";
 import { LoginView } from "./components/LoginView";
 import { authManager, authFetch, DIRECTORY_USERS } from "./lib/auth";
+import { useServerMetrics, ServerHealthEntry } from "./hooks/api/useServerMetrics";
 import { hasPermission } from "./lib/rbac";
 
 import {
@@ -106,6 +107,13 @@ export default function App() {
   const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
   const [deployments, setDeployments] = useState<Deployment[]>(mockDeployments);
   const [servers, setServers] = useState<ServerTelemetry[]>(mockServers);
+
+  // Story 9.3: live server health from the Workstation Linux Agent ingestion API
+  const { data: serverHealthData } = useServerMetrics({ enabled: Boolean(session?.user) });
+  useEffect(() => {
+    if (!serverHealthData?.servers?.length) return;
+    setServers((prev) => mergeServerTelemetry(prev, serverHealthData.servers));
+  }, [serverHealthData]);
   const [aiFindings, setAiFindings] = useState<AIFinding[]>(mockAIFindings);
   const [aiScanMode, setAiScanMode] = useState<string | null>(null); // SEC-05: integrity flag from /api/ai/scan
   const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>(mockAIRecommendations);
@@ -901,4 +909,59 @@ export default function App() {
       />
     </RetroDesktopShell>
   );
+}
+
+/**
+ * Story 9.3 — Maps ingested agent telemetry (server-metrics API) onto the
+ * dashboard's ServerTelemetry cards, preserving static metadata as base.
+ */
+function mergeServerTelemetry(base: ServerTelemetry[], entries: ServerHealthEntry[]): ServerTelemetry[] {
+  const byName = (name: string) =>
+    base.find(
+      (b) =>
+        b.name.toLowerCase().includes(name.toLowerCase()) ||
+        (name.toLowerCase().includes("kontabo") && b.provider === "Kontabo VPS") ||
+        (name.toLowerCase().includes("kantor") && b.provider === "Office Server Local")
+    );
+
+  return entries.map((entry) => {
+    const { latest, stale, serverName } = entry;
+    const cpuUsage = Math.round(latest.cpuUsage * 10) / 10;
+    const ramUsage = latest.memoryTotal > 0 ? Math.round((latest.memoryUsed / latest.memoryTotal) * 1000) / 10 : 0;
+    const diskUsage = latest.disks.length > 0 ? Math.max(...latest.disks.map((d) => d.usePercent ?? 0)) : 0;
+    const peak = Math.max(cpuUsage, ramUsage, diskUsage);
+
+    const minutesAgo = Math.max(0, Math.round((Date.now() - new Date(latest.recordedAt).getTime()) / 60000));
+    const lastHeartbeat = minutesAgo < 1 ? "Just now" : `${minutesAgo} min ago`;
+
+    const existing = byName(serverName);
+    if (existing) {
+      return {
+        ...existing,
+        status: (stale ? "OFFLINE" : peak >= 80 ? "DEGRADED" : "ONLINE") as ServerTelemetry["status"],
+        cpuUsage,
+        ramUsage,
+        diskUsage,
+        lastHeartbeat,
+      };
+    }
+
+    return {
+      id: `srv-${serverName.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
+      name: serverName,
+      environment: "Production" as const,
+      ip: "—",
+      provider: serverName.toLowerCase().includes("kontabo") ? ("Kontabo VPS" as const) : ("Office Server Local" as const),
+      os: "Linux (agent)",
+      status: (stale ? "OFFLINE" : peak >= 80 ? "DEGRADED" : "ONLINE") as ServerTelemetry["status"],
+      agentVersion: "v1.0.0 (workstation-agent)",
+      lastHeartbeat,
+      cpuUsage,
+      ramUsage,
+      diskUsage,
+      loadAverage: "—",
+      uptime: "—",
+      services: [],
+    };
+  });
 }

@@ -24,6 +24,8 @@ import { deploymentRouter } from "./server/modules/deployments/deployment.routes
 import { auditRouter } from "./server/modules/audit/audit.routes.ts";
 import { myWorkRouter } from "./server/modules/my-work/my-work.routes.ts";
 import { userRouter } from "./server/modules/users/users.routes.ts";
+import { serverMetricsRouter } from "./server/modules/server-metrics/server-metrics.routes.ts";
+import { agentIngestRouter } from "./server/modules/server-metrics/server-metrics.routes.ts";
 import { UserRole, Permission, SERVER_ROLE_PERMISSIONS } from "./server/constants/permissions.ts";
 
 export type { UserRole, Permission, AuthenticatedRequest };
@@ -62,6 +64,8 @@ app.use("/api/v1/deployments", deploymentRouter);
 app.use("/api/v1/audit-logs", auditRouter);
 app.use("/api/v1/my-work", myWorkRouter);
 app.use("/api/v1/users", authenticateToken, userRouter);
+app.use("/api/v1/agent", agentIngestRouter); // agent-token auth, bukan JWT user (Story 9.2)
+app.use("/api/v1/server-metrics", authenticateToken, serverMetricsRouter);
 
 // Public sanitized user directory metadata (profiles without password hashes)
 const PUBLIC_USERS = [

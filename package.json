@@ -12,7 +12,8 @@
     "lint": "tsc --noEmit",
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "tsx server/db/migrate.ts"
+    "db:migrate": "tsx server/db/migrate.ts",
+    "agent": "tsx agent/index.ts"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",

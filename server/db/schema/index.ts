@@ -9,3 +9,4 @@ export * from './work_item_dependencies.ts';
 export * from './evidence_links.ts';
 export * from './repositories.ts';
 export * from './webhook_deliveries.ts';
+export * from './server_metrics.ts';

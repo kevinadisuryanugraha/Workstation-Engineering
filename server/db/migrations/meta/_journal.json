@@ -43,6 +43,13 @@
       "when": 1789713948560,
       "tag": "0005_add_users_token_version",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789714460466,
+      "tag": "0006_add_server_metrics",
+      "breakpoints": true
     }
   ]
 }
