@@ -1,0 +1,188 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #FAF7EE;
+    color: #0f172a;
+    overflow-x: hidden;
+    letter-spacing: -0.01em;
+  }
+
+  code, pre, .font-mono {
+    font-family: var(--font-mono);
+  }
+}
+
+/* Retro 90s OS Graph Paper Grid Background */
+.bg-retro-grid {
+  background-color: #FAF7EE;
+  background-image: 
+    linear-gradient(to right, rgba(24, 24, 27, 0.08) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(24, 24, 27, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+.bg-retro-grid-dense {
+  background-color: #F5F1E4;
+  background-image: 
+    linear-gradient(to right, rgba(24, 24, 27, 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(24, 24, 27, 0.1) 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Retro Windows / Neo-Brutalist Hard Shadows */
+.retro-shadow-sm {
+  box-shadow: 2px 2px 0px #18181b;
+}
+
+.retro-shadow {
+  box-shadow: 3.5px 3.5px 0px #18181b;
+}
+
+.retro-shadow-lg {
+  box-shadow: 5px 5px 0px #18181b;
+}
+
+.retro-shadow-xl {
+  box-shadow: 7px 7px 0px #18181b;
+}
+
+/* Retro Tactile Button Press */
+.retro-btn {
+  transition: all 0.1s ease-in-out;
+  box-shadow: 2.5px 2.5px 0px #18181b;
+}
+
+.retro-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3.5px 3.5px 0px #18181b;
+}
+
+.retro-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0px 0px 0px #18181b;
+}
+
+/* Retro Window Titlebar Bevel & Controls */
+.retro-window-btn {
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  border: 1.5px solid #18181b;
+  background-color: #ffffff;
+  color: #18181b;
+  border-radius: 3px;
+  box-shadow: 1px 1px 0px #18181b;
+  cursor: pointer;
+  user-select: none;
+}
+
+.retro-window-btn:hover {
+  background-color: #f1f5f9;
+}
+
+.retro-window-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
+/* Custom Retro Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: #f5f1e4;
+  border-left: 2px solid #18181b;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border: 2px solid #18181b;
+  border-radius: 4px;
+  box-shadow: 1px 1px 0px #18181b;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Global Retro Theme Adaptations for existing views */
+.retro-theme .bg-slate-900,
+.retro-theme .bg-slate-900\/90,
+.retro-theme .bg-slate-900\/80,
+.retro-theme .bg-slate-900\/60 {
+  background-color: #ffffff !important;
+  border-color: #18181b !important;
+  color: #0f172a !important;
+  box-shadow: 3px 3px 0px #18181b !important;
+}
+
+.retro-theme .bg-slate-950,
+.retro-theme .bg-slate-950\/90,
+.retro-theme .bg-slate-950\/80,
+.retro-theme .bg-slate-950\/60 {
+  background-color: #FAF7EE !important;
+  border-color: #18181b !important;
+  color: #0f172a !important;
+}
+
+.retro-theme .bg-slate-800,
+.retro-theme .bg-slate-800\/90,
+.retro-theme .bg-slate-800\/80,
+.retro-theme .bg-slate-800\/70,
+.retro-theme .bg-slate-800\/60,
+.retro-theme .bg-slate-800\/40 {
+  background-color: #F3EDE0 !important;
+  border-color: #18181b !important;
+  color: #0f172a !important;
+}
+
+.retro-theme .bg-slate-850 {
+  background-color: #EFE8D6 !important;
+  border-color: #18181b !important;
+}
+
+.retro-theme .text-white {
+  color: #0f172a !important;
+}
+
+.retro-theme .text-slate-100,
+.retro-theme .text-slate-200,
+.retro-theme .text-slate-300 {
+  color: #1e293b !important;
+}
+
+.retro-theme .text-slate-400 {
+  color: #475569 !important;
+}
+
+.retro-theme .text-slate-500 {
+  color: #64748b !important;
+}
+
+.retro-theme .border-slate-800,
+.retro-theme .border-slate-800\/80,
+.retro-theme .border-slate-800\/60,
+.retro-theme .border-slate-700,
+.retro-theme .border-slate-700\/80,
+.retro-theme .border-slate-700\/60 {
+  border-color: #18181b !important;
+}
+
+.retro-theme input,
+.retro-theme select,
+.retro-theme textarea {
+  border-color: #18181b !important;
+  color: #0f172a !important;
+  background-color: #ffffff !important;
+}

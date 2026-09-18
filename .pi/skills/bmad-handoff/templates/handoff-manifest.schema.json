@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/bmad-code-org/BMAD-METHOD/schemas/handoff-manifest/1.0/schema.json",
+  "title": "BMAD Handoff Manifest",
+  "description": "Dev-tool-agnostic manifest emitted by the bmad-handoff skill. Lists all ready-for-dev stories with the metadata a downstream dev tool or orchestrator needs to schedule and execute them. schemaVersion is a stable versioned interface — consumers must check it before processing.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "generatedAt",
+    "projectName",
+    "outputFolder",
+    "stories"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "description": "Semantic version of this manifest schema. Current stable: '1.0'. Consumers should reject manifests with a higher major version than they support.",
+      "pattern": "^\\d+\\.\\d+(\\.\\d+)?$",
+      "examples": ["1.0"]
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO-8601 UTC timestamp of when this manifest was written by the bmad-handoff skill."
+    },
+    "projectName": {
+      "type": "string",
+      "description": "Human-readable project name. Sourced from project-context.md or user input.",
+      "minLength": 1
+    },
+    "outputFolder": {
+      "type": "string",
+      "description": "Relative path (from project root) of the folder where story files live. Useful for resolving storyFilePath values.",
+      "minLength": 1,
+      "examples": ["bmad-output", "bmad-output/stories"]
+    },
+    "stories": {
+      "type": "array",
+      "description": "One entry per story with status ready-for-dev. Sorted by wave ascending, then id ascending within each wave.",
+      "items": {
+        "$ref": "#/$defs/story"
+      }
+    }
+  },
+  "$defs": {
+    "story": {
+      "type": "object",
+      "title": "Story",
+      "description": "A single ready-for-dev story and all metadata needed by an external dev tool to schedule and implement it.",
+      "required": [
+        "id",
+        "storyFilePath",
+        "status",
+        "epic",
+        "storyNumber",
+        "title",
+        "ownedScope",
+        "wave",
+        "parallelSet",
+        "dependencies",
+        "acceptanceCriteriaSummary",
+        "lockedSectionsNote",
+        "devAgentRecord"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique story identifier derived from the story filename stem (e.g. '2.1.stripe-integration'). Stable across manifest regenerations.",
+          "minLength": 1,
+          "examples": ["2.1.stripe-integration", "1.3.user-auth"]
+        },
+        "storyFilePath": {
+          "type": "string",
+          "description": "Path to the .story.md file, relative to project root. The dev tool should read this file for full story context before starting implementation.",
+          "minLength": 1,
+          "examples": ["bmad-output/stories/2.1.stripe-integration.story.md"]
+        },
+        "status": {
+          "type": "string",
+          "description": "Story status at manifest generation time. Always 'ready-for-dev' in this manifest.",
+          "const": "ready-for-dev"
+        },
+        "epic": {
+          "type": "string",
+          "description": "Epic identifier extracted from the story filename (first segment). E.g. '2' from '2.1.stripe-integration.story.md'.",
+          "minLength": 1,
+          "examples": ["1", "2", "epic-auth"]
+        },
+        "storyNumber": {
+          "type": "string",
+          "description": "Story sequence number within the epic (second segment of filename). E.g. '1' from '2.1.stripe-integration.story.md'.",
+          "minLength": 1,
+          "examples": ["1", "3", "12"]
+        },
+        "title": {
+          "type": "string",
+          "description": "Human-readable story title from the first H1 or ## Story heading in the story file.",
+          "minLength": 1
+        },
+        "ownedScope": {
+          "type": "array",
+          "description": "Verbatim list of file and directory paths this story is permitted to modify. Primary mechanism for parallel-conflict safety: two stories sharing any path in ownedScope must not run concurrently. Empty array means new-files-only (lower conflict risk, but runner should still validate).",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "examples": [
+            [
+              "src/payments/stripe-client.ts",
+              "src/payments/checkout-service.ts",
+              "tests/payments/"
+            ]
+          ]
+        },
+        "wave": {
+          "type": "integer",
+          "description": "Execution wave number (minimum 1). Wave 1 = no dependencies, may start immediately. Wave N may start only after all stories in lower waves that this story depends on are complete.",
+          "minimum": 1,
+          "examples": [1, 2, 3]
+        },
+        "parallelSet": {
+          "type": ["string", "null"],
+          "description": "Optional label grouping stories that were explicitly planned to run concurrently. Null when not annotated by the planning workflow.",
+          "examples": ["wave-2-auth-and-payments", null]
+        },
+        "dependencies": {
+          "type": "array",
+          "description": "List of story id values that must reach 'done' status before this story may start. Empty array means no dependencies.",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "examples": [[], ["1.2.user-model", "1.3.user-auth"]]
+        },
+        "acceptanceCriteriaSummary": {
+          "type": "array",
+          "description": "First three acceptance criteria from the story file, each truncated to 120 characters. Quick preview for runners; authoritative criteria are in the LOCKED ## Acceptance Criteria section of the story file.",
+          "minItems": 1,
+          "maxItems": 3,
+          "items": {
+            "type": "string",
+            "maxLength": 120
+          }
+        },
+        "lockedSectionsNote": {
+          "type": "string",
+          "description": "Instruction to dev tools regarding locked story sections. Always a specific fixed string — see const value.",
+          "const": "Sections Acceptance Criteria, Dev Notes, and Testing are LOCKED. External dev tools must not edit them. Populate only the Dev Agent Record section."
+        },
+        "devAgentRecord": {
+          "type": ["object", "null"],
+          "description": "Reserved for the external dev tool to populate with implementation metadata (branch, commit, completion time, notes). The planning plugin always emits null here. Runners must not error if null.",
+          "examples": [
+            null,
+            {
+              "startedAt": "2026-06-19T15:00:00Z",
+              "completedAt": "2026-06-19T16:42:00Z",
+              "agentId": "agent-3",
+              "outcome": "success",
+              "notes": "Added 3 integration tests; see PR #42"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

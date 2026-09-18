@@ -1,0 +1,14 @@
+### {{DATE}} — Course Correction: {{CHANGE_TITLE}}
+- **Decision:** {{WHAT_CHANGED_IN_THE_PLAN}}
+- **Rationale:** {{WHY_NECESSARY_ALTERNATIVES_CONSIDERED}}
+- **Impact:**
+  - Epics added: {{EPICS_ADDED | none}}
+  - Epics cancelled: {{EPICS_CANCELLED | none}}
+  - Epics re-scoped: {{EPICS_RESCOPED | none}}
+  - Stories added: {{STORIES_ADDED | none}}
+  - Stories cancelled: {{STORIES_CANCELLED | none}}
+  - Stories re-scoped: {{STORIES_RESCOPED | none}}
+  - sprint-status.yaml: {{RESEQUENCED_YES_NO_AND_NOTES}}
+- **In-progress stories affected:** {{IN_PROGRESS_STORIES | none}}
+- **Made by:** bmad-correct-course
+- **Supersedes:** {{PRIOR_ENTRY_LINK | none}}

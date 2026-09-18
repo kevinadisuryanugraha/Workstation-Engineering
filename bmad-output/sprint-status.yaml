@@ -1,0 +1,366 @@
+# BMAD Sprint Status — Sequencing System-of-Record
+# Generated: 2026-09-18
+# Project: WORKSTATION
+
+project_name: "WORKSTATION"
+track: "bmad-method"
+generated_at: "2026-09-18T10:30:00Z"
+last_updated: "2026-09-18T10:30:00Z"
+
+epics:
+  - id: "epic-1"
+    title: "Core Platform Foundation, Security & Database"
+    description: "Inisialisasi Git, migrasi PostgreSQL 16 + Drizzle, dan hardening Auth/RBAC"
+    status: in-progress
+    story_ids:
+      - "1.1.git-init-and-toolchain"
+      - "1.2.postgres-drizzle-setup"
+      - "1.3.secure-auth-engine"
+      - "1.4.server-rbac-middleware"
+      - "1.5.org-and-project-api"
+
+  - id: "epic-2"
+    title: "Work Items & Task Management"
+    description: "Siklus hidup item kerja, kriteria selesai, dan dependensi antar tugas"
+    status: backlog
+    story_ids:
+      - "2.1.work-items-crud-api"
+      - "2.2.acceptance-criteria-engine"
+      - "2.3.task-dependency-tracking"
+
+  - id: "epic-3"
+    title: "Developer Experience & My Work Workspace"
+    description: "Ruang kerja developer terpadu, state decomposition, dan aksi status 1-klik"
+    status: backlog
+    story_ids:
+      - "3.1.my-work-aggregation-api"
+      - "3.2.client-store-decomposition"
+      - "3.3.quick-status-and-evidence-ui"
+
+  - id: "epic-4"
+    title: "Ticketing & ITSM Issue Resolution"
+    description: "Intake bug & insiden, pemisahan severity vs priority, dan penautan dua arah ke tugas"
+    status: backlog
+    story_ids:
+      - "4.1.ticket-lifecycle-api"
+      - "4.2.ticket-work-item-linking"
+      - "4.3.ticket-comments-timeline"
+
+  - id: "epic-5"
+    title: "Git Intelligence & Webhook Engine"
+    description: "Receiver webhook resmi GitHub dan auto-linking artefak commit/PR berbasis regex"
+    status: backlog
+    story_ids:
+      - "5.1.github-webhook-receiver"
+      - "5.2.git-entity-auto-linker"
+
+  - id: "epic-6"
+    title: "Release & Deployment Operations"
+    description: "Pencatatan deployment per server/environment dan otorisasi rollback darurat"
+    status: backlog
+    story_ids:
+      - "6.1.deployment-recording-api"
+      - "6.2.rollback-authorization-ops"
+
+  - id: "epic-7"
+    title: "Audit Trail & System Governance"
+    description: "Pencatatan log transaksi sistem append-only dengan correlation ID UUIDv7"
+    status: backlog
+    story_ids:
+      - "7.1.append-only-audit-middleware"
+      - "7.2.audit-log-viewer-api"
+
+stories:
+  # Wave 1 (Immediate Foundation)
+  - id: "1.1.git-init-and-toolchain"
+    title: "Git Repository Initialization & Quality Toolchain"
+    epic_id: "epic-1"
+    status: ready-for-dev
+    file: "bmad-output/stories/1.1.git-init-and-toolchain.story.md"
+    parallel_set: 1
+    dependencies: []
+    owned_scope:
+      - ".gitignore"
+      - "package.json"
+      - "tsconfig.json"
+      - "vitest.config.ts"
+      - "tests/sanity.test.ts"
+
+  - id: "1.2.postgres-drizzle-setup"
+    title: "PostgreSQL Schema & Drizzle ORM Setup"
+    epic_id: "epic-1"
+    status: ready-for-dev
+    file: "bmad-output/stories/1.2.postgres-drizzle-setup.story.md"
+    parallel_set: 1
+    dependencies:
+      - "1.1.git-init-and-toolchain"
+    owned_scope:
+      - "drizzle.config.ts"
+      - "server/db/**"
+      - ".env.example"
+
+  # Wave 2 (Security & Governance Core)
+  - id: "1.3.secure-auth-engine"
+    title: "Hardened Authentication Engine (bcrypt + Stateless JWT)"
+    epic_id: "epic-1"
+    status: backlog
+    file: "bmad-output/stories/1.3.secure-auth-engine.story.md"
+    parallel_set: 2
+    dependencies:
+      - "1.1.git-init-and-toolchain"
+      - "1.2.postgres-drizzle-setup"
+    owned_scope:
+      - "server/config/auth.ts"
+      - "server/middlewares/authenticate.ts"
+      - "server/modules/auth/**"
+      - "server/db/seed.ts"
+      - "tests/auth.test.ts"
+
+  - id: "1.4.server-rbac-middleware"
+    title: "Server-Side RBAC Enforcement & Frontend Sanitization"
+    epic_id: "epic-1"
+    status: backlog
+    file: "bmad-output/stories/1.4.server-rbac-middleware.story.md"
+    parallel_set: 2
+    dependencies:
+      - "1.3.secure-auth-engine"
+    owned_scope:
+      - "server/middlewares/rbac.ts"
+      - "server/constants/permissions.ts"
+      - "src/lib/auth.ts"
+      - "src/lib/rbac.ts"
+      - "tests/rbac.test.ts"
+
+  - id: "7.1.append-only-audit-middleware"
+    title: "Append-Only Audit Logging Middleware with Correlation IDs"
+    epic_id: "epic-7"
+    status: backlog
+    file: "bmad-output/stories/7.1.append-only-audit-middleware.story.md"
+    parallel_set: 2
+    dependencies:
+      - "1.2.postgres-drizzle-setup"
+    owned_scope:
+      - "server/db/schema/audit_logs.ts"
+      - "server/middlewares/correlationId.ts"
+      - "server/modules/audit/**"
+      - "tests/audit.test.ts"
+
+  # Wave 3 (Domain Entities)
+  - id: "1.5.org-and-project-api"
+    title: "Organization & Project Management API"
+    epic_id: "epic-1"
+    status: backlog
+    file: "bmad-output/stories/1.5.org-and-project-api.story.md"
+    parallel_set: 3
+    dependencies:
+      - "1.2.postgres-drizzle-setup"
+      - "1.3.secure-auth-engine"
+      - "1.4.server-rbac-middleware"
+    owned_scope:
+      - "server/modules/projects/**"
+      - "tests/projects.test.ts"
+
+  - id: "2.1.work-items-crud-api"
+    title: "Work Items Schema & CRUD API"
+    epic_id: "epic-2"
+    status: backlog
+    file: "bmad-output/stories/2.1.work-items-crud-api.story.md"
+    parallel_set: 3
+    dependencies:
+      - "1.5.org-and-project-api"
+    owned_scope:
+      - "server/db/schema/work_items.ts"
+      - "server/modules/work-items/**"
+      - "tests/work-items.test.ts"
+
+  - id: "4.1.ticket-lifecycle-api"
+    title: "Ticketing / ITSM Lifecycle & Triage API"
+    epic_id: "epic-4"
+    status: backlog
+    file: "bmad-output/stories/4.1.ticket-lifecycle-api.story.md"
+    parallel_set: 3
+    dependencies:
+      - "1.5.org-and-project-api"
+    owned_scope:
+      - "server/db/schema/tickets.ts"
+      - "server/modules/tickets/**"
+      - "tests/tickets.test.ts"
+
+  # Wave 4 (Logic, Gates & Integration)
+  - id: "2.2.acceptance-criteria-engine"
+    title: "Acceptance Criteria Checklist Engine & Definition of Done Gate"
+    epic_id: "epic-2"
+    status: backlog
+    file: "bmad-output/stories/2.2.acceptance-criteria-engine.story.md"
+    parallel_set: 4
+    dependencies:
+      - "2.1.work-items-crud-api"
+      - "1.4.server-rbac-middleware"
+      - "7.1.append-only-audit-middleware"
+    owned_scope:
+      - "server/db/schema/acceptance_criteria.ts"
+      - "server/modules/work-items/acceptance-criteria.*"
+      - "tests/acceptance-criteria.test.ts"
+
+  - id: "2.3.task-dependency-tracking"
+    title: "Task Dependency & Circular Blocker Prevention"
+    epic_id: "epic-2"
+    status: backlog
+    file: "bmad-output/stories/2.3.task-dependency-tracking.story.md"
+    parallel_set: 4
+    dependencies:
+      - "2.1.work-items-crud-api"
+    owned_scope:
+      - "server/db/schema/work_item_dependencies.ts"
+      - "server/modules/work-items/dependency.*"
+      - "tests/dependencies.test.ts"
+
+  - id: "4.2.ticket-work-item-linking"
+    title: "Bi-directional Linking: Ticket ↔ Work Item & Evidence Engine"
+    epic_id: "epic-4"
+    status: backlog
+    file: "bmad-output/stories/4.2.ticket-work-item-linking.story.md"
+    parallel_set: 4
+    dependencies:
+      - "2.1.work-items-crud-api"
+      - "4.1.ticket-lifecycle-api"
+    owned_scope:
+      - "server/db/schema/evidence_links.ts"
+      - "server/modules/tickets/ticket-link.*"
+      - "tests/ticket-work-linking.test.ts"
+
+  - id: "5.1.github-webhook-receiver"
+    title: "GitHub Webhook Receiver with HMAC-SHA256 Verification & Idempotency"
+    epic_id: "epic-5"
+    status: backlog
+    file: "bmad-output/stories/5.1.github-webhook-receiver.story.md"
+    parallel_set: 4
+    dependencies:
+      - "1.5.org-and-project-api"
+    owned_scope:
+      - "server/db/schema/repositories.ts"
+      - "server/db/schema/webhook_deliveries.ts"
+      - "server/middlewares/githubSignature.ts"
+      - "server/modules/git/webhook.*"
+      - "tests/webhook.test.ts"
+
+  # Wave 5 (Operations & Presentation)
+  - id: "4.3.ticket-comments-timeline"
+    title: "Ticket Comments & Chronological Activity Timeline"
+    epic_id: "epic-4"
+    status: backlog
+    file: "bmad-output/stories/4.3.ticket-comments-timeline.story.md"
+    parallel_set: 5
+    dependencies:
+      - "4.1.ticket-lifecycle-api"
+    owned_scope:
+      - "server/db/schema/ticket_comments.ts"
+      - "server/db/schema/ticket_history.ts"
+      - "server/modules/tickets/comments.*"
+      - "server/modules/tickets/timeline.*"
+      - "tests/ticket-comments.test.ts"
+
+  - id: "5.2.git-entity-auto-linker"
+    title: "Git Entity Auto-Linker & Evidence Attachment Engine"
+    epic_id: "epic-5"
+    status: backlog
+    file: "bmad-output/stories/5.2.git-entity-auto-linker.story.md"
+    parallel_set: 5
+    dependencies:
+      - "4.2.ticket-work-item-linking"
+      - "5.1.github-webhook-receiver"
+    owned_scope:
+      - "server/db/schema/commits.ts"
+      - "server/db/schema/pull_requests.ts"
+      - "server/modules/git/git-linker.*"
+      - "tests/git-linker.test.ts"
+
+  - id: "6.1.deployment-recording-api"
+    title: "Release & Deployment Recording API"
+    epic_id: "epic-6"
+    status: backlog
+    file: "bmad-output/stories/6.1.deployment-recording-api.story.md"
+    parallel_set: 5
+    dependencies:
+      - "1.5.org-and-project-api"
+      - "5.1.github-webhook-receiver"
+    owned_scope:
+      - "server/db/schema/deployments.ts"
+      - "server/modules/deployments/**"
+      - "tests/deployments.test.ts"
+
+  - id: "6.2.rollback-authorization-ops"
+    title: "Rollback Authorization Operations & Tamper-Evident Audit"
+    epic_id: "epic-6"
+    status: backlog
+    file: "bmad-output/stories/6.2.rollback-authorization-ops.story.md"
+    parallel_set: 5
+    dependencies:
+      - "6.1.deployment-recording-api"
+      - "1.4.server-rbac-middleware"
+      - "7.1.append-only-audit-middleware"
+    owned_scope:
+      - "server/modules/deployments/rollback.*"
+      - "tests/rollback.test.ts"
+
+  - id: "7.2.audit-log-viewer-api"
+    title: "Audit Log Viewer API & Filtering Engine"
+    epic_id: "epic-7"
+    status: backlog
+    file: "bmad-output/stories/7.2.audit-log-viewer-api.story.md"
+    parallel_set: 5
+    dependencies:
+      - "7.1.append-only-audit-middleware"
+      - "1.4.server-rbac-middleware"
+    owned_scope:
+      - "server/modules/audit/audit.controller.ts"
+      - "server/modules/audit/audit.routes.ts"
+      - "src/components/AuditLogView.tsx"
+      - "tests/audit-viewer.test.ts"
+
+  - id: "3.1.my-work-aggregation-api"
+    title: "Developer 'My Work' Aggregation Endpoint & Workspace Data Feed"
+    epic_id: "epic-3"
+    status: backlog
+    file: "bmad-output/stories/3.1.my-work-aggregation-api.story.md"
+    parallel_set: 5
+    dependencies:
+      - "1.3.secure-auth-engine"
+      - "2.1.work-items-crud-api"
+      - "4.1.ticket-lifecycle-api"
+    owned_scope:
+      - "server/modules/my-work/**"
+      - "tests/my-work.test.ts"
+
+  - id: "3.2.client-store-decomposition"
+    title: "Client-Side Store Decomposition & REST Integration"
+    epic_id: "epic-3"
+    status: backlog
+    file: "bmad-output/stories/3.2.client-store-decomposition.story.md"
+    parallel_set: 5
+    dependencies:
+      - "1.3.secure-auth-engine"
+      - "2.1.work-items-crud-api"
+      - "4.1.ticket-lifecycle-api"
+    owned_scope:
+      - "src/stores/**"
+      - "src/hooks/api/**"
+      - "src/lib/apiClient.ts"
+      - "src/App.tsx"
+      - "src/main.tsx"
+
+  - id: "3.3.quick-status-and-evidence-ui"
+    title: "Quick Status 1-Click Action & Interactive Evidence Drill-Down UI"
+    epic_id: "epic-3"
+    status: backlog
+    file: "bmad-output/stories/3.3.quick-status-and-evidence-ui.story.md"
+    parallel_set: 5
+    dependencies:
+      - "3.1.my-work-aggregation-api"
+      - "3.2.client-store-decomposition"
+      - "2.2.acceptance-criteria-engine"
+    owned_scope:
+      - "src/components/ui/QuickStatusButton.tsx"
+      - "src/components/ui/EvidenceDrillDownModal.tsx"
+      - "src/components/WorkItemsView.tsx"
+      - "src/components/OverviewView.tsx"

@@ -1,0 +1,6 @@
+{
+  "name": "WORKSTATION - Engineering Intelligence & Operations",
+  "description": "Centralized engineering workspace turning engineering activity into measurable, traceable, and evidence-backed progress for developers and management.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

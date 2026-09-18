@@ -1,0 +1,64 @@
+# Project Context — WORKSTATION
+
+> The project **constitution**. Dokumen ini dimuat oleh setiap skill BMAD berikutnya  
+> (architecture, ux, epics-and-stories, sprint-planning) agar selalu memegang satu sumber kebenaran.  
+> Setiap perubahan keputusan besar wajib dicatat di `decision-log.md`.
+
+- **Track:** bmad-method
+- **Created:** 2026-09-18
+- **Master PRD:** `docs/WORKSTATION_Super_Duper_PRD.pdf` (North Star)
+- **Working PRD (MVP):** `bmad-output/prd.md`
+
+---
+
+## Project Goal
+Menjadi *single source of truth* dan platform operasional internal yang menghubungkan seluruh siklus hidup rekayasa perangkat lunak: dari Tiket masalah → Work Item perencanaan → Branch kode → Commit → PR review → Release tag → Deployment server → Bukti verifikasi (evidence), menggantikan pelaporan manual dengan data nyata yang dapat ditelusuri.
+
+## Primary Users
+1. **Developer (Pengguna Utama MVP):** Membutuhkan satu ruang kerja harian (*My Work*) yang cepat, minim klik, dan otomatis menghubungkan commit/PR GitHub ke tiket dan tugas tanpa perlu salin-tempel tautan manual.
+2. **Tech Lead / PM:** Membutuhkan visibilitas status rilis, deployment per environment, dan persetujuan rollback yang aman.
+3. **Platform / Security Admin:** Menjamin keandalan hak akses (RBAC), integritas audit trail, dan perlindungan kredensial.
+
+## Scope (MVP Phase — Track: BMad Method)
+- **EPIC-001:** Core Platform Foundation, Security & Relational Database (Menutup kerentanan DS-01 s.d. DS-07)
+- **EPIC-002:** Work Items & Task Management (Epic, Feature, Task, Bug, Checklist Kriteria Selesai)
+- **EPIC-003:** Developer Experience & "My Work" Workspace
+- **EPIC-004:** Ticketing & ITSM Issue Resolution Workflow
+- **EPIC-005:** Git Intelligence & GitHub Inbound Webhook Receiver
+- **EPIC-006:** Release & Deployment Operations (Manual/API + Rollback otorisasi)
+- **EPIC-007:** Append-Only Audit Trail & System Governance
+
+## Core Constraints
+1. **Kerapihan Frontend:** Tetap mempertahankan dan memanfaatkan komponen antarmuka React 19 + Tailwind 4 + Vite yang sudah dibangun di `src/` (tidak menulis ulang dari awal).
+2. **Basis Data Wajib Relasional SQL:** Mengharuskan migrasi dari array in-memory ke PostgreSQL 15+ atau MySQL 8.0+ untuk integritas transaksi.
+3. **Pemisahan Modular Backend:** Mengurai `server.ts` (801 baris) menjadi struktur modular berlayer (Routes, Controllers, Services, Repositories).
+4. **Keamanan Tanpa Kompromi:** Kunci JWT wajib dari environment variable; password wajib bcrypt/argon2; verifikasi permission ketat di sisi server.
+5. **Kendali Versi Git:** Seluruh basis kode wajib berada di bawah manajemen Git dengan proteksi branch.
+
+## Non-Goals (Prinsip Master PRD Section 2.2)
+- Menggantikan GitHub sebagai Git provider (kami adalah agregator/lapisan intelligence, bukan git host).
+- Menganggap commit sebagai bukti otomatis durasi jam kerja karyawan.
+- Membiarkan AI mengubah status bisnis atau menutup tiket tanpa validasi manusia.
+- Menyimpan secret atau password server secara plaintext.
+- Fitur AI Codebase Scanner dan Dual-Language Translation di fase MVP (ditunda ke V1/V2 per keputusan 2026-09-18).
+- Daemon server agent Linux untuk Kontabo/lokal di fase MVP (ditunda ke V1).
+
+## Key Stakeholders / Roles
+- **Product Owner:** Pengarah prioritas produk & bisnis.
+- **John (BMAD PM):** Penjaga konsistensi PRD dan kriteria penerimaan.
+- **Winston (BMAD Architect):** Perancang arsitektur sistem, skema basis data, dan ADR.
+- **Developer Tim Internal:** Pelaksana implementasi dan pengguna pertama sistem.
+
+## Glossary
+- **Evidence:** Fakta konkret yang dapat diverifikasi sistem (Commit SHA, PR ID, log deployment, hasil test, telemetry agent) yang membuktikan progres kerja.
+- **Traceability:** Kemampuan menelusuri rantai perjalanan kerja secara utuh: dari Tiket masalah → Work Item → Branch → Commit → PR → Release → Deployment.
+- **RBAC:** Kontrol akses berbasis peran (9 peran × 20 permission) yang divalidasi server secara ketat.
+
+---
+
+## Decision Thread
+Entri keputusan aktif tersimpan di [`decision-log.md`](./decision-log.md):
+1. **2026-09-18:** Posisi fitur AI ditunda keputusannya (Catatan A-01 di `addendum.md`).
+2. **2026-09-18:** Pengguna pertama MVP difokuskan pada Developer (*My Work*).
+3. **2026-09-18:** Master PRD PDF = North Star; PRD kerja = Shard fase MVP (Track: BMad Method).
+4. **2026-09-18:** Target produk = internal produksi nyata (Foundation-first wajib).

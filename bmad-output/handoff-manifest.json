@@ -1,0 +1,234 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-09-18T10:35:00Z",
+  "projectName": "WORKSTATION",
+  "outputFolder": "bmad-output",
+  "totalStories": 20,
+  "readyForDevCount": 20,
+  "waves": 5,
+  "stories": [
+    {
+      "id": "1.1.git-init-and-toolchain",
+      "storyFilePath": "bmad-output/stories/1.1.git-init-and-toolchain.story.md",
+      "status": "ready-for-dev",
+      "epic": "1",
+      "storyNumber": "1",
+      "title": "Git Repository Initialization & Quality Toolchain",
+      "ownedScope": [
+        ".gitignore",
+        "package.json",
+        "tsconfig.json",
+        "vitest.config.ts",
+        "tests/sanity.test.ts"
+      ],
+      "wave": 1,
+      "parallelSet": 1,
+      "dependencies": [],
+      "acceptanceCriteriaSummary": [
+        "Git repository initialized with main branch and clean .gitignore excluding secrets and dist",
+        "TypeScript compiler strict mode enabled in tsconfig.json passing without compile errors",
+        "Vitest testing framework installed and npm run test runs passing",
+        "Package.json metadata cleaned up from react-example to workstation-engineering-intelligence",
+        "Initial clean commit created"
+      ],
+      "lockedSectionsNote": "Sections Acceptance Criteria, Dev Notes, and Testing are LOCKED. External dev tools must not edit them. Populate only the Dev Agent Record section.",
+      "devAgentRecord": null
+    },
+    {
+      "id": "1.2.postgres-drizzle-setup",
+      "storyFilePath": "bmad-output/stories/1.2.postgres-drizzle-setup.story.md",
+      "status": "ready-for-dev",
+      "epic": "1",
+      "storyNumber": "2",
+      "title": "PostgreSQL Schema & Drizzle ORM Setup",
+      "ownedScope": [
+        "drizzle.config.ts",
+        "server/db/**",
+        ".env.example"
+      ],
+      "wave": 1,
+      "parallelSet": 1,
+      "dependencies": [
+        "1.1.git-init-and-toolchain"
+      ],
+      "acceptanceCriteriaSummary": [
+        "drizzle-orm and pg dependencies installed",
+        "drizzle.config.ts configured with DATABASE_URL and migrations directory",
+        "Core schemas defined for organizations, users, and projects with indexes",
+        "Migration scripts generate and apply cleanly to PostgreSQL",
+        "server/db/client.ts initializes connection pool with error handling"
+      ],
+      "lockedSectionsNote": "Sections Acceptance Criteria, Dev Notes, and Testing are LOCKED. External dev tools must not edit them. Populate only the Dev Agent Record section.",
+      "devAgentRecord": null
+    },
+    {
+      "id": "1.3.secure-auth-engine",
+      "storyFilePath": "bmad-output/stories/1.3.secure-auth-engine.story.md",
+      "status": "ready-for-dev",
+      "epic": "1",
+      "storyNumber": "3",
+      "title": "Hardened Authentication Engine (bcrypt + Stateless JWT)",
+      "ownedScope": [
+        "server/config/auth.ts",
+        "server/middlewares/authenticate.ts",
+        "server/modules/auth/**",
+        "server/db/seed.ts",
+        "tests/auth.test.ts"
+      ],
+      "wave": 2,
+      "parallelSet": 2,
+      "dependencies": [
+        "1.1.git-init-and-toolchain",
+        "1.2.postgres-drizzle-setup"
+      ],
+      "acceptanceCriteriaSummary": [
+        "Passwords hashed with bcrypt work factor 12",
+        "POST /api/v1/auth/login validates against PostgreSQL users table returning valid 24h JWT",
+        "Hardcoded backdoor admin123 completely deleted",
+        "JWT_SECRET read from env with fail-fast crash if missing or shorter than 32 chars",
+        "GET /api/v1/auth/me verifies Bearer token and returns session user",
+        "Requests without valid Bearer token rejected with HTTP 401 (no auto-admin fallback)"
+      ],
+      "lockedSectionsNote": "Sections Acceptance Criteria, Dev Notes, and Testing are LOCKED. External dev tools must not edit them. Populate only the Dev Agent Record section.",
+      "devAgentRecord": null
+    },
+    {
+      "id": "1.4.server-rbac-middleware",
+      "storyFilePath": "bmad-output/stories/1.4.server-rbac-middleware.story.md",
+      "status": "ready-for-dev",
+      "epic": "1",
+      "storyNumber": "4",
+      "title": "Server-Side RBAC Enforcement & Frontend Sanitization",
+      "ownedScope": [
+        "server/middlewares/rbac.ts",
+        "server/constants/permissions.ts",
+        "src/lib/auth.ts",
+        "src/lib/rbac.ts",
+        "tests/rbac.test.ts"
+      ],
+      "wave": 2,
+      "parallelSet": 2,
+      "dependencies": [
+        "1.3.secure-auth-engine"
+      ],
+      "acceptanceCriteriaSummary": [
+        "requirePermission and requireRole middlewares validate server-side authoritative RBAC matrix",
+        "Client-side token forgery branch in server.ts deleted",
+        "DIRECTORY_USERS and passwordHint plaintext array deleted from src/lib/auth.ts",
+        "restoreSession() auto-bootstrap Super Admin removed",
+        "Offline login fallback without password removed"
+      ],
+      "lockedSectionsNote": "Sections Acceptance Criteria, Dev Notes, and Testing are LOCKED. External dev tools must not edit them. Populate only the Dev Agent Record section.",
+      "devAgentRecord": null
+    },
+    {
+      "id": "7.1.append-only-audit-middleware",
+      "storyFilePath": "bmad-output/stories/7.1.append-only-audit-middleware.story.md",
+      "status": "ready-for-dev",
+      "epic": "7",
+      "storyNumber": "1",
+      "title": "Append-Only Audit Logging Middleware with Correlation IDs",
+      "ownedScope": [
+        "server/db/schema/audit_logs.ts",
+        "server/middlewares/correlationId.ts",
+        "server/modules/audit/**",
+        "tests/audit.test.ts"
+      ],
+      "wave": 2,
+      "parallelSet": 2,
+      "dependencies": [
+        "1.2.postgres-drizzle-setup"
+      ],
+      "acceptanceCriteriaSummary": [
+        "requestCorrelationId middleware attaches UUIDv7 X-Correlation-Id to all requests and responses",
+        "audit_logs schema defined in PostgreSQL with actor, action, target, details, correlation_id",
+        "auditService.logEvent inserts records append-only with no update/delete methods",
+        "Critical system events trigger audit logging automatically"
+      ],
+      "lockedSectionsNote": "Sections Acceptance Criteria, Dev Notes, and Testing are LOCKED. External dev tools must not edit them. Populate only the Dev Agent Record section.",
+      "devAgentRecord": null
+    },
+    {
+      "id": "1.5.org-and-project-api",
+      "storyFilePath": "bmad-output/stories/1.5.org-and-project-api.story.md",
+      "status": "ready-for-dev",
+      "epic": "1",
+      "storyNumber": "5",
+      "title": "Organization & Project Management API",
+      "ownedScope": [
+        "server/modules/projects/**",
+        "tests/projects.test.ts"
+      ],
+      "wave": 3,
+      "parallelSet": 3,
+      "dependencies": [
+        "1.2.postgres-drizzle-setup",
+        "1.3.secure-auth-engine",
+        "1.4.server-rbac-middleware"
+      ],
+      "acceptanceCriteriaSummary": [
+        "GET /api/v1/projects returns user accessible projects with standard envelope",
+        "POST /api/v1/projects creates project with unique uppercase key (rejects duplicates with 409)",
+        "GET /api/v1/projects/:id returns full project status metadata",
+        "PUT /api/v1/projects/:id allows metadata updates under PERM_PROJECT_UPDATE",
+        "Zod validation validates all input schemas"
+      ],
+      "lockedSectionsNote": "Sections Acceptance Criteria, Dev Notes, and Testing are LOCKED. External dev tools must not edit them. Populate only the Dev Agent Record section.",
+      "devAgentRecord": null
+    },
+    {
+      "id": "2.1.work-items-crud-api",
+      "storyFilePath": "bmad-output/stories/2.1.work-items-crud-api.story.md",
+      "status": "ready-for-dev",
+      "epic": "2",
+      "storyNumber": "1",
+      "title": "Work Items Schema & CRUD API",
+      "ownedScope": [
+        "server/db/schema/work_items.ts",
+        "server/modules/work-items/**",
+        "tests/work-items.test.ts"
+      ],
+      "wave": 3,
+      "parallelSet": 3,
+      "dependencies": [
+        "1.5.org-and-project-api"
+      ],
+      "acceptanceCriteriaSummary": [
+        "work_items schema in PostgreSQL with type, priority, and status lifecycle",
+        "Sequential key generated automatically (e.g. WRK-101)",
+        "GET /api/v1/work-items supports filtering by project, status, assignee with pagination",
+        "PUT /api/v1/work-items/:id updates fields with Zod validation",
+        "DELETE /api/v1/work-items/:id soft-deletes or removes backlog items with audit log"
+      ],
+      "lockedSectionsNote": "Sections Acceptance Criteria, Dev Notes, and Testing are LOCKED. External dev tools must not edit them. Populate only the Dev Agent Record section.",
+      "devAgentRecord": null
+    },
+    {
+      "id": "4.1.ticket-lifecycle-api",
+      "storyFilePath": "bmad-output/stories/4.1.ticket-lifecycle-api.story.md",
+      "status": "ready-for-dev",
+      "epic": "4",
+      "storyNumber": "1",
+      "title": "Ticketing / ITSM Lifecycle & Triage API",
+      "ownedScope": [
+        "server/db/schema/tickets.ts",
+        "server/modules/tickets/**",
+        "tests/tickets.test.ts"
+      ],
+      "wave": 3,
+      "parallelSet": 3,
+      "dependencies": [
+        "1.5.org-and-project-api"
+      ],
+      "acceptanceCriteriaSummary": [
+        "tickets schema with separate severity and priority fields",
+        "POST /api/v1/tickets creates new issue defaulting to NEW status",
+        "PATCH /api/v1/tickets/:id/triage allows assigning priority, assignee, and transitioning to ASSIGNED",
+        "GET /api/v1/tickets supports filtering and pagination",
+        "Transition to RESOLVED requires resolution explanation"
+      ],
+      "lockedSectionsNote": "Sections Acceptance Criteria, Dev Notes, and Testing are LOCKED. External dev tools must not edit them. Populate only the Dev Agent Record section.",
+      "devAgentRecord": null
+    }
+  ]
+}

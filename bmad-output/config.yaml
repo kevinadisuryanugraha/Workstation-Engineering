@@ -1,0 +1,30 @@
+# BMAD Planning & Orchestrator — Project Configuration
+# Generated: 2026-09-18T03:06:22Z
+# Single source of truth: other planning skills read paths and track from here.
+
+bmad_version: "6.x"
+
+project:
+  name: "WORKSTATION"
+  # Scale-adaptive track (never a numbered level):
+  #   quick-flow   = 1-15 stories, tech-spec only
+  #   bmad-method  = 10-50+ stories, PRD + Architecture (+ optional UX)
+  #   enterprise   = 30+ stories, + Security planning + DevOps planning
+  track: "bmad-method"
+  created: "2026-09-18T03:06:22Z"
+
+paths:
+  output_folder: "bmad-output"
+  stories_folder: "bmad-output/stories"
+  decision_log: "bmad-output/decision-log.md"
+  project_context: "bmad-output/project-context.md"
+
+languages:
+  communication: "English"
+  document_output: "English"
+
+# Delivery is COUNT-BASED: track stories remaining / completion rate.
+# No story points, no velocity, no burndown.
+delivery:
+  metric: "count-based"
+  story_sizing: "one agent session (~2-8h, one dev-day max); split if larger"
