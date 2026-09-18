@@ -27,6 +27,7 @@
 | ke-6 | 18 Sep 2026 | **FASE V1 TUNTAS 100%** — SEC-01..05 tertutup (Epic 8), Server Agent (Epic 9), Reporting Engine (Epic 10) · 23/23 temuan selesai · 98/98 test lulus | `678802a` |
 | **ke-7** | **18 Sep 2026** | **PRODUKSI LIVE** — Deploy VPS Kontabo (systemd + PostgreSQL + agent telemetri), AI Gemini aktif, GitHub + CI, domain `workstation.zamzami.or.id` (Cloudflare), HTTPS Let's Encrypt + auto-renew, hardening kredensial (rotasi root SSH + 7 akun app + tutup port 3020 publik) | `f09b3c9` |
 | **ke-8** | **18 Sep 2026** | **Backup otomatis DB produksi** — pg_dump harian 02:30 via cron, kompresi gzip, retensi 14 hari, config ikut dibackup, uji restore nyata: hasil identik 100% (27 tabel · 7 users · 67 metrics) | `backup-db.sh` |
+| **ke-9** | **18 Sep 2026** | **Purge kredensial plaintext dari UI & bundle produksi** — LoginView (peta 7 password + pre-fill admin123 + panel directory) dibersihkan total, seed hash dirotasi tanpa komentar pengungkap, lazy-import @google/genai memperbaiki 3 test suite · 178/178 hijau · bundle produksi terverifikasi bebas kredensial | `65b7eed`, `4e82086` |
 
 ---
 
@@ -376,6 +377,45 @@ gunzip -c /opt/workstation/backups/workstation_db_<TIMESTAMP>.sql.gz | \
 | **Uji restore nyata** ke DB temporer `restore_test` | 🟢 **IDENTIK 100%** — produksi vs restore: `tabel=27 · users=7 · metrics=67` (sama persis) |
 | Produksi tersentuh selama uji? | 🟢 TIDAK — sanity check pasca-uji: 7 users utuh |
 | Cron terpasang | 🟢 `/etc/cron.d/workstation-backup` aktif |
+
+---
+
+---
+
+## 13. PEMBARUAN KE-9 — PURGE KREDENSIAL PLAINTEXT DARI UI & BUNDLE PRODUKSI
+
+> **Tanggal:** 18 September 2026 · **Pemicu:** saat UAT pertama, halaman login produksi masih menampilkan hint `admin123` + directory kredensial — temuan lapangan yang lolos dari audit statis DS-05.
+
+### 13.1 Temuan (Kritikal untuk Aplikasi Publik)
+
+| # | Temuan | Lokasi | Risiko |
+|:---:|---|---|---|
+| 1 | Peta **7 password plaintext** (`DEMO_CREDENTIALS`) + field password **pre-filled `admin123`** + panel "Role Directory" yang memamerkan seluruh email organisasi di halaman login | `src/components/LoginView.tsx` | Siapa pun yang membuka halaman login publik melihat kredensial seluruh tim |
+| 2 | Dialog UI lain dengan `defaultValue="admin123"` | `src/components/ui/RetroDialogs.tsx` | String kredensial menempel di bundle |
+| 3 | 7 seed hash lama **dengan komentar pengungkap password** (`// admin123`, `// dev123`, dst.) — seed ulang di masa depan akan mengembalikan password default | `server/modules/auth/auth.service.ts` | Regresi kredensial pada provisioning baru |
+| 4 | 3 test suite gagal (effek samping pekerjaan AI fallback): `@google/genai` ESM crash saat dimuat via partial-mock vitest | `server/modules/reports/translate.service.ts` | CI merah — menutup visibilitas regresi |
+
+### 13.2 Perbaikan
+
+| # | Aksi | Komit |
+|:---:|---|---|
+| 1 | `LoginView.tsx` ditulis ulang: form login bersih — tanpa peta kredensial, tanpa pre-fill, tanpa panel directory (desain & alur auth tidak berubah) | `65b7eed` |
+| 2 | `defaultValue="admin123"` dihapus dari dialog | `65b7eed` |
+| 3 | `translate.service.ts`: `@google/genai` diubah ke **lazy dynamic import** (`import type` + import saat pemanggilan nyata) → modul SDK tidak lagi dimuat saat import modul; test aman, perilaku produksi identik | `65b7eed` |
+| 4 | 7 seed hash diganti bcrypt cost-12 dari password terkini (rotasi ke-7) + komentar pengungkap dihapus — fresh seed tidak lagi mengembalikan password lama | `4e82086` |
+
+### 13.3 Verifikasi Nyata
+
+| Uji | Hasil |
+|---|:---:|
+| TypeScript strict (`tsc --noEmit`) | 🟢 0 error |
+| Test suite | 🟢 **37/37 file · 178/178 test** (3 suite yang sebelumnya rusak ikut pulih) |
+| `grep` kredensial plaintext di `src/` & `server/` | 🟢 0 temuan |
+| **Bundle produksi `dist/`** (server + client + sourcemap) | 🟢 **100% bersih** — nol string `admin123/techlead123/dev123/pm123/manager123/qa123/viewer123` |
+| Login produksi password baru | 🟢 OK — Super Admin |
+| Login `admin123` | 🟢 HTTP 401 (ditolak) |
+
+> **Catatan pelajaran:** audit statis (DS-05) membersihkan data & logika, tetapi string kredensial bisa selamat di **lapisan UI presentasi** dan **komentar sumber** yang ikut ke bundle. Verifikasi akhir wajib menyasar artefak build (`dist/`), bukan hanya source.
 
 ---
 
