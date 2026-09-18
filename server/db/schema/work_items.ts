@@ -1,6 +1,8 @@
 import { pgTable, varchar, text, integer, timestamp, index } from 'drizzle-orm/pg-core';
 import crypto from 'crypto';
 import { projects } from './projects.ts';
+import { sprints } from './sprints.ts';
+import { milestones } from './milestones.ts';
 import { users } from './users.ts';
 
 export const workItems = pgTable('work_items', {
@@ -14,6 +16,8 @@ export const workItems = pgTable('work_items', {
   status: varchar('status', { length: 30 }).notNull().default('BACKLOG'), // BACKLOG, READY, IN_PROGRESS, IN_REVIEW, READY_FOR_TEST, DONE, CANCELLED
   assigneeId: varchar('assignee_id', { length: 36 }).references(() => users.id),
   estimateHours: integer('estimate_hours'),
+  sprintId: varchar('sprint_id', { length: 36 }).references(() => sprints.id),
+  milestoneId: varchar('milestone_id', { length: 36 }).references(() => milestones.id),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [

@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import { AuthenticatedRequest } from '../../middlewares/authenticate.ts';
 import { workItemService, GateValidationError } from './work-item.service.ts';
+import { AssignmentValidationError } from '../sprints/sprint.service.ts';
 import { createWorkItemSchema, updateWorkItemSchema, filterWorkItemSchema } from './work-item.schema.ts';
 import { NotFoundError } from '../projects/project.service.ts';
 import { acceptanceCriteriaService } from './acceptance-criteria.service.ts';
@@ -122,6 +123,13 @@ export async function updateWorkItemHandler(req: AuthenticatedRequest, res: Resp
       timestamp: new Date().toISOString(),
     });
   } catch (error: any) {
+    if (error instanceof AssignmentValidationError) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_FAILED', message: error.message },
+        timestamp: new Date().toISOString(),
+      });
+    }
     if (error instanceof GateValidationError) {
       return res.status(400).json({
         success: false,

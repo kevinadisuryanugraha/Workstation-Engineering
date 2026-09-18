@@ -3,6 +3,7 @@ import { projectRepository } from '../projects/project.repository.ts';
 import { CreateWorkItemInput, UpdateWorkItemInput, FilterWorkItemInput } from './work-item.schema.ts';
 import { WorkItem, NewWorkItem } from '../../db/schema/work_items.ts';
 import { auditService } from '../audit/audit.service.ts';
+import { sprintService, AssignmentValidationError } from '../sprints/sprint.service.ts';
 import { NotFoundError } from '../projects/project.service.ts';
 import { acceptanceCriteriaService } from './acceptance-criteria.service.ts';
 
@@ -99,6 +100,11 @@ export class WorkItemService {
           correlationId,
         });
       }
+    }
+
+    // Story 14.1 (AC #4): validasi target sprint/milestone sebelum assign
+    if (input.sprintId !== undefined || input.milestoneId !== undefined) {
+      await sprintService.assertAssignmentTargets(input.sprintId, input.milestoneId);
     }
 
     const { overrideReason, ...dataToUpdate } = input;

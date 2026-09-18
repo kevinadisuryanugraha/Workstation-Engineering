@@ -5,6 +5,14 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-18 — KEPUTUSAN: Fitur AI DISETUJUI untuk Fase V2 (menghapus status PENDING)
+- **Decision:** Keputusan posisi fitur AI (yang sebelumnya PENDING) resmi: **DISETUJUI** — AI masuk scope Fase V2 sesuai Master PRD §11 & §30: AI code scan nyata (Gemini), finding lifecycle dengan validasi manusia, recommendation→work item, dan terjemahan laporan.
+- **Rationale:** Prinsip Master PRD "AI as analyst, not authority" terpenuhi: AI menghasilkan temuan/rekomendasi, manusia memvalidasi (state machine finding + approval konversi). Tanpa GEMINI_API_KEY sistem tetap berfungsi (STATIC_DEMO_PREVIEW, SEC-05) dan biaya nol. Kunci dapat ditempelkan ke `.env` kapan pun tanpa perubahan kode.
+- **Impact:** prd.md (+FR-017..FR-021, NFR-006); epics.md (+Epic 14/15/16); sprint-status (+10 story); item COULD yang ditunda ke V2.1: multi-provider Git (GitLab/Bitbucket), CI/CD adapters, advanced deployment gates, advanced analytics, tech-debt register penuh (lihat addendum).
+- **In-progress stories affected:** none.
+- **Made by:** bmad-prd (John the PM)
+- **Supersedes:** entri "Posisi fitur AI ditunda keputusannya [PENDING]"
+
 ### 2026-09-18 — Fase V1 Gelombang 2 Tuntas: Epic 11/12/13 selesai dieksekusi (Wave 9-11)
 - **Decision:** Seluruh 7 story gelombang kedua dieksekusi & diuji: **Wave 9** (11.1 service probes Nginx/MySQL/Redis, 11.2 persistensi services + panel live, 12.1 arsip laporan DAILY/WEEKLY/MONTHLY), **Wave 10** (12.2 narasi eksekutif + tren antar periode, 13.1 skema insiden + mesin status lifecycle), **Wave 11** (13.2 SLA engine PENDING/MET/BREACHED + overdue, 13.3 timeline append-only + wiring Incident Room live).
 - **Rationale:** Eksekusi penuh Master PRD §30 gelombang 2; Incident Room kini berjalan di atas PostgreSQL nyata (bukan mock).

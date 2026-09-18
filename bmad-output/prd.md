@@ -237,6 +237,62 @@ Sesuai keputusan pemilik produk (2026-09-18), project ini adalah **produk intern
 
 ---
 
+## Fase V2 Requirements (Added 2026-09-18 — bmad-prd UPDATE)
+
+> Sumber: Master PRD §11 (AI Codebase Intelligence) & §30 (Fase V2) + penuntasan sisa V1 (§5 Sprint, §19 KB).
+> Prinsip Master PRD: **"AI membantu menganalisis; manusia memvalidasi keputusan"** — AI as analyst, not authority.
+
+### FR-017: MUST — Sprints & Milestones Management (penuntasan V1)
+**Description:** Work item dapat dikelompokkan ke dalam sprint (goal, periode, status) dan milestone, dengan progres sprint yang dapat dijelaskan (planned vs completed vs carry-over).
+**Acceptance Criteria:**
+- CRUD sprint (goal, startDate, endDate, status PLANNED/ACTIVE/CLOSED) dan milestone (nama, targetDate, status) via API dengan RBAC.
+- Work item dapat ditugaskan ke sprint/milestone; pindah sprint tercatat.
+- Sprint board: planned / completed / carry-over terhitung dari data nyata.
+- Sprint aktif bersifat eksklusif per project (satu sprint ACTIVE per project).
+**Related Epic:** EPIC-014
+
+### FR-018: MUST — Knowledge Base & Pencarian Global (penuntasan V1)
+**Description:** Artikel KB dengan versioning (bersumber dari tiket resolved atau ditulis manual) dan pencarian global lintas entitas.
+**Acceptance Criteria:**
+- CRUD artikel KB (slug, judul, body markdown, tags) dengan versioning — setiap update membuat versi baru yang dapat dilihat.
+- Tiket berstatus RESOLVED dapat dikonversi menjadi draft artikel (prefill terkontrol).
+- Pencarian global `?q=` mencari di tiket, work item, KB, dan insiden; hasil menyertakan tipe entitas + project.
+**Related Epic:** EPIC-015
+
+### FR-019: MUST — AI Codebase Scan Nyata (Gemini) dengan Snapshot Persisten
+**Description:** Scan AI berbasis LLM (Gemini) menghasilkan snapshot findings yang tersimpan; hasil tidak pernah menimpa source code atau status bisnis otomatis. Tanpa API key, sistem tetap berfungsi dengan label STATIC_DEMO_PREVIEW (SEC-05).
+**Acceptance Criteria:**
+- Setiap scan (live maupun demo) tersimpan sebagai snapshot (mode, findings, recommendations, scannedBy).
+- Riwayat scan dapat dibaca per project, terurut terbaru.
+- Mode selalu eksplisit: LIVE_ANALYSIS atau STATIC_DEMO_PREVIEW.
+- Kegagalan panggilan Gemini menghasilkan pesan error bersih (bukan crash) dan snapshot demo tidak dianggap live.
+**Related Epic:** EPIC-016
+
+### FR-020: MUST — Finding Lifecycle & Konversi Recommendation → Work Item
+**Description:** Finding memiliki status siklus hidup yang divalidasi manusia; recommendation dapat dikonversi menjadi work item setelah persetujuan.
+**Acceptance Criteria:**
+- Finding tersimpan sebagai baris individual dengan status: PENDING, CONFIRMED, REJECTED, FALSE_POSITIVE, IN_PROGRESS, RESOLVED, ACCEPTED_RISK.
+- Perubahan status via API dengan RBAC (PERM_AI_SCAN_TRIGGER) dan tercatat di audit trail.
+- Recommendation dapat dikonversi menjadi work item (PERM_WORK_ITEM_CREATE) dengan tautan evidence ke scan asal; konversi idempoten (tidak dobel).
+**Related Epic:** EPIC-016
+
+### FR-021: SHOULD — AI Report Translation (Dwibahasa)
+**Description:** Laporan manajemen yang sudah terarsip dapat diterjemahkan EN↔ID oleh AI untuk pembaca internasional; terjemahan tersimpan sebagai bagian arsip.
+**Acceptance Criteria:**
+- Endpoint terjemahan memerlukan PERM_AI_TRANSLATE dan GEMINI_API_KEY aktif; tanpa key → 503 dengan pesan jelas.
+- Terjemahan tersimpan pada arsip laporan dan dapat ditampilkan berdampingan.
+- Laporan sumber tidak pernah tertimpa terjemahan.
+**Related Epic:** EPIC-016
+
+### NFR-006: AI Explainability & Cost Control — MUST
+**Description:** Seluruh output AI wajib dapat dijelaskan dan terkendali biayanya.
+**Acceptance / Threshold:**
+- Setiap output AI menyertakan metadata: mode, scanId, model, timestamp.
+- Tanpa GEMINI_API_KEY, tidak ada panggilan network ke provider (biaya nol).
+- Label integritas demo wajib tampil di UI (SEC-05).
+
+---
+
 ## Non-Functional Requirements (NFR)
 
 ### NFR-001: Kecepatan Respons API (Performance) — MUST

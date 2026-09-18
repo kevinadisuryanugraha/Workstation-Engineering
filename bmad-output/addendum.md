@@ -95,3 +95,17 @@ Berikut adalah catatan teknis internal untuk tim pengembang yang diidentifikasi 
 | **Ticket (ITSM)** | Laporan masuk atau permintaan layanan dari pengguna, QA, atau sistem pemantau yang perlu ditriase sebelum menjadi work item. |
 | **Single Source of Truth** | Prinsip di mana hanya ada satu sistem terpusat yang menjadi rujukan kebenaran status operasional, bukan tersebar di spreadsheet atau ingatan individu. |
 | **RBAC** | *Role-Based Access Control* — pembatasan hak akses sistem berdasarkan peran pengguna yang divalidasi ketat di sisi server. |
+
+---
+
+## Fase V2.1 Backlog (Ditunda dari V2 — 2026-09-18, bmad-prd)
+
+Item Master PRD §30 V2 yang sengaja ditunda (COULD) agar gelombang V2 fokus:
+
+| Item | Sumber | Alasan penundaan |
+|---|---|---|
+| Multi-provider Git adapter (GitLab/Bitbucket) | §21 | GitHub adapter sudah memenuhi kebutuhan saat ini; adapter tambahan butuh integrasi & webhook testing per provider |
+| CI/CD adapters | §21 | Belum ada CI/CD eksternal yang dipakai organisasi |
+| Advanced deployment gates | §30 | Deployment gate sederhana (DoD + rollback auth) sudah ada |
+| Advanced analytics (DORA metrics) | §30 | Butuh data riwayat sprint yang baru tersedia setelah Epic 14 dipakai |
+| Technical Debt register penuh | §11.4 | Menunggu finding lifecycle (Epic 16) aktif; aging butuh waktu berjalan |

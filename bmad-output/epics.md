@@ -410,6 +410,69 @@
 
 ---
 
+## Epic 14: Sprints & Milestones (Penuntasan V1)
+
+> # COURSE-CORRECTION-3 (2026-09-18, via bmad-prd UPDATE — FR-017)
+> Sisa scope V1 dari Master PRD §5 & §30.
+
+**Goal:** Work item terkelompokkan dalam sprint/milestone dengan progres yang dapat dijelaskan (planned/completed/carry-over).
+
+**In scope (cited):** FR-017 [Source: prd.md#FR-017], Master PRD §5 [Source: docs/WORKSTATION_Super_Duper_PRD.pdf#5]
+**Out of scope:** kapasitas tim & velocity points (count-based saja).
+
+**Stories:**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 14.1 | sprint-milestone-management | Skema sprints/milestones + assignment ke work item + CRUD API | done |
+| 14.2 | sprint-board-progress | Sprint board (planned/completed/carry-over) + panel UI Project 360 | done |
+
+**Dependencies:** Blocked by Epic 2 · Blocks: Epic 17 (analytics, V2.1)
+
+---
+
+## Epic 15: Knowledge Base & Global Search (Penuntasan V1)
+
+> # COURSE-CORRECTION-3 (2026-09-18) — Master PRD §19.
+
+**Goal:** Artikel KB dengan versioning (termasuk draft dari tiket resolved) dan pencarian global lintas entitas.
+
+**In scope (cited):** FR-018 [Source: prd.md#FR-018], Master PRD §19
+**Out of scope:** full-text search engine eksternal (pg_trgm ILIKE cukup).
+
+**Stories:**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 15.1 | kb-articles-versioning | Skema kb_articles + versions, CRUD, draft dari tiket resolved | ready-for-dev |
+| 15.2 | global-search | Endpoint pencarian lintas tiket/work item/KB/insiden + panel hasil | ready-for-dev |
+
+**Dependencies:** Blocked by Epic 4 · Blocks: None
+
+---
+
+## Epic 16: AI Codebase Intelligence Real (Gemini)
+
+> # COURSE-CORRECTION-3 (2026-09-18) — Inti Fase V2, Master PRD §11 & §30. Keputusan AI DISETUJUI.
+
+**Goal:** Scan AI berbasis Gemini dengan snapshot persisten, finding lifecycle tervalidasi manusia, konversi recommendation→work item, dan terjemahan laporan dwibahasa.
+
+**In scope (cited):** FR-019..FR-021, NFR-006 [Source: prd.md], Master PRD §11
+**Out of scope:** full repository indexer; AI menulis langsung ke code/status bisnis (dilarang prinsip).
+
+**Stories:**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 16.1 | ai-scan-snapshots | Snapshot scan persisten (live & demo) + riwayat | ready-for-dev |
+| 16.2 | finding-lifecycle | Finding individual + state machine + audit | ready-for-dev |
+| 16.3 | recommendation-to-work-item | Konversi rekomendasi → work item (approval manusia, idempoten) | ready-for-dev |
+| 16.4 | ai-report-translate | Terjemahan EN↔ID arsip laporan via Gemini (503 bersih tanpa key) | ready-for-dev |
+
+**Dependencies:** Blocked by Epic 7 (audit), Epic 2 (work items) · Blocks: V2.1 analytics
+
+---
+
 ## Delivery Tracking (Count-Based)
 
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
@@ -478,6 +541,20 @@ Wave 10 (Narasi Eksekutif + Incident Core) [COURSE-CORRECTION-2]:
 Wave 11 (SLA + Timeline Immutable) [COURSE-CORRECTION-2]:
   ├── Story 13.2 (Incident SLA Engine)
   └── Story 13.3 (Immutable Timeline & Incident Room UI)
+
+Wave 12 (Sprints & Milestones) [COURSE-CORRECTION-3 — Fase V2]:
+  ├── Story 14.1 (Sprint & Milestone Management)
+  └── Story 14.2 (Sprint Board & Progress)
+
+Wave 13 (Knowledge Base & Search) [COURSE-CORRECTION-3]:
+  ├── Story 15.1 (KB Articles & Versioning)
+  └── Story 15.2 (Global Search)
+
+Wave 14 (AI Intelligence Real) [COURSE-CORRECTION-3]:
+  ├── Story 16.1 (AI Scan Snapshots)
+  ├── Story 16.2 (Finding Lifecycle)
+  ├── Story 16.3 (Recommendation → Work Item)
+  └── Story 16.4 (AI Report Translate)
 ```
 
 ---

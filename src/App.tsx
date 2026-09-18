@@ -12,6 +12,7 @@ import { InfrastructureView } from "./components/InfrastructureView";
 import { AIIntelligenceView } from "./components/AIIntelligenceView";
 import { ReportsView } from "./components/ReportsView";
 import { ReportView } from "./components/ReportView";
+import { SprintPanel } from "./components/SprintPanel";
 import { BlueprintView } from "./components/BlueprintView";
 import { KnowledgeBaseView } from "./components/KnowledgeBaseView";
 import { AuditLogView } from "./components/AuditLogView";
@@ -745,6 +746,10 @@ export default function App() {
               onSelectProject={setCurrentProject}
               onNavigateTab={(tab: any) => setActiveTab(tab)}
             />
+          )}
+
+          {activeTab === "project360" && (
+            <SprintPanel projectId={currentProject.id} isAuthenticated={Boolean(session?.user)} />
           )}
 
           {activeTab === "project360" && (

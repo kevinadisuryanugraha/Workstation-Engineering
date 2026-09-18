@@ -647,3 +647,152 @@ stories:
       - "src/hooks/api/useIncidents.ts"
       - "src/App.tsx (mapping incidents live)"
       - "tests/incident-timeline.test.ts"
+
+  # ===== COURSE-CORRECTION-3 2026-09-18: Fase V2 (Epic 14-16, Master PRD §11/§30) =====
+  - id: "epic-14"
+    title: "Sprints & Milestones (Penuntasan V1)"
+    description: "Work item dalam sprint/milestone dengan progres explainable"
+    status: done
+    story_ids:
+      - "14.1.sprint-milestone-management"
+      - "14.2.sprint-board-progress"
+
+  - id: "epic-15"
+    title: "Knowledge Base & Global Search (Penuntasan V1)"
+    description: "Artikel KB versioning + draft dari tiket resolved + pencarian global"
+    status: backlog
+    story_ids:
+      - "15.1.kb-articles-versioning"
+      - "15.2.global-search"
+
+  - id: "epic-16"
+    title: "AI Codebase Intelligence Real (Gemini)"
+    description: "Snapshot scan, finding lifecycle tervalidasi manusia, rekomendasi jadi work item, terjemahan laporan"
+    status: backlog
+    story_ids:
+      - "16.1.ai-scan-snapshots"
+      - "16.2.finding-lifecycle"
+      - "16.3.recommendation-to-work-item"
+      - "16.4.ai-report-translate"
+
+  # Wave 12 (Sprints & Milestones)
+  - id: "14.1.sprint-milestone-management"
+    title: "Sprint & Milestone Schema, Assignment, CRUD API"
+    epic_id: "epic-14"
+    status: done
+    file: "bmad-output/stories/14.1.sprint-milestone-management.story.md"
+    parallel_set: 12
+    dependencies:
+      - "2.1.work-items-crud-api"
+    owned_scope:
+      - "server/db/schema/sprints.ts"
+      - "server/db/schema/milestones.ts"
+      - "server/db/schema/work_items.ts (sprintId/milestoneId)"
+      - "server/db/migrations/**"
+      - "server/modules/sprints/**"
+      - "server.ts (mount)"
+      - "tests/sprint-management.test.ts"
+
+  - id: "14.2.sprint-board-progress"
+    title: "Sprint Board (planned/completed/carry-over) & Panel UI"
+    epic_id: "epic-14"
+    status: done
+    file: "bmad-output/stories/14.2.sprint-board-progress.story.md"
+    parallel_set: 12
+    dependencies:
+      - "14.1.sprint-milestone-management"
+    owned_scope:
+      - "server/modules/sprints/** (board endpoint)"
+      - "src/hooks/api/useSprints.ts"
+      - "src/App.tsx (panel)"
+      - "tests/sprint-board.test.ts"
+
+  # Wave 13 (KB & Search)
+  - id: "15.1.kb-articles-versioning"
+    title: "KB Articles, Versioning & Draft from Resolved Ticket"
+    epic_id: "epic-15"
+    status: ready-for-dev
+    file: "bmad-output/stories/15.1.kb-articles-versioning.story.md"
+    parallel_set: 13
+    dependencies:
+      - "4.1.ticket-lifecycle-api"
+    owned_scope:
+      - "server/db/schema/kb_articles.ts"
+      - "server/db/schema/kb_article_versions.ts"
+      - "server/db/migrations/**"
+      - "server/modules/kb/**"
+      - "server.ts (mount)"
+      - "tests/kb-articles.test.ts"
+
+  - id: "15.2.global-search"
+    title: "Global Search API across Tickets/Work Items/KB/Incidents"
+    epic_id: "epic-15"
+    status: ready-for-dev
+    file: "bmad-output/stories/15.2.global-search.story.md"
+    parallel_set: 13
+    dependencies:
+      - "15.1.kb-articles-versioning"
+      - "13.1.incident-schema-lifecycle"
+    owned_scope:
+      - "server/modules/search/**"
+      - "server.ts (mount)"
+      - "tests/global-search.test.ts"
+
+  # Wave 14 (AI Intelligence Real)
+  - id: "16.1.ai-scan-snapshots"
+    title: "AI Scan Snapshots (persist live & demo) + History"
+    epic_id: "epic-16"
+    status: ready-for-dev
+    file: "bmad-output/stories/16.1.ai-scan-snapshots.story.md"
+    parallel_set: 14
+    dependencies:
+      - "1.5.org-and-project-api"
+    owned_scope:
+      - "server/db/schema/ai_scans.ts"
+      - "server/db/schema/ai_findings.ts"
+      - "server/db/migrations/**"
+      - "server/modules/ai/**"
+      - "server.ts (rute ai)"
+      - "tests/ai-snapshots.test.ts"
+
+  - id: "16.2.finding-lifecycle"
+    title: "AI Finding Lifecycle State Machine + Audit"
+    epic_id: "epic-16"
+    status: ready-for-dev
+    file: "bmad-output/stories/16.2.finding-lifecycle.story.md"
+    parallel_set: 14
+    dependencies:
+      - "16.1.ai-scan-snapshots"
+      - "7.1.append-only-audit-middleware"
+    owned_scope:
+      - "server/modules/ai/finding.service.ts"
+      - "server/modules/ai/finding.routes.ts"
+      - "tests/finding-lifecycle.test.ts"
+
+  - id: "16.3.recommendation-to-work-item"
+    title: "Recommendation → Work Item Conversion (human approval, idempotent)"
+    epic_id: "epic-16"
+    status: ready-for-dev
+    file: "bmad-output/stories/16.3.recommendation-to-work-item.story.md"
+    parallel_set: 14
+    dependencies:
+      - "16.1.ai-scan-snapshots"
+      - "2.1.work-items-crud-api"
+    owned_scope:
+      - "server/db/schema/ai_recommendations.ts"
+      - "server/modules/ai/recommendation.service.ts"
+      - "tests/recommendation-conversion.test.ts"
+
+  - id: "16.4.ai-report-translate"
+    title: "AI Report Translation EN-ID via Gemini (graceful 503)"
+    epic_id: "epic-16"
+    status: ready-for-dev
+    file: "bmad-output/stories/16.4.ai-report-translate.story.md"
+    parallel_set: 14
+    dependencies:
+      - "12.1.generated-reports-storage"
+    owned_scope:
+      - "server/modules/reports/translate.service.ts"
+      - "server/modules/reports/reports.routes.ts (translate endpoint)"
+      - "server/db/schema/generated_reports.ts (kolom terjemahan)"
+      - "tests/ai-translate.test.ts"
