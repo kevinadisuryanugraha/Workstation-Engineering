@@ -258,71 +258,76 @@ $ vitest run
 ---
 
 ### 📦 BLOK 7 — DEPLOYMENT PRODUKSI VPS · DOMAIN HTTPS · HARDENING KREDENSIAL
-**📅 18 September 2026 · Status: 🟢 SELESAI (LIVE)** · Komit: `cac48c3` `4c148fb` `f09b3c9`
 
-**A. Komponen baru di VPS** *(100% aditif — nol gangguan layanan existing: mail server, MariaDB, Redis, aaPanel, Docker apps lain)*
+| 📅 Tanggal | 📊 Status | 🔖 Komit |
+|:---:|:---:|:---:|
+| 18 September 2026 | 🟢 SELESAI (LIVE) | `cac48c3` · `4c148fb` · `f09b3c9` |
 
-| Komponen | Detail | Status |
-|---|---|:---:|
-| Folder aplikasi | `/opt/workstation` (fresh clone GitHub) | ✅ |
-| Database | Container `workstation-db` (postgres:16-alpine, bind `127.0.0.1:5433`) | ✅ Healthy |
-| Layanan app | systemd `workstation.service` — `node dist/server.cjs`, port 3020 | ✅ Active |
-| Layanan agent | systemd `workstation-agent.service` — telemetri tiap 60 dtk (apache/mysql/redis) | ✅ Active |
-| Migrasi & seed | 7 akun user enterprise masuk PostgreSQL | ✅ |
-| AI produksi | `GEMINI_API_KEY` aktif — Live Scan `LIVE_ANALYSIS` (fallback chain + retry 503) | ✅ |
-| Firewall | `ufw allow 3020/tcp` (+1 rule saat deploy; ditutup kembali di Tahap E-4) | ✅ |
+**1. Komponen Baru di VPS** — *100% aditif, nol gangguan layanan existing (mail server, MariaDB, Redis, aaPanel, Docker apps lain)*
 
-**B. Bug selama deployment → perbaikan**
+| No. | Komponen | Detail | Status |
+|:---:|---|---|:---:|
+| 1 | Folder aplikasi | `/opt/workstation` (fresh clone GitHub) | ✅ |
+| 2 | Database | Container `workstation-db` (postgres:16-alpine, bind `127.0.0.1:5433`) | ✅ Healthy |
+| 3 | Layanan aplikasi | systemd `workstation.service` — `node dist/server.cjs`, port 3020 | ✅ Active |
+| 4 | Layanan agent | systemd `workstation-agent.service` — telemetri tiap 60 dtk (apache/mysql/redis) | ✅ Active |
+| 5 | Migrasi & seed | 7 akun user enterprise masuk PostgreSQL | ✅ |
+| 6 | AI produksi | `GEMINI_API_KEY` aktif — Live Scan `LIVE_ANALYSIS` (fallback chain + retry 503) | ✅ |
+| 7 | Firewall | `ufw allow 3020/tcp` (+1 rule saat deploy; ditutup kembali — lih. No. 5 bagian 5) | ✅ |
 
-| Bug | Perbaikan | Komit |
-|---|---|---|
-| Crash `ERR_INVALID_ARG_TYPE` — `import.meta.url` di bundle CJS | Ganti `process.cwd()` (systemd `WorkingDirectory`) | `cac48c3` |
-| Agent keluar setelah 1 tick (systemd flapping) | Hapus `timer.unref()` | `4c148fb` |
-| Container DB restart-loop (password kosong) | `docker compose --env-file .dbpass-workstation` + re-create volume | — |
-| `npm install` gagal (ERESOLVE peer deps) | `npm install --legacy-peer-deps` | — |
+**2. Bug Selama Deployment → Perbaikan**
 
-**C. Domain & HTTPS (`https://workstation.zamzami.or.id`)**
+| No. | Bug | Perbaikan | Komit |
+|:---:|---|---|:---:|
+| 1 | Crash `ERR_INVALID_ARG_TYPE` — `import.meta.url` tidak tersedia di bundle CJS | Ganti `process.cwd()` (systemd `WorkingDirectory` menjamin cwd benar) | `cac48c3` |
+| 2 | Agent keluar setelah 1 tick (systemd flapping) | Hapus `timer.unref()` — daemon hidup permanen | `4c148fb` |
+| 3 | Container DB restart-loop (password kosong) | `docker compose --env-file .dbpass-workstation` + re-create volume | — |
+| 4 | `npm install` gagal (ERESOLVE peer deps) | `npm install --legacy-peer-deps` | — |
 
-| Langkah | Detail | Bukti |
-|---|---|---|
-| DNS | Cloudflare: A `workstation` → `217.216.110.59` — **DNS only (awan abu-abu)**, Cloudflare gratis tak proxy port 3020 | Resolve konsisten via 1.1.1.1 & 8.8.8.8 |
-| Reverse proxy | Vhost Apache 80 (redirect 301, `.well-known` dikecualikan) + 443 (SSL) + `ProxyPass → 127.0.0.1:3020`, `ProxyTimeout 300` | `apachectl -t` Syntax OK |
-| Sertifikat | Let's Encrypt — **valid s.d. 17 Des 2026**, auto-renew (`certbot.timer`) | SSL verify OK dari publik |
-| Konfigurasi app | `APP_URL=https://workstation.zamzami.or.id` | Health OK |
+**3. Domain & HTTPS** — `https://workstation.zamzami.or.id`
 
-**D. Temuan teknis penting (pelajaran diagnostik)**
+| No. | Langkah | Detail | Bukti |
+|:---:|---|---|:---:|
+| 1 | Identifikasi DNS | Nameserver domain = Cloudflare (zona aktif) | `dig NS` → gabe/jill.ns.cloudflare.com |
+| 2 | A record | `workstation` → `217.216.110.59`, **DNS only** (awan abu-abu — CF gratis tak proxy port 3020) | Resolve konsisten via 1.1.1.1 & 8.8.8.8 |
+| 3 | Reverse proxy | Vhost Apache 80 (redirect 301) + 443 (SSL) + `ProxyPass → 127.0.0.1:3020` (`ProxyTimeout 300`) | `apachectl -t` Syntax OK |
+| 4 | Sertifikat | Let's Encrypt — valid s.d. **17 Des 2026**, auto-renew (`certbot.timer`) | SSL verify OK dari publik |
+| 5 | Konfigurasi app | `APP_URL=https://workstation.zamzami.or.id` | Health OK |
 
-| Temuan | Solusi / Pelajaran |
-|---|---|
-| aaPanel punya `Alias` global `/.well-known/acme-challenge` → folder internal `/www/server/acme_challenges` — challenge certbot selalu 404 | certbot `--webroot /www/server/acme_challenges` — nol ubah config Apache; auto-renewal ikut jalur sama |
-| Reload Apache tidak selalu apply (master process tua) | Wajib cek umur master PID vs mtime config → `apachectl -k graceful` penuh |
-| File asing `test-challenge` (sisa uji 3 Sep) menyesatkan diagnosa | Selalu uji dengan **file unik ber-nama-acak**, bukan nama yang mudah tabrakan |
+**4. Temuan Teknis Penting (Pelajaran Diagnostik)**
 
-**E. Hardening kredensial (urutan anti-lockout)**
+| No. | Temuan | Solusi / Pelajaran |
+|:---:|---|---|
+| 1 | aaPanel punya `Alias` global `/.well-known/acme-challenge` → folder internal — challenge certbot selalu 404 | certbot `--webroot /www/server/acme_challenges` — nol ubah config Apache; auto-renewal ikut jalur sama |
+| 2 | Reload Apache tidak selalu apply (master process tua) | Wajib cek umur master PID vs mtime config → `apachectl -k graceful` penuh |
+| 3 | File asing `test-challenge` (sisa uji lama) menyesatkan diagnosa | Selalu uji dengan **file unik ber-nama-acak**, bukan nama yang mudah tabrakan |
 
-| Tahap | Aksi | Bukti |
+**5. Hardening Kredensial (urutan anti-lockout)**
+
+| No. | Aksi | Bukti Verifikasi |
 |:---:|---|---|
 | 1 | SSH public key dipasang & login key-only diuji **sebelum** sentuh password | `KEY-LOGIN-OK` — nol risiko lockout |
 | 2 | Password root VPS dirotasi (24 char alfanumerik acak) | Baru OK · lama **TERTOLAK** |
 | 3 | 7 akun app dirotasi (bcrypt cost-12) + `token_version`+1 → sesi JWT lama mati serempak | `UPDATE 7` · lama HTTP **401** |
 | 4 | Port 3020 ditutup dari publik → akses eksklusif via HTTPS domain | 3020 tertutup · HTTPS 200 · agent aman (loopback) |
-| 5 | Verifikasi menyeluruh + shred artefak password lokal | Telemetri jalan · site lain 200 |
+| 5 | Verifikasi menyeluruh + shred artefak password lokal | Telemetri jalan · situs lain 200 |
 
 > 🔐 Kredensial disampaikan sekali via chat & wajib disimpan di password manager — tidak ditulis di dokumen ini.
 
-**F. Lokasi teknis di server produksi**
+**6. Lokasi Teknis di Server Produksi**
 
-| Item | Lokasi |
-|---|---|
-| App · env | `/opt/workstation` · `/opt/workstation/.env` (chmod 600) |
-| systemd | `workstation.service` · `workstation-agent.service` |
-| DB | Container `workstation-db` · password di `.dbpass-workstation` (600) |
-| Vhost / proxy | `/www/server/panel/vhost/apache/workstation.zamzami.or.id.conf` + `…/proxy/…/workstation_proxy.conf` |
-| TLS | `/etc/letsencrypt/live/workstation.zamzami.or.id/` · webroot via alias aaPanel `/www/server/acme_challenges` |
+| No. | Item | Lokasi |
+|:---:|---|---|
+| 1 | Aplikasi | `/opt/workstation` |
+| 2 | Environment produksi | `/opt/workstation/.env` (chmod 600) |
+| 3 | Layanan systemd | `workstation.service` · `workstation-agent.service` |
+| 4 | Database | Container `workstation-db` · password di `.dbpass-workstation` (600) |
+| 5 | Vhost / proxy Apache | `/www/server/panel/vhost/apache/workstation.zamzami.or.id.conf` + `…/proxy/…/workstation_proxy.conf` |
+| 6 | Sertifikat TLS | `/etc/letsencrypt/live/workstation.zamzami.or.id/` — webroot via alias aaPanel `/www/server/acme_challenges` |
 
-**G. Koordinasi tersisa untuk pemilik**
+**7. Koordinasi Tersisa untuk Pemilik**
 
-| # | Aksi | Catatan |
+| No. | Aksi | Catatan |
 |:---:|---|---|
 | 1 | Revoke GitHub PAT lama (pernah lewat chat) | Git push aman — memakai SSH key, kode bersih dari PAT |
 | 2 | *(Opsional)* Rotasi `GEMINI_API_KEY` | Key baru tinggal dipasang ke `.env` |
@@ -331,68 +336,85 @@ $ vitest run
 ---
 
 ### 📦 BLOK 8 — BACKUP OTOMATIS DATABASE PRODUKSI
-**📅 18 September 2026 · Status: 🟢 SELESAI (AKTIF)**
 
-| Aspek | Detail |
-|---|---|
-| Metode | `pg_dump` (plain SQL) + gzip via `docker exec` — stream langsung tanpa file temp |
-| Jadwal | Harian **02:30** — `/etc/cron.d/workstation-backup` |
-| Lokasi | `/opt/workstation/backups/` (dir 700 · dump 600) |
-| Retensi | **14 hari**, auto-purge `find -mtime` |
-| Ikutan dibackup | `.env` + `.dbpass-workstation` (tar, chmod 600) |
-| Guard integritas | `gzip -t` + threshold ukuran minimum; exit non-zero bila dump abnormal |
-| Log | `/var/log/workstation-backup.log` |
+| 📅 Tanggal | 📊 Status | 🔖 Artefak |
+|:---:|:---:|:---:|
+| 18 September 2026 | 🟢 SELESAI (AKTIF) | `scripts/backup-db.sh` · `/etc/cron.d/workstation-backup` |
 
-**Prosedur restore resmi:**
+**1. Desain Backup**
+
+| No. | Aspek | Detail |
+|:---:|---|---|
+| 1 | Metode | `pg_dump` (plain SQL) + gzip via `docker exec` — stream langsung tanpa file temp |
+| 2 | Jadwal | Harian **02:30** — `/etc/cron.d/workstation-backup` |
+| 3 | Lokasi | `/opt/workstation/backups/` (dir 700 · dump 600) |
+| 4 | Retensi | **14 hari**, auto-purge `find -mtime` |
+| 5 | Ikutan dibackup | `.env` + `.dbpass-workstation` (tar, chmod 600) |
+| 6 | Guard integritas | `gzip -t` + threshold ukuran minimum; exit non-zero bila dump abnormal |
+| 7 | Log | `/var/log/workstation-backup.log` |
+
+**2. Prosedur Restore Resmi**
+
 ```bash
 gunzip -c /opt/workstation/backups/workstation_db_<TIMESTAMP>.sql.gz | \
   docker exec -i workstation-db psql -U workstation -d workstation
 ```
 
-| Uji verifikasi nyata | Hasil |
-|---|:---:|
-| Backup pertama manual | 🟢 `workstation_db_20260918_133951.sql.gz` (15,5 KB · 28 CREATE TABLE) |
-| Integritas arsip (`gzip -t`) | 🟢 LULUS |
-| **Restore nyata → DB temporer** | 🟢 **IDENTIK 100%** — produksi vs restore: `27 tabel · 7 users · 67 metrics` |
-| Produksi tersentuh selama uji | 🟢 TIDAK (sanity check pasca-uji: 7 users utuh) |
-| Cron terpasang | 🟢 Aktif |
+**3. Hasil Verifikasi Nyata**
+
+| No. | Uji Verifikasi | Hasil |
+|:---:|---|:---:|
+| 1 | Backup pertama manual | 🟢 `workstation_db_20260918_133951.sql.gz` (15,5 KB · 28 CREATE TABLE) |
+| 2 | Integritas arsip (`gzip -t`) | 🟢 LULUS |
+| 3 | **Restore nyata → DB temporer** | 🟢 **IDENTIK 100%** — produksi vs restore: `27 tabel · 7 users · 67 metrics` |
+| 4 | Produksi tersentuh selama uji | 🟢 TIDAK (sanity check pasca-uji: 7 users utuh) |
+| 5 | Cron terpasang | 🟢 Aktif |
 
 ---
 
 ### 📦 BLOK 9 — PURGE KREDENSIAL PLAINTEXT DARI UI & BUNDLE PRODUKSI
-**📅 18 September 2026 · Status: 🟢 SELESAI** · Komit: `65b7eed` `4e82086`
+
+| 📅 Tanggal | 📊 Status | 🔖 Komit |
+|:---:|:---:|:---:|
+| 18 September 2026 | 🟢 SELESAI | `65b7eed` · `4e82086` |
+
 **Pemicu:** temuan lapangan saat UAT pertama — halaman login produksi masih menampilkan hint `admin123` + directory kredensial (lolos dari audit statis DS-05).
 
-**A. Temuan**
+**1. Temuan**
 
-| # | Temuan | Lokasi | Risiko |
+| No. | Temuan | Lokasi | Risiko |
 |:---:|---|---|---|
 | 1 | Peta **7 password plaintext** + field password pre-filled `admin123` + panel "Role Directory" (seluruh email tim) | `src/components/LoginView.tsx` | Kredensial seluruh tim terbaca publik |
 | 2 | Dialog dengan `defaultValue="admin123"` | `src/components/ui/RetroDialogs.tsx` | String menempel di bundle |
-| 3 | 7 seed hash lama + **komentar pengungkap password** (`// admin123`, dst.) — seed ulang = regresi ke password default | `server/modules/auth/auth.service.ts` | Provisioning baru tidak aman |
+| 3 | 7 seed hash lama + **komentar pengungkap password** — seed ulang = regresi ke password default | `server/modules/auth/auth.service.ts` | Provisioning baru tidak aman |
 | 4 | 3 test suite gagal — `@google/genai` ESM crash saat dimuat partial-mock vitest | `server/modules/reports/translate.service.ts` | CI merah |
 
-**B. Perbaikan**
+**2. Perbaikan**
 
-| # | Aksi | Komit |
-|:---:|---|---|
+| No. | Aksi | Komit |
+|:---:|---|:---:|
 | 1 | `LoginView.tsx` ditulis ulang — form bersih: tanpa peta kredensial, tanpa pre-fill, tanpa panel directory (desain & alur auth tetap) | `65b7eed` |
 | 2 | `defaultValue="admin123"` dihapus dari dialog | `65b7eed` |
 | 3 | `@google/genai` → **lazy dynamic import** (`import type` + import saat panggilan nyata) — test aman, produksi identik | `65b7eed` |
 | 4 | 7 seed hash → bcrypt cost-12 password terkini; komentar pengungkap dihapus | `4e82086` |
 
-**C. Verifikasi nyata**
+**3. Verifikasi Nyata**
 
-| Uji | Hasil |
-|---|:---:|
-| TypeScript strict (`tsc --noEmit`) | 🟢 0 error |
-| Test suite | 🟢 **37/37 file · 178/178 test** (3 suite rusak ikut pulih) |
-| Grep plaintext di `src/` & `server/` | 🟢 0 temuan |
-| **Bundle produksi `dist/`** (server + client + sourcemap) | 🟢 **100% bersih** — nol `admin123/techlead123/dev123/pm123/manager123/qa123/viewer123` |
-| Login produksi password baru | 🟢 OK — Super Admin |
-| Login `admin123` | 🟢 HTTP 401 (ditolak) |
+| No. | Uji | Hasil |
+|:---:|---|:---:|
+| 1 | TypeScript strict (`tsc --noEmit`) | 🟢 0 error |
+| 2 | Test suite | 🟢 **37/37 file · 178/178 test** (3 suite rusak ikut pulih) |
+| 3 | Grep plaintext di `src/` & `server/` | 🟢 0 temuan |
+| 4 | **Bundle produksi `dist/`** (server + client + sourcemap) | 🟢 **100% bersih** — nol string kredensial |
+| 5 | Login produksi password baru | 🟢 OK — Super Admin |
+| 6 | Login `admin123` | 🟢 HTTP 401 (ditolak) |
 
-> 📌 **Pelajaran:** string kredensial dapat selamat di **lapisan UI presentasi** dan **komentar sumber** yang ikut ter-bundle — verifikasi akhir wajib menyasar artefak build (`dist/`), bukan hanya source code.
+**4. Pelajaran**
+
+| No. | Pelajaran |
+|:---:|---|
+| 1 | String kredensial dapat selamat di **lapisan UI presentasi** dan **komentar sumber** yang ikut ter-bundle |
+| 2 | Verifikasi akhir wajib menyasar **artefak build (`dist/`)**, bukan hanya source code |
 
 ---
 
