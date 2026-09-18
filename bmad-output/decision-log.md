@@ -5,6 +5,14 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-18 — Fase V1 Tuntas: Epic 8/9/10 selesai dieksekusi (Wave 6-8)
+- **Decision:** Seluruh 8 story Fase V1 hasil course-correction dieksekusi, diuji, dan dikomit: **Wave 6** (Epic 8 — SEC-01 s.d. SEC-05: rate limit, helmet, body limit 500kb, token_version revocation, AI demo integrity flag), **Wave 7** (Epic 9 — agent daemon + ingest API server_metrics + server health cards), **Wave 8** (Epic 10 — aggregation API + generator laporan Bahasa Indonesia + ReportView).
+- **Rationale:** Eksekusi penuh roadmap Fase V1 sesuai Deep Scan Report §8; seluruh temuan audit kini tuntas (23/23).
+- **Impact:** Total story 28/28 done (100%); test suite 49 → 98 test; migrasi DB 0005 (token_version) & 0006 (server_metrics); dependencies baru: helmet, express-rate-limit.
+- **In-progress stories affected:** none.
+- **Made by:** bmad-correct-course → bmad-epics-and-stories → dev execution loop
+- **Supersedes:** none
+
 ### 2026-09-18 — Course Correction: Tambah Epic 8, 9, 10 (Fase V1) dari Deep Scan Report
 - **Decision:** Menambahkan 3 epic baru (8 story) hasil audit keamanan mendalam & roadmap Fase V1: **Epic 8** Security Hardening & Token Governance (SEC-01 s.d. SEC-05, Sprint V1.1), **Epic 9** Workstation Linux Server Agent (Sprint V1.2), **Epic 10** Dual-Language Reporting Engine (Sprint V1.3).
 - **Rationale:** MVP 20/20 story selesai 100% dan semua temuan kritis DS-01..DS-07 tertutup. Deep Scan Report §8 menetapkan Roadmap Fase V1 sebagai lanjutan resmi; scope harus masuk planning agar penambahan terlacak, dependency jelas, dan siap dieksekusi dev.

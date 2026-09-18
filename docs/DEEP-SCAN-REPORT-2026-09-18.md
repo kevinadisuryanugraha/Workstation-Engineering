@@ -12,8 +12,8 @@
 | **Objek Pemeriksaan** | Alur kerja sistem (Autentikasi, Proyek, Tugas, Tiket, Git, Deployment, Audit) & Postur Keamanan Perangkat Lunak |
 | **Basis Pemeriksaan** | Hasil eksekusi Sprint Wave 1 s.d. Wave 5 Final + Full E2E Workflow & Security Audit (Komit `f42bfd4`) |
 | **Hasil Temuan Awal** | **15 dari 18 temuan awal tuntas (83% Selesai)** · 100% Celah Kritis DS-01 s.d. DS-07 Tertutup |
-| **Temuan Baru Audit** | **5 Rekomendasi Penguatan Keamanan Lanjutan (SEC-01 s.d. SEC-05)** — Rencana Sprint V1 |
-| **Status Laporan** | 🟢 **Pembaruan ke-5 (AUDIT MUTU & KEAMANAN PENUH)** — Seluruh 20 Story MVP Berfungsi Nyata |
+| **Temuan Baru Audit** | **5 Rekomendasi Penguatan Keamanan Lanjutan (SEC-01 s.d. SEC-05)** — ✅ SELURUHNYA TUNTAS via Epic 8 (Fase V1) |
+| **Status Laporan** | 🟢 **Pembaruan ke-6 (FASE V1 TUNTAS 100%)** — Epic 8/9/10 selesai: Security Hardening, Server Agent, Reporting Engine · 98/98 test lulus |
 
 ---
 
@@ -164,11 +164,11 @@ Berdasarkan audit statis dan analisis defensif terhadap standar **OWASP Top 10:2
 | Kategori Temuan | Jumlah Awal | Selesai | Temuan Baru (Audit) | Status Akhir |
 |---|:---:|:---:|:---:|:---:|
 | 🔴 Prioritas Tinggi | 7 | **7 (100%)** | 0 | **0 Terbuka** |
-| 🟡 Perlu Perhatian | 6 | **4 (67%)** | 2 (SEC-01, SEC-02) | 4 Dijadwalkan V1 |
-| 🔵 Rutin | 3 | **3 (100%)** | 1 (SEC-03) | 1 Dijadwalkan V1 |
-| ⚪ Minor | 1 | 0 | 2 (SEC-04, SEC-05) | 3 Sambil jalan |
+| 🟡 Perlu Perhatian | 6 | **4 (67%)** | 2 (SEC-01, SEC-02) | **✅ 6 Selesai (100%)** |
+| 🔵 Rutin | 3 | **3 (100%)** | 1 (SEC-03) | **✅ 4 Selesai (100%)** |
+| ⚪ Minor | 1 | 0 | 2 (SEC-04, SEC-05) | **✅ 3 Selesai (100%)** |
 | ℹ️ Kondisi Baik | 1 | 1 | — | Terjaga |
-| **TOTAL** | **18** | **15 Selesai (83%)** | **5 Temuan Baru** | **Sistem Siap Operasi** |
+| **TOTAL** | **18** | **15 Selesai** | **5 Temuan Baru** | **✅ 23/23 SELESAI (100%)** |
 
 ---
 
@@ -177,16 +177,20 @@ Berdasarkan audit statis dan analisis defensif terhadap standar **OWASP Top 10:2
 ### 🟢 Tahap 1 & 2 (Fase MVP): SELESAI 100%
 - Seluruh 20 Story dari Wave 1 s.d. Wave 5 telah tuntas dikerjakan, diuji, dan dikomit ke cabang `main`.
 
-### 🟡 Tahap 3 (Fase V1 — Operations & Hardening Expansion):
-1. **Penguatan Keamanan Lanjutan (Sprint V1.1):**
-   - Pasang `express-rate-limit` pada `/api/v1/auth/login` (SEC-02).
-   - Pasang `helmet` untuk security headers standar (SEC-03).
-   - Turunkan limit body parser menjadi `500kb` (SEC-04).
-   - Mekanisme pembatalan token JWT via `token_version` di database (SEC-01).
-2. **Workstation Linux Server Agent (Sprint V1.2):**
-   - Daemon ringan untuk pemantauan CPU/RAM/Disk di server kantor & Kontabo VPS.
-3. **Dual-Language Reporting Engine (Sprint V1.3):**
-   - Generator ringkasan laporan manajemen otomatis dalam Bahasa Indonesia.
+### 🟡 Tahap 3 (Fase V1 — Operations & Hardening Expansion): ✅ SELESAI 100% (Pembaruan ke-6)
+1. **Penguatan Keamanan Lanjutan (Sprint V1.1 — Epic 8):** ✅ SELESAI
+   - ✅ Pasang `express-rate-limit` pada `/api/v1/auth/login` (SEC-02) — 5 percobaan/15 menit/IP, env-tunable.
+   - ✅ Pasang `helmet` untuk security headers standar (SEC-03) + sembunyikan `X-Powered-By`.
+   - ✅ Turunkan limit body parser menjadi `500kb` (SEC-04).
+   - ✅ Mekanisme pembatalan token JWT via `token_version` di database (SEC-01) — logout & role-change merotasi versi.
+   - ✅ Bonus: label integritas `STATIC_DEMO_PREVIEW` pada fallback AI scanner (SEC-05).
+2. **Workstation Linux Server Agent (Sprint V1.2 — Epic 9):** ✅ SELESAI
+   - ✅ Daemon `agent/` pengumpul CPU/RAM/Disk dengan buffer & retry idempoten.
+   - ✅ Ingest API ber-auth token agen (`server_metrics` schema, batch atomik).
+   - ✅ Kartu kesehatan server live di dashboard Infrastructure.
+3. **Dual-Language Reporting Engine (Sprint V1.3 — Epic 10):** ✅ SELESAI
+   - ✅ API agregasi KPI operasional per periode (RBAC Manager ke atas).
+   - ✅ Generator ringkasan manajemen otomatis Bahasa Indonesia + UI `Laporan Manajemen (ID)`.
 
 ---
 
