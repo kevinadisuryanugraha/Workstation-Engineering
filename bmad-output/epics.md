@@ -403,8 +403,8 @@
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
 | 13.1 | incident-schema-lifecycle | Skema `incidents` + API deklarasi & transisi status tervalidasi mesin status | done |
-| 13.2 | incident-sla-engine | Target SLA tanggap/resolve per severity, perhitungan status MET/BREACHED/PENDING | ready-for-dev |
-| 13.3 | incident-immutable-timeline-ui | Tabel `incident_events` append-only + wiring IncidentRoomView ke API nyata | ready-for-dev |
+| 13.2 | incident-sla-engine | Target SLA tanggap/resolve per severity, perhitungan status MET/BREACHED/PENDING | done |
+| 13.3 | incident-immutable-timeline-ui | Tabel `incident_events` append-only + wiring IncidentRoomView ke API nyata | done |
 
 **Cross-epic dependencies:** Blocked by Epic 1 (auth/RBAC), Epic 7 (pola audit) · Blocks: None
 

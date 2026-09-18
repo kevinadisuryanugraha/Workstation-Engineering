@@ -2,6 +2,21 @@ import { Router, Request, Response } from 'express';
 import { AuthenticatedRequest } from '../../middlewares/authenticate.ts';
 import { requirePermission } from '../../middlewares/rbac.ts';
 import { incidentService, InvalidTransitionError, IncidentNotFoundError } from './incident.service.ts';
+import { incidentEventsService } from './incident.events.ts';
+import { computeIncidentSla } from './incident.sla.ts';
+
+/** Story 13.2 (AC #3): attach the computed SLA picture to an incident row. */
+function withSla(incident: any) {
+  return {
+    ...incident,
+    sla: computeIncidentSla(
+      incident.severity,
+      new Date(incident.detectedAt),
+      incident.acknowledgedAt ? new Date(incident.acknowledgedAt) : null,
+      incident.resolvedAt ? new Date(incident.resolvedAt) : null
+    ),
+  };
+}
 import { INCIDENT_SEVERITIES, INCIDENT_STATUSES } from '../../db/schema/incidents.ts';
 
 /**
@@ -50,22 +65,30 @@ incidentRouter.post('/', requirePermission('PERM_INCIDENT_DECLARE'), async (req:
     });
   }
 
-  const created = await incidentService.declare(
-    {
-      title,
-      severity,
-      environment,
-      serverName,
-      impact,
-      relatedTicketCode,
-      runbookUrl,
-      detectedAt: detectedAt ? new Date(detectedAt) : undefined,
-    },
-    actor(req),
-    (req.correlationId as string) || 'system'
-  );
+  try {
+    const created = await incidentService.declare(
+      {
+        title,
+        severity,
+        environment,
+        serverName,
+        impact,
+        relatedTicketCode,
+        runbookUrl,
+        detectedAt: detectedAt ? new Date(detectedAt) : undefined,
+      },
+      actor(req),
+      (req.correlationId as string) || 'system'
+    );
 
-  return res.status(201).json({ success: true, data: created, timestamp: new Date().toISOString() });
+    return res.status(201).json({ success: true, data: created, timestamp: new Date().toISOString() });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: { code: 'DECLARE_FAILED', message: err instanceof Error ? err.message : 'Failed to declare incident' },
+      timestamp: new Date().toISOString(),
+    });
+  }
 });
 
 incidentRouter.patch('/:id/status', requirePermission('PERM_INCIDENT_COMMAND'), async (req: AuthenticatedRequest, res: Response) => {
@@ -108,7 +131,7 @@ incidentRouter.get('/', requirePermission('PERM_VIEW_DASHBOARD'), async (req: Au
     page: page ? Number.parseInt(page, 10) : undefined,
     limit: limit ? Number.parseInt(limit, 10) : undefined,
   });
-  return res.json({ success: true, data: result, timestamp: new Date().toISOString() });
+  return res.json({ success: true, data: { ...result, items: result.items.map(withSla) }, timestamp: new Date().toISOString() });
 });
 
 incidentRouter.get('/:id', requirePermission('PERM_VIEW_DASHBOARD'), async (req: AuthenticatedRequest, res: Response) => {
@@ -120,5 +143,40 @@ incidentRouter.get('/:id', requirePermission('PERM_VIEW_DASHBOARD'), async (req:
       timestamp: new Date().toISOString(),
     });
   }
-  return res.json({ success: true, data: incident, timestamp: new Date().toISOString() });
+  return res.json({ success: true, data: withSla(incident), timestamp: new Date().toISOString() });
+});
+
+// GET /api/v1/incidents/:id/events — immutable chronological timeline (Story 13.3 / AC #3)
+incidentRouter.get('/:id/events', requirePermission('PERM_VIEW_DASHBOARD'), async (req: AuthenticatedRequest, res: Response) => {
+  const events = await incidentEventsService.list(req.params.id);
+  return res.json({ success: true, data: { events, count: events.length }, timestamp: new Date().toISOString() });
+});
+
+// POST /api/v1/incidents/:id/events — append a manual note (Story 13.3 / AC #2)
+incidentRouter.post('/:id/events', requirePermission('PERM_VIEW_DASHBOARD'), async (req: AuthenticatedRequest, res: Response) => {
+  const { message, type } = req.body as { message?: string; type?: string };
+  if (!message || message.trim().length === 0 || message.length > 500) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'VALIDATION_FAILED', message: 'message is required (1-500 chars)' },
+      timestamp: new Date().toISOString(),
+    });
+  }
+  const eventType = type ?? 'note';
+  if (!['alert', 'action', 'mitigation', 'resolution', 'note'].includes(eventType)) {
+    return res.status(400).json({
+      success: false,
+      error: { code: 'VALIDATION_FAILED', message: 'type must be alert, action, mitigation, resolution, or note' },
+      timestamp: new Date().toISOString(),
+    });
+  }
+  const created = await incidentEventsService.record({
+    incidentId: req.params.id,
+    type: eventType as any,
+    message: message.trim(),
+    actorName: req.user?.name ?? 'unknown',
+    actorUserId: req.user?.userId ?? null,
+    correlationId: (req.correlationId as string) || 'system',
+  });
+  return res.status(201).json({ success: true, data: created, timestamp: new Date().toISOString() });
 });

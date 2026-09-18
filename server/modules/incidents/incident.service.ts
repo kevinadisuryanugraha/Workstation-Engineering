@@ -2,6 +2,7 @@ import { and, desc, eq, sql } from 'drizzle-orm';
 import { db } from '../../db/client.ts';
 import { incidents, Incident, INCIDENT_STATUSES, IncidentStatus, NewIncident } from '../../db/schema/incidents.ts';
 import { auditService } from '../audit/audit.service.ts';
+import { incidentEventsService, statusToEventType } from './incident.events.ts';
 
 /**
  * Incident lifecycle service (Story 13.1).
@@ -85,6 +86,16 @@ export class IncidentService {
 
     const created = rows[0];
 
+    // Story 13.3 (AC #2): declaration opens the timeline with an alert event
+    await incidentEventsService.record({
+      incidentId: created.id,
+      type: 'alert',
+      message: `Incident ${code} declared: ${input.title}`,
+      actorName: actor.name,
+      actorUserId: actor.userId ?? null,
+      correlationId,
+    }).catch(() => undefined);
+
     await auditService.logEvent({
       actorId: actor.userId ?? 'system',
       actorName: actor.name,
@@ -122,6 +133,16 @@ export class IncidentService {
     if (toStatus === 'RESOLVED') patch.resolvedAt = now;
 
     const updated = await db.update(incidents).set(patch).where(eq(incidents.id, incidentId)).returning();
+
+    // Story 13.3 (AC #2): every transition writes an immutable timeline event
+    await incidentEventsService.record({
+      incidentId,
+      type: statusToEventType(toStatus),
+      message: `Status changed ${from} → ${toStatus}`,
+      actorName: actor.name,
+      actorUserId: actor.userId ?? null,
+      correlationId,
+    }).catch(() => undefined);
 
     await auditService.logEvent({
       actorId: actor.userId ?? 'system',

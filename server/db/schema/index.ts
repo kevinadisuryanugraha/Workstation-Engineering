@@ -12,3 +12,4 @@ export * from './webhook_deliveries.ts';
 export * from './server_metrics.ts';
 export * from './generated_reports.ts';
 export * from './incidents.ts';
+export * from './incident_events.ts';

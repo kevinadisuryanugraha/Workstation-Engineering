@@ -109,7 +109,7 @@ epics:
   - id: "epic-12"
     title: "Scheduled Reporting Engine (Daily/Weekly/Monthly)"
     description: "Laporan berkala terarsip dengan narasi eksekutif Bahasa Indonesia dan tren antar periode"
-    status: in-progress
+    status: done
     story_ids:
       - "12.1.generated-reports-storage"
       - "12.2.executive-narrative-trends"
@@ -117,7 +117,7 @@ epics:
   - id: "epic-13"
     title: "Incident Room & SLA Management"
     description: "Deklarasi insiden, mesin status lifecycle, target SLA per severity, timeline append-only"
-    status: backlog
+    status: done
     story_ids:
       - "13.1.incident-schema-lifecycle"
       - "13.2.incident-sla-engine"
@@ -620,7 +620,7 @@ stories:
   - id: "13.2.incident-sla-engine"
     title: "Incident SLA Engine: Response/Resolution Targets & Breach Detection"
     epic_id: "epic-13"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/13.2.incident-sla-engine.story.md"
     parallel_set: 11
     dependencies:
@@ -633,7 +633,7 @@ stories:
   - id: "13.3.incident-immutable-timeline-ui"
     title: "Append-Only Incident Events Timeline & Incident Room Live Wiring"
     epic_id: "epic-13"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/13.3.incident-immutable-timeline-ui.story.md"
     parallel_set: 11
     dependencies:

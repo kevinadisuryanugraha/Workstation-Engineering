@@ -5,6 +5,14 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-18 — Fase V1 Gelombang 2 Tuntas: Epic 11/12/13 selesai dieksekusi (Wave 9-11)
+- **Decision:** Seluruh 7 story gelombang kedua dieksekusi & diuji: **Wave 9** (11.1 service probes Nginx/MySQL/Redis, 11.2 persistensi services + panel live, 12.1 arsip laporan DAILY/WEEKLY/MONTHLY), **Wave 10** (12.2 narasi eksekutif + tren antar periode, 13.1 skema insiden + mesin status lifecycle), **Wave 11** (13.2 SLA engine PENDING/MET/BREACHED + overdue, 13.3 timeline append-only + wiring Incident Room live).
+- **Rationale:** Eksekusi penuh Master PRD §30 gelombang 2; Incident Room kini berjalan di atas PostgreSQL nyata (bukan mock).
+- **Impact:** Total 35/35 story done (100%); test suite 98 → 144; migrasi 0007 (services), 0008 (generated_reports), 0009 (incidents), 0010 (incident_events); field opsional `sla` pada tipe Incident UI (deviasi minor terdokumentasi).
+- **In-progress stories affected:** none.
+- **Made by:** bmad-correct-course → bmad-epics-and-stories → dev execution loop
+- **Supersedes:** none
+
 ### 2026-09-18 — Course Correction #2: Epic 11/12/13 (Fase V1 gelombang 2 — Master PRD §30)
 - **Decision:** Menambah 3 epic (7 story) sesuai peta jalan Master PRD Section 30: **Epic 11** Agent Service Monitoring (Nginx/MySQL/Redis), **Epic 12** Scheduled Reporting (daily/weekly/monthly + arsip + narasi eksekutif + tren), **Epic 13** Incident Room & SLA (lifecycle + SLA engine + timeline immutable + wiring UI).
 - **Rationale:** MVP dan Fase V1 gelombang 1 (Epic 8/9/10) tuntas 28/28; Master PRD §30 menetapkan ekspansi berikutnya. Koneksi layanan & insiden/SLA belum ada sama sekali di backend — perlu perencanaan terstruktur sebelum eksekusi.

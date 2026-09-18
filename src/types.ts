@@ -228,6 +228,11 @@ export interface Incident {
     mitigation: string;
     correctiveActionWorkItemCode: string;
   };
+  /** Story 13.2/13.3 — live SLA picture from the incident API (badges on cards). */
+  sla?: {
+    response: { targetMinutes: number; status: "PENDING" | "MET" | "BREACHED"; actualMinutes: number | null; overdueMinutes: number };
+    resolution: { targetMinutes: number; status: "PENDING" | "MET" | "BREACHED"; actualMinutes: number | null; overdueMinutes: number };
+  };
 }
 
 export interface Commit {

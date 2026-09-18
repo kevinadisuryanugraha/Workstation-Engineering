@@ -9,9 +9,10 @@ import express, { Express } from 'express';
 
 process.env.JWT_SECRET = 'workstation-test-secret-min-32-chars-long-security-token';
 
-const { incidentStore } = vi.hoisted(() => {
+const { incidentStore, eventRows } = vi.hoisted(() => {
   const incidentStore = new Map<string, any>();
-  return { incidentStore };
+  const eventRows = new Map<string, any>(); // timeline events live here (Story 13.3)
+  return { incidentStore, eventRows };
 });
 
 vi.mock('../server/db/client.ts', () => {
@@ -24,7 +25,7 @@ vi.mock('../server/db/client.ts', () => {
         orderBy: () => ({
           limit: () => {
             // latest-code lookup for sequential INC-NNNNN
-            const codes = rowsFrom(incidentStore).map((r: any) => r.code).sort();
+            const codes = rowsFrom(incidentStore).map((r: any) => r.code).filter(Boolean).sort();
             const latest = codes.length > 0 ? [{ code: codes[codes.length - 1] }] : [];
             return Promise.resolve(latest);
           },
@@ -34,8 +35,11 @@ vi.mock('../server/db/client.ts', () => {
     insert: () => ({
       values: (row: any) => ({
         returning: async () => {
-          const full = { id: `inc-${incidentStore.size + 1}`, createdAt: new Date(), updatedAt: new Date(), ...row };
-          incidentStore.set(full.id, full);
+          // Route incident rows vs timeline event rows to their own stores
+          const isIncident = typeof row.code === 'string' && row.code.startsWith('INC-');
+          const store = isIncident ? incidentStore : eventRows;
+          const full = { id: `${isIncident ? 'inc' : 'evt'}-${store.size + 1}`, createdAt: new Date(), updatedAt: new Date(), ...row };
+          store.set(full.id, full);
           return [full];
         },
       }),

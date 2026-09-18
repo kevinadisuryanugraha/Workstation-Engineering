@@ -23,6 +23,7 @@ import { RBACDenialModal } from "./components/RBACDenialModal";
 import { LoginView } from "./components/LoginView";
 import { authManager, authFetch, DIRECTORY_USERS } from "./lib/auth";
 import { useServerMetrics, ServerHealthEntry } from "./hooks/api/useServerMetrics";
+import { useIncidents, IncidentDto } from "./hooks/api/useIncidents";
 import { hasPermission } from "./lib/rbac";
 
 import {
@@ -120,6 +121,13 @@ export default function App() {
   const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>(mockAIRecommendations);
   const [technicalDebts, setTechnicalDebts] = useState(mockTechnicalDebts);
   const [incidents, setIncidents] = useState(mockIncidents);
+
+  // Story 13.3: live incident feed from the Incident Room API
+  const { data: incidentFeed } = useIncidents({ enabled: Boolean(session?.user) });
+  useEffect(() => {
+    if (!incidentFeed?.items?.length) return;
+    setIncidents((prev) => mapIncidentDtos(prev, incidentFeed.items));
+  }, [incidentFeed]);
   const [commits, setCommits] = useState(mockCommits);
   const [pullRequests, setPullRequests] = useState(mockPullRequests);
   const [events, setEvents] = useState<EngineeringEvent[]>(mockEngineeringEvents);
@@ -981,5 +989,63 @@ function mergeServerTelemetry(base: ServerTelemetry[], entries: ServerHealthEntr
       uptime: "—",
       services: liveServices,
     };
+  });
+}
+
+/**
+ * Story 13.3 — Maps live incident DTOs onto the UI Incident contract,
+ * enriching each card with SLA badge data and a translated timeline.
+ */
+function mapIncidentDtos(base: Incident[], dtos: IncidentDto[]): Incident[] {
+  const byCode = (code: string) => base.find((b) => b.code === code);
+
+  return dtos.map((dto) => {
+    const existing = byCode(dto.code);
+    const timeline = [
+      {
+        time: new Date(dto.detectedAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+        event: `Insiden terdeteksi dan dideklarasikan (${dto.code})`,
+        actor: dto.commanderName,
+        type: "alert" as const,
+      },
+      ...(dto.acknowledgedAt
+        ? [
+            {
+              time: new Date(dto.acknowledgedAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+              event: "Insiden ditanggapi oleh commander (ACK)",
+              actor: dto.commanderName,
+              type: "action" as const,
+            },
+          ]
+        : []),
+      ...(dto.resolvedAt
+        ? [
+            {
+              time: new Date(dto.resolvedAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" }),
+              event: "Insiden dinyatakan selesai (RESOLVED)",
+              actor: dto.commanderName,
+              type: "resolution" as const,
+            },
+          ]
+        : []),
+    ];
+
+    return {
+      ...(existing ?? {}),
+      id: existing?.id ?? dto.id,
+      code: dto.code,
+      title: dto.title,
+      severity: dto.severity,
+      environment: dto.environment,
+      server: dto.serverName,
+      detectedAt: dto.detectedAt,
+      resolvedAt: dto.resolvedAt ?? undefined,
+      commander: dto.commanderName,
+      impact: dto.impact,
+      status: dto.status,
+      relatedTicketCode: dto.relatedTicketCode ?? undefined,
+      timeline,
+      sla: dto.sla,
+    } as Incident;
   });
 }
