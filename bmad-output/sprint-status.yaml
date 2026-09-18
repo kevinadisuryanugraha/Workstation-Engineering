@@ -149,7 +149,7 @@ stories:
   - id: "1.5.org-and-project-api"
     title: "Organization & Project Management API"
     epic_id: "epic-1"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/1.5.org-and-project-api.story.md"
     parallel_set: 3
     dependencies:
@@ -163,7 +163,7 @@ stories:
   - id: "2.1.work-items-crud-api"
     title: "Work Items Schema & CRUD API"
     epic_id: "epic-2"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/2.1.work-items-crud-api.story.md"
     parallel_set: 3
     dependencies:
@@ -176,7 +176,7 @@ stories:
   - id: "4.1.ticket-lifecycle-api"
     title: "Ticketing / ITSM Lifecycle & Triage API"
     epic_id: "epic-4"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/4.1.ticket-lifecycle-api.story.md"
     parallel_set: 3
     dependencies:
@@ -190,7 +190,7 @@ stories:
   - id: "2.2.acceptance-criteria-engine"
     title: "Acceptance Criteria Checklist Engine & Definition of Done Gate"
     epic_id: "epic-2"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/2.2.acceptance-criteria-engine.story.md"
     parallel_set: 4
     dependencies:
@@ -205,7 +205,7 @@ stories:
   - id: "2.3.task-dependency-tracking"
     title: "Task Dependency & Circular Blocker Prevention"
     epic_id: "epic-2"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/2.3.task-dependency-tracking.story.md"
     parallel_set: 4
     dependencies:
@@ -218,7 +218,7 @@ stories:
   - id: "4.2.ticket-work-item-linking"
     title: "Bi-directional Linking: Ticket ↔ Work Item & Evidence Engine"
     epic_id: "epic-4"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/4.2.ticket-work-item-linking.story.md"
     parallel_set: 4
     dependencies:
@@ -232,7 +232,7 @@ stories:
   - id: "5.1.github-webhook-receiver"
     title: "GitHub Webhook Receiver with HMAC-SHA256 Verification & Idempotency"
     epic_id: "epic-5"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/5.1.github-webhook-receiver.story.md"
     parallel_set: 4
     dependencies:

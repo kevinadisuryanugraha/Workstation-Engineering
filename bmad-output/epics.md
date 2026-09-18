@@ -39,7 +39,7 @@
 | 1.2 | postgres-drizzle-setup | Konfigurasi Drizzle ORM, skema inti (users, orgs, projects), dan migrasi SQL (DS-09) | done |
 | 1.3 | secure-auth-engine | Rombak auth: bcrypt hashing, stateless JWT HMAC, fail-fast env secret (DS-01, DS-04, DS-06) | done |
 | 1.4 | server-rbac-middleware | Penegakan RBAC server-side, hapus auto-admin klien & password hints (DS-02, DS-03, DS-05) | done |
-| 1.5 | org-and-project-api | CRUD Organization & Project API ber-RBAC dengan key generation unik | ready-for-dev |
+| 1.5 | org-and-project-api | CRUD Organization & Project API ber-RBAC dengan key generation unik | done |
 
 **Cross-epic dependencies:**
 - Blocked by: None (Fondasi sistem)
@@ -68,7 +68,7 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 2.1 | work-items-crud-api | Skema Drizzle, endpoint CRUD work items, dan filter query terindeks | ready-for-dev |
+| 2.1 | work-items-crud-api | Skema Drizzle, endpoint CRUD work items, dan filter query terindeks | done |
 | 2.2 | acceptance-criteria-engine | Checklist kriteria penerimaan & validasi pemblokiran transisi status DONE | ready-for-dev |
 | 2.3 | task-dependency-tracking | Penautan dependensi 'Blocked By' / 'Blocks' dan pencegahan circular loop | ready-for-dev |
 
@@ -129,7 +129,7 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 4.1 | ticket-lifecycle-api | Skema Drizzle tickets, endpoint CRUD, workflow status, dan triase | ready-for-dev |
+| 4.1 | ticket-lifecycle-api | Skema Drizzle tickets, endpoint CRUD, workflow status, dan triase | done |
 | 4.2 | ticket-work-item-linking | Mekanisme penautan dua arah Tiket ↔ Work Item dan validasi resolusi | ready-for-dev |
 | 4.3 | ticket-comments-timeline | Komentar tiket berbasis markdown dan timeline perubahan status | ready-for-dev |
 
@@ -230,9 +230,9 @@
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
 - **Total Stories:** 20
-- **Done:** 5
-- **Remaining:** 15
-- **Completion Rate:** 25% (5 / 20)
+- **Done:** 8
+- **Remaining:** 12
+- **Completion Rate:** 40% (8 / 20)
 
 ## Sequencing & Wave Plan
 

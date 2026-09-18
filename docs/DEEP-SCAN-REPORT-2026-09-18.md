@@ -10,9 +10,9 @@
 | **Disusun oleh** | Tim Teknis — pemeriksaan berkala & eksekusi perbaikan kerangka kerja BMAD |
 | **Ditujukan kepada** | Manajemen / Pemilik Produk |
 | **Objek Pemeriksaan** | Kode program (aplikasi web + server), keamanan akses, penyimpanan data, dokumentasi, kesiapan rilis |
-| **Basis Pemeriksaan** | Hasil eksekusi Sprint Wave 1 & Wave 2 (Komit `77252d4` di branch `main`) |
+| **Basis Pemeriksaan** | Hasil eksekusi Sprint Wave 1, Wave 2, dan Wave 3 (Komit `b2b4069` di branch `main`) |
 | **Jumlah Temuan** | **18 temuan** — **11 Selesai (61%)** · 3 Perlu Perhatian · 3 Rutin · 1 dalam kondisi baik |
-| **Status Laporan** | 🟢 **Pembaruan ke-1** — Wave 1 & 2 Selesai (100% Celah Kritis DS-01 s.d. DS-07 Ditutup) |
+| **Status Laporan** | 🟢 **Pembaruan ke-2** — Wave 1, 2, & 3 Selesai (8/20 Stories Selesai — Organisasi, Tugas, dan Tiket Aktif) |
 
 ---
 
@@ -157,13 +157,13 @@ Pemeriksaan awal pada 18 September 2026 menemukan **18 poin** tindak lanjutan. H
 
 ### 🟡 Tahap 2 — Entitas Domain & Alur Pengembang (Sedang Berjalan di Wave 3 & 4)
 
-| Urut | ID | Pekerjaan | Target |
-|:---:|:---:|---|---|
-| 1 | Story 1.5 | API Manajemen Organisasi & Proyek (scoping multi-proyek) | Wave 3 |
-| 2 | Story 2.1 | API Manajemen Work Items & Tugas | Wave 3 |
-| 3 | Story 4.1 | API Manajemen Tiket & Isu ITSM | Wave 3 |
-| 4 | Story 2.2, 2.3 | Kriteria penerimaan terverifikasi & pelacakan ketergantungan | Wave 4 |
-| 5 | Story 5.1 | Integrasi receiver webhook resmi GitHub | Wave 4 |
+| Urut | ID | Pekerjaan | Status | Catatan Verifikasi |
+|:---:|:---:|---|:---:|---|
+| 1 | Story 1.5 | API Manajemen Organisasi & Proyek | ✅ Selesai | Validasi Zod key ^[A-Z]{2,6}$, tolak duplikat HTTP 409 |
+| 2 | Story 2.1 | API Manajemen Work Items & Tugas | ✅ Selesai | Auto-sequencer key (WRK-101), pagination & index query |
+| 3 | Story 4.1 | API Manajemen Tiket & Isu ITSM | ✅ Selesai | Pemisahan Severity vs Priority, transisi triage & resolve |
+| 4 | Story 2.2, 2.3 | Kriteria selesai (DoD) & pelacakan ketergantungan | 🟡 Siap Dev | Dijadwalkan di Wave 4 |
+| 5 | Story 5.1 | Integrasi receiver webhook resmi GitHub | 🟡 Siap Dev | Dijadwalkan di Wave 4 |
 
 ### ⚪ Tahap 3 — Penguatan & Penyempurnaan Antarmuka (Wave 5)
 
