@@ -3,16 +3,18 @@ import { ROLE_PERMISSIONS, hasPermission } from "./rbac";
 
 const TOKEN_STORAGE_KEY = "workstation_auth_session_v1";
 
-// Directory of predefined enterprise accounts with verified credentials
-export const DIRECTORY_USERS: (User & { passwordHint: string })[] = [
+/**
+ * Public organization members directory (profile metadata only).
+ * Sanitized for Story 1.4 & closing DS-05: ALL plaintext password hints deleted.
+ */
+export const DIRECTORY_USERS: User[] = [
   {
     id: "usr-admin-0",
     name: "System Security Admin",
     email: "vibelab.kd@gmail.com",
     avatar: "SA",
     role: "Super Admin",
-    team: "Platform Security",
-    passwordHint: "admin123"
+    team: "Platform Security"
   },
   {
     id: "usr-2",
@@ -20,8 +22,7 @@ export const DIRECTORY_USERS: (User & { passwordHint: string })[] = [
     email: "rina@workstation.io",
     avatar: "RW",
     role: "Tech Lead",
-    team: "Core Engineering",
-    passwordHint: "techlead123"
+    team: "Core Engineering"
   },
   {
     id: "usr-1",
@@ -29,8 +30,7 @@ export const DIRECTORY_USERS: (User & { passwordHint: string })[] = [
     email: "kevin@workstation.io",
     avatar: "KS",
     role: "Developer",
-    team: "Web Team",
-    passwordHint: "dev123"
+    team: "Web Team"
   },
   {
     id: "usr-3",
@@ -38,8 +38,7 @@ export const DIRECTORY_USERS: (User & { passwordHint: string })[] = [
     email: "budi@workstation.io",
     avatar: "BP",
     role: "Project Manager",
-    team: "Product Delivery",
-    passwordHint: "pm123"
+    team: "Product Delivery"
   },
   {
     id: "usr-4",
@@ -47,8 +46,7 @@ export const DIRECTORY_USERS: (User & { passwordHint: string })[] = [
     email: "citra@workstation.io",
     avatar: "CD",
     role: "Manager",
-    team: "Operations & Exec",
-    passwordHint: "manager123"
+    team: "Operations & Exec"
   },
   {
     id: "usr-5",
@@ -56,8 +54,7 @@ export const DIRECTORY_USERS: (User & { passwordHint: string })[] = [
     email: "andi@workstation.io",
     avatar: "AS",
     role: "QA",
-    team: "Quality Assurance",
-    passwordHint: "qa123"
+    team: "Quality Assurance"
   },
   {
     id: "usr-6",
@@ -65,8 +62,7 @@ export const DIRECTORY_USERS: (User & { passwordHint: string })[] = [
     email: "maya@workstation.io",
     avatar: "MP",
     role: "Viewer",
-    team: "Stakeholder Relations",
-    passwordHint: "viewer123"
+    team: "Stakeholder Relations"
   }
 ];
 
@@ -86,6 +82,10 @@ export class AuthManager {
     return AuthManager.instance;
   }
 
+  /**
+   * Restores session from localStorage.
+   * Closes DS-03: NEVER automatically bootstraps a Super Admin session.
+   */
   private restoreSession() {
     try {
       const stored = localStorage.getItem(TOKEN_STORAGE_KEY);
@@ -102,48 +102,6 @@ export class AuthManager {
     } catch (e) {
       console.error("Failed to restore auth session:", e);
       this.currentSession = null;
-    }
-
-    // Default bootstrap with Super Admin account if empty
-    if (!this.currentSession) {
-      this.bootstrapDefaultSession(DIRECTORY_USERS[0]);
-    }
-  }
-
-  private bootstrapDefaultSession(user: User) {
-    const permissions = ROLE_PERMISSIONS[user.role] || [];
-    const issuedAt = new Date().toISOString();
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
-    
-    // Construct valid client token
-    const payload = {
-      userId: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      permissions,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor((Date.now() + 24 * 60 * 60 * 1000) / 1000)
-    };
-    
-    // Client-side representation of verified session
-    const headerB64 = btoa(JSON.stringify({ alg: "HS256", typ: "JWT" }));
-    const payloadB64 = btoa(JSON.stringify(payload));
-    const token = `ey.${headerB64}.${payloadB64}.verified_session_sig`;
-
-    const session: AuthSession = {
-      token,
-      user,
-      expiresAt,
-      issuedAt,
-      permissions
-    };
-
-    this.currentSession = session;
-    try {
-      localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(session));
-    } catch (e) {
-      console.warn("Could not save to localStorage:", e);
     }
   }
 
@@ -176,54 +134,47 @@ export class AuthManager {
     this.listeners.forEach((l) => l(this.currentSession));
   }
 
+  /**
+   * Performs authentication against the backend API.
+   * Closes DS-03: Offline fallback without password verification is deleted.
+   */
   public async login(email: string, password?: string): Promise<AuthResponse> {
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/v1/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password })
       });
 
-      const data: AuthResponse = await response.json();
-      if (response.ok && data.success && data.token && data.user) {
+      const json = await response.json();
+      const data = json.data || json;
+
+      if (response.ok && (json.success || data.success) && data.token && data.user) {
         const session: AuthSession = {
           token: data.token,
           user: data.user,
           expiresAt: data.expiresAt || new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
           issuedAt: new Date().toISOString(),
-          permissions: data.permissions || ROLE_PERMISSIONS[data.user.role] || []
+          permissions: data.permissions || ROLE_PERMISSIONS[data.user.role as UserRole] || []
         };
 
         this.currentSession = session;
         localStorage.setItem(TOKEN_STORAGE_KEY, JSON.stringify(session));
         this.notify();
-        return { ...data, success: true };
+        return { success: true, token: data.token, user: data.user, permissions: session.permissions };
       } else {
-        return { success: false, error: data.error || "Authentication failed" };
+        const errorMsg = json.error?.message || data.error || "Authentication failed: Invalid email or password";
+        return { success: false, error: errorMsg };
       }
     } catch (error: any) {
-      // Fallback to local directory matching if offline
-      const matched = DIRECTORY_USERS.find(
-        (u) => u.email.toLowerCase() === email.toLowerCase()
-      );
-      if (matched) {
-        this.bootstrapDefaultSession(matched);
-        this.notify();
-        return {
-          success: true,
-          user: matched,
-          token: this.currentSession?.token,
-          permissions: this.currentSession?.permissions
-        };
-      }
-      return { success: false, error: error.message || "Network error during authentication" };
+      return { success: false, error: error.message || "Network error: Unable to reach authentication server" };
     }
   }
 
   public async logout(): Promise<void> {
     try {
       if (this.currentSession?.token) {
-        await fetch("/api/auth/logout", {
+        await fetch("/api/v1/auth/logout", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -240,8 +191,16 @@ export class AuthManager {
     }
   }
 
-  public async switchRole(targetUser: User): Promise<void> {
-    await this.login(targetUser.email, "admin123");
+  /**
+   * Switches active user.
+   * Closes DS-04: Backdoor default password "admin123" is deleted; password is required.
+   */
+  public async switchRole(targetUser: User, password?: string): Promise<boolean> {
+    if (!password) {
+      return false;
+    }
+    const res = await this.login(targetUser.email, password);
+    return res.success;
   }
 }
 

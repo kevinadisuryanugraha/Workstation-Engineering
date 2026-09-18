@@ -6,6 +6,17 @@ import dotenv from "dotenv";
 import crypto from "crypto";
 import { GoogleGenAI } from "@google/genai";
 
+import { getJwtSecret } from "./server/config/auth.ts";
+import { requestCorrelationId } from "./server/middlewares/correlationId.ts";
+import { authenticateToken, AuthenticatedRequest } from "./server/middlewares/authenticate.ts";
+import { requirePermission, requireRole } from "./server/middlewares/rbac.ts";
+import { authRouter } from "./server/modules/auth/auth.routes.ts";
+import { loginHandler } from "./server/modules/auth/auth.controller.ts";
+import { UserRole, Permission, SERVER_ROLE_PERMISSIONS } from "./server/constants/permissions.ts";
+
+export type { UserRole, Permission, AuthenticatedRequest };
+export { authenticateToken, requirePermission, requireRole };
+
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,463 +26,22 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json({ limit: "10mb" }));
+app.use(requestCorrelationId);
 
-// ==========================================
-// 1. CRYPTOGRAPHIC AUTH & JWT ENGINE
-// ==========================================
-const JWT_SECRET = process.env.JWT_SECRET || "workstation-enterprise-rbac-secure-salt-2026";
+// Mount modular auth routers (v1 and backward-compatible /api/auth)
+app.use("/api/v1/auth", authRouter);
+app.post("/api/auth/login", loginHandler);
 
-export type UserRole =
-  | "Super Admin"
-  | "Organization Admin"
-  | "Manager"
-  | "Project Manager"
-  | "Tech Lead"
-  | "Developer"
-  | "QA"
-  | "Support"
-  | "Viewer";
-
-export type Permission =
-  | "PERM_VIEW_DASHBOARD"
-  | "PERM_VIEW_ENGINEERING"
-  | "PERM_VIEW_MANAGEMENT"
-  | "PERM_WORK_ITEM_CREATE"
-  | "PERM_WORK_ITEM_UPDATE"
-  | "PERM_WORK_ITEM_DELETE"
-  | "PERM_EVIDENCE_ATTACH"
-  | "PERM_TICKET_CREATE"
-  | "PERM_TICKET_UPDATE"
-  | "PERM_TICKET_RESOLVE"
-  | "PERM_INCIDENT_DECLARE"
-  | "PERM_INCIDENT_COMMAND"
-  | "PERM_INCIDENT_RESOLVE"
-  | "PERM_DEPLOYMENT_EXECUTE"
-  | "PERM_DEPLOYMENT_ROLLBACK"
-  | "PERM_AI_SCAN_TRIGGER"
-  | "PERM_AI_TRANSLATE"
-  | "PERM_SERVER_TELEMETRY"
-  | "PERM_AUDIT_LOGS_VIEW"
-  | "PERM_USER_MANAGEMENT";
-
-export interface ServerUser {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  role: UserRole;
-  team: string;
-  passwordHash: string; // SHA-256 password hash
-}
-
-export interface TokenPayload {
-  userId: string;
-  email: string;
-  name: string;
-  role: UserRole;
-  permissions: Permission[];
-  iat: number;
-  exp: number;
-}
-
-// Server-authoritative RBAC Permission Matrix
-export const SERVER_ROLE_PERMISSIONS: Record<UserRole, Permission[]> = {
-  "Super Admin": [
-    "PERM_VIEW_DASHBOARD",
-    "PERM_VIEW_ENGINEERING",
-    "PERM_VIEW_MANAGEMENT",
-    "PERM_WORK_ITEM_CREATE",
-    "PERM_WORK_ITEM_UPDATE",
-    "PERM_WORK_ITEM_DELETE",
-    "PERM_EVIDENCE_ATTACH",
-    "PERM_TICKET_CREATE",
-    "PERM_TICKET_UPDATE",
-    "PERM_TICKET_RESOLVE",
-    "PERM_INCIDENT_DECLARE",
-    "PERM_INCIDENT_COMMAND",
-    "PERM_INCIDENT_RESOLVE",
-    "PERM_DEPLOYMENT_EXECUTE",
-    "PERM_DEPLOYMENT_ROLLBACK",
-    "PERM_AI_SCAN_TRIGGER",
-    "PERM_AI_TRANSLATE",
-    "PERM_SERVER_TELEMETRY",
-    "PERM_AUDIT_LOGS_VIEW",
-    "PERM_USER_MANAGEMENT"
-  ],
-  "Organization Admin": [
-    "PERM_VIEW_DASHBOARD",
-    "PERM_VIEW_ENGINEERING",
-    "PERM_VIEW_MANAGEMENT",
-    "PERM_WORK_ITEM_CREATE",
-    "PERM_WORK_ITEM_UPDATE",
-    "PERM_WORK_ITEM_DELETE",
-    "PERM_EVIDENCE_ATTACH",
-    "PERM_TICKET_CREATE",
-    "PERM_TICKET_UPDATE",
-    "PERM_TICKET_RESOLVE",
-    "PERM_INCIDENT_DECLARE",
-    "PERM_INCIDENT_COMMAND",
-    "PERM_DEPLOYMENT_EXECUTE",
-    "PERM_DEPLOYMENT_ROLLBACK",
-    "PERM_AI_SCAN_TRIGGER",
-    "PERM_AI_TRANSLATE",
-    "PERM_SERVER_TELEMETRY",
-    "PERM_AUDIT_LOGS_VIEW",
-    "PERM_USER_MANAGEMENT"
-  ],
-  "Tech Lead": [
-    "PERM_VIEW_DASHBOARD",
-    "PERM_VIEW_ENGINEERING",
-    "PERM_VIEW_MANAGEMENT",
-    "PERM_WORK_ITEM_CREATE",
-    "PERM_WORK_ITEM_UPDATE",
-    "PERM_WORK_ITEM_DELETE",
-    "PERM_EVIDENCE_ATTACH",
-    "PERM_TICKET_CREATE",
-    "PERM_TICKET_UPDATE",
-    "PERM_TICKET_RESOLVE",
-    "PERM_INCIDENT_DECLARE",
-    "PERM_INCIDENT_COMMAND",
-    "PERM_INCIDENT_RESOLVE",
-    "PERM_DEPLOYMENT_EXECUTE",
-    "PERM_DEPLOYMENT_ROLLBACK",
-    "PERM_AI_SCAN_TRIGGER",
-    "PERM_AI_TRANSLATE",
-    "PERM_SERVER_TELEMETRY",
-    "PERM_AUDIT_LOGS_VIEW"
-  ],
-  "Project Manager": [
-    "PERM_VIEW_DASHBOARD",
-    "PERM_VIEW_ENGINEERING",
-    "PERM_VIEW_MANAGEMENT",
-    "PERM_WORK_ITEM_CREATE",
-    "PERM_WORK_ITEM_UPDATE",
-    "PERM_EVIDENCE_ATTACH",
-    "PERM_TICKET_CREATE",
-    "PERM_TICKET_UPDATE",
-    "PERM_TICKET_RESOLVE",
-    "PERM_INCIDENT_DECLARE",
-    "PERM_AI_TRANSLATE",
-    "PERM_AUDIT_LOGS_VIEW"
-  ],
-  "Manager": [
-    "PERM_VIEW_DASHBOARD",
-    "PERM_VIEW_MANAGEMENT",
-    "PERM_TICKET_CREATE",
-    "PERM_TICKET_UPDATE",
-    "PERM_AI_TRANSLATE",
-    "PERM_AUDIT_LOGS_VIEW"
-  ],
-  "Developer": [
-    "PERM_VIEW_DASHBOARD",
-    "PERM_VIEW_ENGINEERING",
-    "PERM_WORK_ITEM_CREATE",
-    "PERM_WORK_ITEM_UPDATE",
-    "PERM_EVIDENCE_ATTACH",
-    "PERM_TICKET_CREATE",
-    "PERM_TICKET_UPDATE",
-    "PERM_AI_SCAN_TRIGGER",
-    "PERM_SERVER_TELEMETRY"
-  ],
-  "QA": [
-    "PERM_VIEW_DASHBOARD",
-    "PERM_VIEW_ENGINEERING",
-    "PERM_WORK_ITEM_UPDATE",
-    "PERM_EVIDENCE_ATTACH",
-    "PERM_TICKET_CREATE",
-    "PERM_TICKET_UPDATE",
-    "PERM_TICKET_RESOLVE"
-  ],
-  "Support": [
-    "PERM_VIEW_DASHBOARD",
-    "PERM_TICKET_CREATE",
-    "PERM_TICKET_UPDATE"
-  ],
-  "Viewer": [
-    "PERM_VIEW_DASHBOARD"
-  ]
-};
-
-function hashPassword(pass: string): string {
-  return crypto.createHash("sha256").update(pass).digest("hex");
-}
-
-// In-Memory Verified Users Directory
-const SERVER_USERS: ServerUser[] = [
-  {
-    id: "usr-admin-0",
-    name: "System Security Admin",
-    email: "vibelab.kd@gmail.com",
-    avatar: "SA",
-    role: "Super Admin",
-    team: "Platform Security",
-    passwordHash: hashPassword("admin123")
-  },
-  {
-    id: "usr-2",
-    name: "Rina Wijaya",
-    email: "rina@workstation.io",
-    avatar: "RW",
-    role: "Tech Lead",
-    team: "Core Engineering",
-    passwordHash: hashPassword("techlead123")
-  },
-  {
-    id: "usr-1",
-    name: "Kevin Santoso",
-    email: "kevin@workstation.io",
-    avatar: "KS",
-    role: "Developer",
-    team: "Web Team",
-    passwordHash: hashPassword("dev123")
-  },
-  {
-    id: "usr-3",
-    name: "Budi Pratama",
-    email: "budi@workstation.io",
-    avatar: "BP",
-    role: "Project Manager",
-    team: "Product Delivery",
-    passwordHash: hashPassword("pm123")
-  },
-  {
-    id: "usr-4",
-    name: "Citra Dewi",
-    email: "citra@workstation.io",
-    avatar: "CD",
-    role: "Manager",
-    team: "Operations & Exec",
-    passwordHash: hashPassword("manager123")
-  },
-  {
-    id: "usr-5",
-    name: "Andi Saputra",
-    email: "andi@workstation.io",
-    avatar: "AS",
-    role: "QA",
-    team: "Quality Assurance",
-    passwordHash: hashPassword("qa123")
-  },
-  {
-    id: "usr-6",
-    name: "Maya Putri",
-    email: "maya@workstation.io",
-    avatar: "MP",
-    role: "Viewer",
-    team: "Stakeholder Relations",
-    passwordHash: hashPassword("viewer123")
-  }
+// Public sanitized user directory metadata (profiles without password hashes)
+const PUBLIC_USERS = [
+  { id: "usr-admin-0", name: "System Security Admin", email: "vibelab.kd@gmail.com", avatar: "SA", role: "Super Admin" as UserRole, team: "Platform Security" },
+  { id: "usr-2", name: "Rina Wijaya", email: "rina@workstation.io", avatar: "RW", role: "Tech Lead" as UserRole, team: "Core Engineering" },
+  { id: "usr-1", name: "Kevin Santoso", email: "kevin@workstation.io", avatar: "KS", role: "Developer" as UserRole, team: "Web Team" },
+  { id: "usr-3", name: "Budi Pratama", email: "budi@workstation.io", avatar: "BP", role: "Project Manager" as UserRole, team: "Product Delivery" },
+  { id: "usr-4", name: "Citra Dewi", email: "citra@workstation.io", avatar: "CD", role: "Manager" as UserRole, team: "Operations & Exec" },
+  { id: "usr-5", name: "Andi Saputra", email: "andi@workstation.io", avatar: "AS", role: "QA" as UserRole, team: "Quality Assurance" },
+  { id: "usr-6", name: "Maya Putri", email: "maya@workstation.io", avatar: "MP", role: "Viewer" as UserRole, team: "Stakeholder Relations" }
 ];
-
-// Helper: Sign Cryptographic Token
-function generateJWT(user: ServerUser, expiresInSeconds = 86400): string {
-  const permissions = SERVER_ROLE_PERMISSIONS[user.role] || [];
-  const header = { alg: "HS256", typ: "JWT" };
-  const now = Math.floor(Date.now() / 1000);
-  const payload: TokenPayload = {
-    userId: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-    permissions,
-    iat: now,
-    exp: now + expiresInSeconds
-  };
-
-  const encodedHeader = Buffer.from(JSON.stringify(header)).toString("base64url");
-  const encodedPayload = Buffer.from(JSON.stringify(payload)).toString("base64url");
-  const dataToSign = `${encodedHeader}.${encodedPayload}`;
-  const signature = crypto
-    .createHmac("sha256", JWT_SECRET)
-    .update(dataToSign)
-    .digest("base64url");
-
-  return `${dataToSign}.${signature}`;
-}
-
-// Helper: Verify Cryptographic Token
-function verifyJWT(token: string): { valid: boolean; payload?: TokenPayload; error?: string } {
-  try {
-    const parts = token.split(".");
-    if (parts.length === 3) {
-      const [headerB64, payloadB64, sigB64] = parts;
-      const expectedSig = crypto
-        .createHmac("sha256", JWT_SECRET)
-        .update(`${headerB64}.${payloadB64}`)
-        .digest("base64url");
-
-      // Constant-time comparison
-      const sigBuffer = Buffer.from(sigB64);
-      const expectedBuffer = Buffer.from(expectedSig);
-
-      if (
-        sigBuffer.length === expectedBuffer.length &&
-        crypto.timingSafeEqual(sigBuffer, expectedBuffer)
-      ) {
-        const payload: TokenPayload = JSON.parse(
-          Buffer.from(payloadB64, "base64url").toString("utf-8")
-        );
-
-        if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
-          return { valid: false, error: "Token expired" };
-        }
-
-        return { valid: true, payload };
-      }
-    }
-
-    // Fallback: Handle client-generated verified session token
-    if (token.startsWith("ey.") || token.includes(".")) {
-      const segments = token.split(".");
-      const payloadSegment = segments.length >= 3 ? segments[1] : segments[0];
-      try {
-        const jsonStr = Buffer.from(payloadSegment, "base64").toString("utf-8");
-        const payload: TokenPayload = JSON.parse(jsonStr);
-        if (payload && payload.role) {
-          // Re-attach server permissions to prevent client tampering
-          payload.permissions = SERVER_ROLE_PERMISSIONS[payload.role] || [];
-          return { valid: true, payload };
-        }
-      } catch (e) {
-        // Continue to invalid token response
-      }
-    }
-
-    return { valid: false, error: "Invalid token signature" };
-  } catch (error: any) {
-    return { valid: false, error: error.message || "Token verification failure" };
-  }
-}
-
-// Extend Express Request type
-export interface AuthenticatedRequest extends Request {
-  user?: TokenPayload;
-}
-
-// ==========================================
-// 2. STRICT RBAC MIDDLEWARE
-// ==========================================
-
-export function authenticateToken(req: AuthenticatedRequest, res: Response, next: NextFunction) {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.startsWith("Bearer ") ? authHeader.substring(7) : null;
-
-  if (!token) {
-    // If no token provided, fallback gracefully to Super Admin default or return 401
-    const defaultUser = SERVER_USERS[0];
-    req.user = {
-      userId: defaultUser.id,
-      email: defaultUser.email,
-      name: defaultUser.name,
-      role: defaultUser.role,
-      permissions: SERVER_ROLE_PERMISSIONS[defaultUser.role],
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 86400
-    };
-    return next();
-  }
-
-  const result = verifyJWT(token);
-  if (!result.valid || !result.payload) {
-    return res.status(401).json({
-      error: "Unauthorized: Invalid or expired Bearer token",
-      details: result.error,
-      timestamp: new Date().toISOString()
-    });
-  }
-
-  req.user = result.payload;
-  next();
-}
-
-export function requirePermission(...requiredPermissions: Permission[]) {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return res.status(401).json({ error: "Unauthorized: Authentication required" });
-    }
-
-    const userPermissions = req.user.permissions || SERVER_ROLE_PERMISSIONS[req.user.role] || [];
-    const missingPermissions = requiredPermissions.filter(
-      (perm) => !userPermissions.includes(perm)
-    );
-
-    if (missingPermissions.length > 0) {
-      return res.status(403).json({
-        error: "Forbidden: Insufficient RBAC Permissions",
-        code: "RBAC_ACCESS_DENIED",
-        currentRole: req.user.role,
-        user: req.user.email,
-        requiredPermissions,
-        missingPermissions,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    next();
-  };
-}
-
-export function requireRole(...allowedRoles: UserRole[]) {
-  return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return res.status(401).json({ error: "Unauthorized: Authentication required" });
-    }
-
-    if (!allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({
-        error: "Forbidden: Insufficient Role Clearance",
-        code: "RBAC_ROLE_DENIED",
-        currentRole: req.user.role,
-        allowedRoles,
-        user: req.user.email,
-        timestamp: new Date().toISOString()
-      });
-    }
-
-    next();
-  };
-}
-
-// ==========================================
-// 3. AUTHENTICATION & DIRECTORY API ENDPOINTS
-// ==========================================
-
-// Login endpoint with credentials validation
-app.post("/api/auth/login", (req, res) => {
-  const { email, password } = req.body;
-
-  if (!email) {
-    return res.status(400).json({ success: false, error: "Email is required" });
-  }
-
-  const user = SERVER_USERS.find((u) => u.email.toLowerCase() === email.toLowerCase());
-  if (!user) {
-    return res.status(401).json({ success: false, error: "User credentials not found in enterprise directory" });
-  }
-
-  // Password validation: if provided check hash, else allow for verified directory switch
-  if (password && hashPassword(password) !== user.passwordHash && password !== "admin123") {
-    return res.status(401).json({ success: false, error: "Invalid password for this account" });
-  }
-
-  const token = generateJWT(user);
-  const permissions = SERVER_ROLE_PERMISSIONS[user.role];
-
-  res.json({
-    success: true,
-    token,
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      avatar: user.avatar,
-      role: user.role,
-      team: user.team
-    },
-    permissions,
-    expiresAt: new Date(Date.now() + 86400 * 1000).toISOString()
-  });
-});
 
 // Authenticated session introspection
 app.get("/api/auth/me", authenticateToken, (req: AuthenticatedRequest, res) => {
@@ -501,15 +71,7 @@ app.post("/api/auth/logout", authenticateToken, (req: AuthenticatedRequest, res)
 
 // Organization user directory
 app.get("/api/auth/users", authenticateToken, (_req, res) => {
-  const sanitized = SERVER_USERS.map(({ id, name, email, avatar, role, team }) => ({
-    id,
-    name,
-    email,
-    avatar,
-    role,
-    team
-  }));
-  res.json({ success: true, users: sanitized });
+  res.json({ success: true, users: PUBLIC_USERS });
 });
 
 // Pre-flight action verification
@@ -551,7 +113,7 @@ app.post(
       userRole: req.user?.role,
       auditTimestamp: new Date().toISOString(),
       cryptographicSignature: crypto
-        .createHmac("sha256", JWT_SECRET)
+        .createHmac("sha256", getJwtSecret())
         .update(`rollback:${deploymentId}:${Date.now()}`)
         .digest("hex")
     });
@@ -778,6 +340,9 @@ Output strictly JSON:
 // ==========================================
 
 async function startServer() {
+  // Fail-fast security validation: verify JWT_SECRET is configured properly
+  getJwtSecret();
+
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
       server: { middlewareMode: true },
