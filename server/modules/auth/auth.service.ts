@@ -4,6 +4,7 @@ import { users, User } from '../../db/schema/users.ts';
 import { comparePassword, generateToken } from './auth.crypto.ts';
 import { auditService } from '../audit/audit.service.ts';
 import { SERVER_ROLE_PERMISSIONS, UserRole } from '../../constants/permissions.ts';
+import { userService } from '../users/users.service.ts';
 
 export interface LoginResult {
   token: string;
@@ -29,6 +30,7 @@ const VERIFIED_ENTERPRISE_USERS: User[] = [
     passwordHash: '$2b$12$XyxoHuPS1v//ZOwBo6k1yOFVp1WymJqqC0h2id5Sq5A.0.CB5fYVu', // admin123
     role: 'Super Admin',
     avatar: 'SA',
+    tokenVersion: 1,
     team: 'Platform Security',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -41,6 +43,7 @@ const VERIFIED_ENTERPRISE_USERS: User[] = [
     passwordHash: '$2b$12$yhywUgc.fkFAJ5.1ytpsYextktQ0Za/4JiXfWKTCbIfUmj0Bh8VTa', // techlead123
     role: 'Tech Lead',
     avatar: 'RW',
+    tokenVersion: 1,
     team: 'Core Engineering',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -53,6 +56,7 @@ const VERIFIED_ENTERPRISE_USERS: User[] = [
     passwordHash: '$2b$12$jmT5y4JDZ6ghJ0.V/XVuue.kxst2aQeacKVVX4jVLP3YSsCWMDz1m', // dev123
     role: 'Developer',
     avatar: 'KS',
+    tokenVersion: 1,
     team: 'Web Team',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -65,6 +69,7 @@ const VERIFIED_ENTERPRISE_USERS: User[] = [
     passwordHash: '$2b$12$I8sefSzPHtbr0qL6P4HC2eCQu9x/D2OqtXNxLie51s3dhswRoxJYi', // pm123
     role: 'Project Manager',
     avatar: 'BP',
+    tokenVersion: 1,
     team: 'Product Delivery',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -77,6 +82,7 @@ const VERIFIED_ENTERPRISE_USERS: User[] = [
     passwordHash: '$2b$12$ceNMx8EgQPYTyA7vHV7OqOWHj2k1TsY36z2buqolDg3iGka1Nkqvu', // manager123
     role: 'Manager',
     avatar: 'CD',
+    tokenVersion: 1,
     team: 'Operations & Exec',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -89,6 +95,7 @@ const VERIFIED_ENTERPRISE_USERS: User[] = [
     passwordHash: '$2b$12$Ef9/nUOpxVOYYDMHwFqZzusKtxcdyPqhNYr0EwAMAl1nm2D2x3eoO', // qa123
     role: 'QA',
     avatar: 'AS',
+    tokenVersion: 1,
     team: 'Quality Assurance',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -101,6 +108,7 @@ const VERIFIED_ENTERPRISE_USERS: User[] = [
     passwordHash: '$2b$12$GMQBMhSzDSkDjCIiW0wnSuJ6jlhAMn3DOQWeueiMguMuPZGbKPaBm', // viewer123
     role: 'Viewer',
     avatar: 'MP',
+    tokenVersion: 1,
     team: 'Stakeholder Relations',
     createdAt: new Date(),
     updatedAt: new Date(),
@@ -173,12 +181,14 @@ export class AuthService {
       return null;
     }
 
-    // 4. Generate stateless HMAC-SHA256 JWT
+    // 4. Generate stateless HMAC-SHA256 JWT (carries token_version for instant revocation — SEC-01)
+    const tokenVersion = userRecord.tokenVersion ?? (await userService.resolveTokenVersion(userRecord.id)) ?? 1;
     const token = generateToken({
       userId: userRecord.id,
       email: userRecord.email,
       name: userRecord.name,
       role: userRecord.role as UserRole,
+      tokenVersion,
     });
 
     const permissions = SERVER_ROLE_PERMISSIONS[userRecord.role as UserRole] || [];

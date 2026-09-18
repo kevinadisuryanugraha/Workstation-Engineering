@@ -5,6 +5,14 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-18 — Course Correction: Tambah Epic 8, 9, 10 (Fase V1) dari Deep Scan Report
+- **Decision:** Menambahkan 3 epic baru (8 story) hasil audit keamanan mendalam & roadmap Fase V1: **Epic 8** Security Hardening & Token Governance (SEC-01 s.d. SEC-05, Sprint V1.1), **Epic 9** Workstation Linux Server Agent (Sprint V1.2), **Epic 10** Dual-Language Reporting Engine (Sprint V1.3).
+- **Rationale:** MVP 20/20 story selesai 100% dan semua temuan kritis DS-01..DS-07 tertutup. Deep Scan Report §8 menetapkan Roadmap Fase V1 sebagai lanjutan resmi; scope harus masuk planning agar penambahan terlacak, dependency jelas, dan siap dieksekusi dev.
+- **Impact:** epics.md (+3 epic, delivery tracking 20/28 = 71%, wave plan +Wave 6/7/8); stories/ (+8 story files ready-for-dev); sprint-status.yaml (re-sequence: parallel_set 6, 7, 8).
+- **In-progress stories affected:** none (semua 20 story MVP berstatus done).
+- **Made by:** bmad-correct-course
+- **Supersedes:** none (additive)
+
 ### 2026-09-18 — Solutioning ADRs (ADR-001 s.d. ADR-008) disetujui
 - **Decision:** Mengunci 8 keputusan arsitektur sistem (ADR) untuk seluruh story dev:
   1. **ADR-001:** Modular Layered Monolith (pemisahan `server.ts` ke Routes, Controllers, Services, Repositories).

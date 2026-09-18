@@ -225,14 +225,116 @@
 
 ---
 
+## Epic 8: Security Hardening & Token Governance
+
+> # COURSE-CORRECTION (2026-09-18, via bmad-correct-course)
+> Epic baru hasil audit keamanan mendalam — Sprint V1.1. [Source: docs/DEEP-SCAN-REPORT-2026-09-18.md §5 & §8]
+
+**Goal:** Menutup 100% temuan audit keamanan lanjutan (SEC-01 s.d. SEC-05) agar sistem memenuhi standar OWASP Top 10:2025 sebelum operasi produksi penuh.
+
+**In scope (cited):**
+- SEC-01 — Pembatalan token instan via kolom `token_version` pada tabel users [Source: docs/DEEP-SCAN-REPORT-2026-09-18.md#SEC-01]
+- SEC-02 — Rate limiting endpoint login (maks 5 percobaan gagal / 15 menit / IP) [Source: docs/DEEP-SCAN-REPORT-2026-09-18.md#SEC-02]
+- SEC-03 — Security headers standar via helmet & sembunyikan `X-Powered-By` [Source: docs/DEEP-SCAN-REPORT-2026-09-18.md#SEC-03]
+- SEC-04 — Turunkan batas body parser menjadi `500kb` [Source: docs/DEEP-SCAN-REPORT-2026-09-18.md#SEC-04]
+- SEC-05 — Label integritas `STATIC_DEMO_PREVIEW` pada fallback AI scanner [Source: docs/DEEP-SCAN-REPORT-2026-09-18.md#SEC-05]
+- NFR-002 — Keamanan Akses & Perlindungan Kredensial [Source: prd.md#NFR-002]
+
+**Architecture touchpoints:**
+- Server-Authoritative RBAC & Stateless JWT (diperluas dengan verifikasi `token_version`) [Source: architecture.md#ADR-003]
+- Modular Layered Monolith [Source: architecture.md#ADR-001]
+
+**Out of scope:**
+- Redis blacklist eksternal (kolom `token_version` di PostgreSQL cukup untuk skala saat ini).
+- Endpoint upload lampiran 10 MB khusus (ditunda sampai fitur attachment ada).
+
+**Stories (ordered):**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 8.1 | http-hardening-middleware | SEC-02+SEC-03+SEC-04: rate limit login, helmet headers, body limit 500kb | done |
+| 8.2 | token-revocation-token-version | SEC-01: pencabutan token instan via token_version di DB | done |
+| 8.3 | ai-scanner-demo-integrity | SEC-05: penandaan mode demo AI scanner + peringatan visual UI | done |
+
+**Cross-epic dependencies:**
+- Blocked by: Epic 1 (auth engine & skema users)
+- Blocks: None
+
+---
+
+## Epic 9: Workstation Linux Server Agent
+
+> # COURSE-CORRECTION (2026-09-18, via bmad-correct-course)
+> Epic baru — Sprint V1.2. [Source: docs/DEEP-SCAN-REPORT-2026-09-18.md §8]
+
+**Goal:** Daemon ringan berbasis Node.js yang memantau kesehatan server (CPU, RAM, Disk) di server kantor & Kontabo VPS, mengirim telemetri berkala ke platform WORKSTATION, dan menampilkannya sebagai dashboard kesehatan server.
+
+**In scope (cited):**
+- Sprint V1.2 — Workstation Linux Server Agent (daemon CPU/RAM/Disk) [Source: docs/DEEP-SCAN-REPORT-2026-09-18.md#8]
+- FR-015 — Persistensi data telemetri nyata di PostgreSQL [Source: prd.md#FR-015]
+
+**Architecture touchpoints:**
+- Modular Layered Monolith — modul `agent` (daemon) & `server-metrics` (ingest API) [Source: architecture.md#ADR-001]
+- PostgreSQL 16 & Drizzle ORM [Source: architecture.md#ADR-002]
+
+**Out of scope:**
+- Alerting/notifikasi (email/Slack/Telegram) ditunda ke iterasi berikutnya.
+- Agen untuk Windows/macOS (target hanya Linux).
+
+**Stories (ordered):**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 9.1 | agent-metrics-daemon | Daemon pengumpul CPU/RAM/Disk dengan polling interval, buffer, dan retry | ready-for-dev |
+| 9.2 | agent-ingestion-api | Endpoint ingest telemetri ber-auth token agen + skema `server_metrics` | ready-for-dev |
+| 9.3 | server-health-view | Dashboard kesehatan server: kartu status live + riwayat metrik | ready-for-dev |
+
+**Cross-epic dependencies:**
+- Blocked by: Epic 1 (auth & DB foundation)
+- Blocks: None
+
+---
+
+## Epic 10: Dual-Language Reporting Engine
+
+> # COURSE-CORRECTION (2026-09-18, via bmad-correct-course)
+> Epic baru — Sprint V1.3. [Source: docs/DEEP-SCAN-REPORT-2026-09-18.md §8]
+
+**Goal:** Generator ringkasan laporan manajemen otomatis dalam Bahasa Indonesia yang mengagregasi data operasional nyata (tiket, work item, deployment, audit) per periode — menggantikan pelaporan manual.
+
+**In scope (cited):**
+- Sprint V1.3 — Dual-Language Reporting Engine (ringkasan Bahasa Indonesia) [Source: docs/DEEP-SCAN-REPORT-2026-09-18.md#8]
+- FR-015 — Single source of truth dari data nyata, bukan pelaporan manual [Source: prd.md#FR-015]
+
+**Architecture touchpoints:**
+- Modular Layered Monolith — modul `reports` (aggregation + generator) [Source: architecture.md#ADR-001]
+- PostgreSQL 16 & Drizzle ORM [Source: architecture.md#ADR-002]
+
+**Out of scope:**
+- Terjemahan otomatis EN↔ID berbasis LLM (menunggu keputusan fitur AI yang masih PENDING di decision-log).
+- Export PDF/Excel; output Phase ini adalah teks/Markdown terstruktur + tampilan UI.
+
+**Stories (ordered):**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 10.1 | report-aggregation-api | Endpoint agregasi KPI operasional per periode (tiket, work item, deployment, audit) | ready-for-dev |
+| 10.2 | id-report-generator | Generator narasi ringkasan manajemen Bahasa Indonesia dari data agregasi | ready-for-dev |
+
+**Cross-epic dependencies:**
+- Blocked by: Epic 2, Epic 4, Epic 6, Epic 7 (sumber data agregasi)
+- Blocks: None
+
+---
+
 ## Delivery Tracking (Count-Based)
 
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
-- **Total Stories:** 20
-- **Done:** 12
-- **Remaining:** 8
-- **Completion Rate:** 60% (12 / 20)
+- **Total Stories:** 28 (20 MVP + 8 Fase V1)
+- **Done:** 23 (MVP 100% + Epic 8 tuntas)
+- **Remaining:** 5 (Epic 9, 10 — Fase V1)
+- **Completion Rate:** 82% (23 / 28)
 
 ## Sequencing & Wave Plan
 
@@ -266,6 +368,20 @@ Wave 5 (Operations & UI Integration):
   ├── Story 3.1 (My Work Aggregation API)
   ├── Story 3.2 (Client Store Decomposition)
   └── Story 3.3 (Quick Status & Evidence UI)
+
+Wave 6 (Security Hardening — Sprint V1.1) [COURSE-CORRECTION]:
+  ├── Story 8.1 (HTTP Hardening Middleware)
+  ├── Story 8.2 (Token Revocation / token_version)
+  └── Story 8.3 (AI Scanner Demo Integrity)
+
+Wave 7 (Server Agent — Sprint V1.2) [COURSE-CORRECTION]:
+  ├── Story 9.1 (Agent Metrics Daemon)
+  ├── Story 9.2 (Agent Ingestion API)
+  └── Story 9.3 (Server Health View)
+
+Wave 8 (Reporting — Sprint V1.3) [COURSE-CORRECTION]:
+  ├── Story 10.1 (Report Aggregation API)
+  └── Story 10.2 (ID Report Generator)
 ```
 
 ---

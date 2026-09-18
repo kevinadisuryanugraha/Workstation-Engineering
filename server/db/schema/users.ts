@@ -1,4 +1,4 @@
-import { pgTable, varchar, timestamp, index } from 'drizzle-orm/pg-core';
+import { pgTable, varchar, timestamp, index, integer } from 'drizzle-orm/pg-core';
 import crypto from 'crypto';
 import { organizations } from './organizations.ts';
 
@@ -11,6 +11,8 @@ export const users = pgTable('users', {
   role: varchar('role', { length: 50 }).notNull().default('Developer'),
   avatar: varchar('avatar', { length: 10 }).notNull().default('U'),
   team: varchar('team', { length: 100 }).notNull().default('Engineering'),
+  // SEC-01: incremented to instantly revoke all previously issued JWTs for this user
+  tokenVersion: integer('token_version').notNull().default(1),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [

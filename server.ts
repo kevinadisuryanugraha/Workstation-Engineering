@@ -11,6 +11,9 @@ import { getJwtSecret } from "./server/config/auth.ts";
 import { requestCorrelationId } from "./server/middlewares/correlationId.ts";
 import { authenticateToken, AuthenticatedRequest } from "./server/middlewares/authenticate.ts";
 import { requirePermission, requireRole } from "./server/middlewares/rbac.ts";
+import { loginRateLimiter } from "./server/middlewares/rateLimit.ts";
+import { buildStaticDemoPreview } from "./server/modules/ai/ai.fallback.ts";
+import helmet from "helmet";
 import { authRouter } from "./server/modules/auth/auth.routes.ts";
 import { loginHandler } from "./server/modules/auth/auth.controller.ts";
 import { projectRouter } from "./server/modules/projects/project.routes.ts";
@@ -20,6 +23,7 @@ import { gitWebhookRouter } from "./server/modules/git/git.routes.ts";
 import { deploymentRouter } from "./server/modules/deployments/deployment.routes.ts";
 import { auditRouter } from "./server/modules/audit/audit.routes.ts";
 import { myWorkRouter } from "./server/modules/my-work/my-work.routes.ts";
+import { userRouter } from "./server/modules/users/users.routes.ts";
 import { UserRole, Permission, SERVER_ROLE_PERMISSIONS } from "./server/constants/permissions.ts";
 
 export type { UserRole, Permission, AuthenticatedRequest };
@@ -33,9 +37,17 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = 3000;
 
+// ===== HTTP Hardening (Story 8.1 — SEC-02, SEC-03, SEC-04) =====
+app.disable("x-powered-by"); // Hide framework fingerprint (SEC-03)
+app.use(helmet()); // Standard security headers: CSP, nosniff, X-Frame-Options, etc. (SEC-03)
+
 app.use(cors());
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "500kb" })); // Tightened from 10mb — DoS resistance (SEC-04)
 app.use(requestCorrelationId);
+
+// Brute-force protection on login endpoints only (SEC-02)
+app.use("/api/v1/auth/login", loginRateLimiter);
+app.use("/api/auth/login", loginRateLimiter);
 
 // Mount modular auth routers (v1 and backward-compatible /api/auth)
 app.use("/api/v1/auth", authRouter);
@@ -49,6 +61,7 @@ app.use("/api/v1/webhooks", gitWebhookRouter);
 app.use("/api/v1/deployments", deploymentRouter);
 app.use("/api/v1/audit-logs", auditRouter);
 app.use("/api/v1/my-work", myWorkRouter);
+app.use("/api/v1/users", authenticateToken, userRouter);
 
 // Public sanitized user directory metadata (profiles without password hashes)
 const PUBLIC_USERS = [
@@ -77,12 +90,18 @@ app.get("/api/auth/me", authenticateToken, (req: AuthenticatedRequest, res) => {
   });
 });
 
-// Logout endpoint
-app.post("/api/auth/logout", authenticateToken, (req: AuthenticatedRequest, res) => {
+// Logout endpoint (instant token revocation — SEC-01 / Story 8.2)
+app.post("/api/auth/logout", authenticateToken, async (req: AuthenticatedRequest, res) => {
+  let tokenRevoked = false;
+  if (req.user?.userId) {
+    const { userService } = await import("./server/modules/users/users.service.ts");
+    tokenRevoked = await userService.bumpTokenVersion(req.user.userId, "USER_LOGOUT", req.user.userId);
+  }
   res.json({
     success: true,
     message: "Session terminated successfully",
     user: req.user?.email,
+    tokenRevoked,
     timestamp: new Date().toISOString()
   });
 });
@@ -194,61 +213,12 @@ app.post(
     const ai = getAIClient();
 
     if (!ai) {
+      // SEC-05 (Story 8.3): fallback is explicitly and honestly labeled as demo data
       return res.json({
         success: true,
-        mode: "heuristic-fallback",
-        scanId: `SCAN-${Date.now().toString(36).toUpperCase()}`,
+        ...buildStaticDemoPreview(),
         scannedBy: req.user?.name,
-        role: req.user?.role,
-        findings: [
-          {
-            id: `FND-${Math.floor(100 + Math.random() * 900)}`,
-            title: "Potential N+1 Query in Eloquent Relationship Loading",
-            category: "Performance",
-            severity: "Medium",
-            confidence: 88,
-            affectedFile: "app/Http/Controllers/OrderController.php:48",
-            evidence: "User::with('orders') query detected inside foreach loop without eager loading batch.",
-            impact: "Exponential increase in database queries under load.",
-            suggestedRemediation: "Eager load relationships using $orders->load(['items', 'customer']) before iteration.",
-            status: "PENDING"
-          },
-          {
-            id: `FND-${Math.floor(100 + Math.random() * 900)}`,
-            title: "Unvalidated Server Token in Agent Heartbeat Hook",
-            category: "Security",
-            severity: "High",
-            confidence: 94,
-            affectedFile: "app/Services/AgentService.php:112",
-            evidence: "Authorization header checked with loose comparison without constant-time hash_equals().",
-            impact: "Vulnerability to timing attacks when verifying remote Kontabo agent signatures.",
-            suggestedRemediation: "Utilize hash_equals($expectedToken, $providedToken) and enforce HMAC SHA-256 signatures.",
-            status: "PENDING"
-          },
-          {
-            id: `FND-${Math.floor(100 + Math.random() * 900)}`,
-            title: "Missing Circuit Breaker for External Payment Gateway Webhook",
-            category: "Architecture",
-            severity: "Low",
-            confidence: 82,
-            affectedFile: "app/Jobs/ProcessPaymentWebhook.php:34",
-            evidence: "Synchronous HTTP call without retry backoff policy or timeout limit.",
-            impact: "Worker queue saturation if payment gateway latency spikes.",
-            suggestedRemediation: "Wrap in exponential backoff retry job with 5-second connection timeout.",
-            status: "PENDING"
-          }
-        ],
-        recommendations: [
-          {
-            id: `REC-${Math.floor(100 + Math.random() * 900)}`,
-            title: "Refactor OrderController batch query and add DB query assertion test",
-            reason: "Database I/O represents 65% of API response latency in peak hours.",
-            expectedImpact: "Up to 72% reduction in p95 query latency.",
-            effortEstimate: "3-4 hours",
-            affectedModule: "Orders & Checkout",
-            confidence: 90
-          }
-        ]
+        role: req.user?.role
       });
     }
 
@@ -299,7 +269,7 @@ Respond ONLY with valid JSON in this exact structure:
       });
 
       const parsed = JSON.parse(response.text || "{}");
-      res.json({ success: true, mode: "gemini-live", scannedBy: req.user?.name, ...parsed });
+      res.json({ success: true, mode: "LIVE_ANALYSIS", scannedBy: req.user?.name, ...parsed });
     } catch (error: any) {
       console.error("AI Scan Error:", error);
       res.status(500).json({ error: error.message || "Failed to execute AI scan" });

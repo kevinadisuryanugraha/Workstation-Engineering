@@ -70,6 +70,33 @@ epics:
       - "7.1.append-only-audit-middleware"
       - "7.2.audit-log-viewer-api"
 
+  # ===== COURSE-CORRECTION 2026-09-18: Fase V1 (Epic 8-10) =====
+  - id: "epic-8"
+    title: "Security Hardening & Token Governance"
+    description: "Menutup 5 temuan audit keamanan SEC-01 s.d. SEC-05 (rate limit, helmet, body limit, token revocation, integritas mode demo AI)"
+    status: done
+    story_ids:
+      - "8.1.http-hardening-middleware"
+      - "8.2.token-revocation-token-version"
+      - "8.3.ai-scanner-demo-integrity"
+
+  - id: "epic-9"
+    title: "Workstation Linux Server Agent"
+    description: "Daemon pemantauan CPU/RAM/Disk server kantor & Kontabo VPS dengan ingest API dan dashboard kesehatan"
+    status: backlog
+    story_ids:
+      - "9.1.agent-metrics-daemon"
+      - "9.2.agent-ingestion-api"
+      - "9.3.server-health-view"
+
+  - id: "epic-10"
+    title: "Dual-Language Reporting Engine"
+    description: "Agregasi KPI operasional dan generator ringkasan manajemen otomatis Bahasa Indonesia"
+    status: backlog
+    story_ids:
+      - "10.1.report-aggregation-api"
+      - "10.2.id-report-generator"
+
 stories:
   # Wave 1 (Immediate Foundation)
   - id: "1.1.git-init-and-toolchain"
@@ -359,6 +386,126 @@ stories:
       - "3.1.my-work-aggregation-api"
       - "3.2.client-store-decomposition"
       - "2.2.acceptance-criteria-engine"
+
+  # ===== COURSE-CORRECTION 2026-09-18: Fase V1 =====
+  # Wave 6 (Security Hardening — Sprint V1.1)
+  - id: "8.1.http-hardening-middleware"
+    title: "HTTP Hardening: Rate Limit Login, Helmet Headers, Body Limit 500kb"
+    epic_id: "epic-8"
+    status: done
+    file: "bmad-output/stories/8.1.http-hardening-middleware.story.md"
+    parallel_set: 6
+    dependencies: []
+    owned_scope:
+      - "server.ts (bootstrap middleware)"
+      - "server/middlewares/rateLimit.ts"
+      - "package.json"
+      - ".env.example"
+      - "tests/http-hardening.test.ts"
+
+  - id: "8.2.token-revocation-token-version"
+    title: "Instant Token Revocation via token_version (SEC-01)"
+    epic_id: "epic-8"
+    status: done
+    file: "bmad-output/stories/8.2.token-revocation-token-version.story.md"
+    parallel_set: 6
+    dependencies:
+      - "1.3.secure-auth-engine"
+      - "1.2.postgres-drizzle-setup"
+    owned_scope:
+      - "server/db/schema/users.ts (kolom tokenVersion)"
+      - "server/db/migrations/**"
+      - "server/modules/auth/**"
+      - "server/middlewares/authenticate.ts"
+      - "server/modules/users/**"
+      - "tests/token-revocation.test.ts"
+
+  - id: "8.3.ai-scanner-demo-integrity"
+    title: "AI Scanner Demo Mode Integrity Flag (SEC-05)"
+    epic_id: "epic-8"
+    status: done
+    file: "bmad-output/stories/8.3.ai-scanner-demo-integrity.story.md"
+    parallel_set: 6
+    dependencies: []
+    owned_scope:
+      - "server/modules/ai/**"
+      - "src/components/** (badge hasil scan)"
+      - "tests/ai-mode.test.ts"
+
+  # Wave 7 (Server Agent — Sprint V1.2)
+  - id: "9.1.agent-metrics-daemon"
+    title: "Workstation Agent Metrics Daemon (CPU/RAM/Disk Collector)"
+    epic_id: "epic-9"
+    status: ready-for-dev
+    file: "bmad-output/stories/9.1.agent-metrics-daemon.story.md"
+    parallel_set: 7
+    dependencies: []
+    owned_scope:
+      - "agent/**"
+      - "package.json (script agent)"
+      - ".env.example"
+      - "tests/agent-daemon.test.ts"
+
+  - id: "9.2.agent-ingestion-api"
+    title: "Agent Telemetry Ingestion API & server_metrics Schema"
+    epic_id: "epic-9"
+    status: ready-for-dev
+    file: "bmad-output/stories/9.2.agent-ingestion-api.story.md"
+    parallel_set: 7
+    dependencies:
+      - "1.2.postgres-drizzle-setup"
+    owned_scope:
+      - "server/db/schema/serverMetrics.ts"
+      - "server/db/migrations/**"
+      - "server/middlewares/agentAuth.ts"
+      - "server/modules/server-metrics/**"
+      - "server.ts (rute agent)"
+      - "tests/agent-ingestion.test.ts"
+
+  - id: "9.3.server-health-view"
+    title: "Server Health Dashboard View"
+    epic_id: "epic-9"
+    status: ready-for-dev
+    file: "bmad-output/stories/9.3.server-health-view.story.md"
+    parallel_set: 7
+    dependencies:
+      - "9.2.agent-ingestion-api"
+    owned_scope:
+      - "server/modules/server-metrics/** (endpoint baca)"
+      - "src/hooks/api/useServerMetrics.ts"
+      - "src/components/ServerHealthView.tsx"
+      - "tests/server-health.test.ts"
+
+  # Wave 8 (Reporting — Sprint V1.3)
+  - id: "10.1.report-aggregation-api"
+    title: "Operational Report Aggregation API"
+    epic_id: "epic-10"
+    status: ready-for-dev
+    file: "bmad-output/stories/10.1.report-aggregation-api.story.md"
+    parallel_set: 8
+    dependencies:
+      - "2.1.work-items-crud-api"
+      - "4.1.ticket-lifecycle-api"
+      - "6.1.deployment-recording-api"
+      - "7.1.append-only-audit-middleware"
+    owned_scope:
+      - "server/modules/reports/**"
+      - "server.ts (rute reports)"
+      - "tests/reports.test.ts"
+
+  - id: "10.2.id-report-generator"
+    title: "Bahasa Indonesia Management Summary Generator"
+    epic_id: "epic-10"
+    status: ready-for-dev
+    file: "bmad-output/stories/10.2.id-report-generator.story.md"
+    parallel_set: 8
+    dependencies:
+      - "10.1.report-aggregation-api"
+    owned_scope:
+      - "server/modules/reports/idGenerator.ts"
+      - "src/components/ReportView.tsx"
+      - "src/hooks/api/useReport.ts"
+      - "tests/report-generator.test.ts"
     owned_scope:
       - "src/components/ui/QuickStatusButton.tsx"
       - "src/components/ui/EvidenceDrillDownModal.tsx"

@@ -107,6 +107,7 @@ export default function App() {
   const [deployments, setDeployments] = useState<Deployment[]>(mockDeployments);
   const [servers, setServers] = useState<ServerTelemetry[]>(mockServers);
   const [aiFindings, setAiFindings] = useState<AIFinding[]>(mockAIFindings);
+  const [aiScanMode, setAiScanMode] = useState<string | null>(null); // SEC-05: integrity flag from /api/ai/scan
   const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>(mockAIRecommendations);
   const [technicalDebts, setTechnicalDebts] = useState(mockTechnicalDebts);
   const [incidents, setIncidents] = useState(mockIncidents);
@@ -568,6 +569,8 @@ export default function App() {
       }
 
       const data = await response.json();
+      // SEC-05 (Story 8.3): preserve integrity mode so UI can label demo data honestly
+      setAiScanMode(typeof data.mode === "string" ? data.mode : "LIVE_ANALYSIS");
       if (data.findings && Array.isArray(data.findings)) {
         const newFindings: AIFinding[] = data.findings.map((f: any, idx: number) => ({
           id: `FND-${Date.now()}-${idx}`,
@@ -812,6 +815,7 @@ export default function App() {
           {activeTab === "ai" && (
             <AIIntelligenceView
               findings={aiFindings}
+              scanMode={aiScanMode}
               recommendations={aiRecommendations}
               technicalDebts={technicalDebts}
               project={activeProject}

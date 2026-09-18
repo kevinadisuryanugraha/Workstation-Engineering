@@ -10,6 +10,8 @@ export interface TokenPayload {
   email: string;
   name: string;
   role: UserRole;
+  /** SEC-01: rotation counter — validated against users.token_version on every request */
+  tokenVersion?: number;
   iat?: number;
   exp?: number;
 }
@@ -44,6 +46,7 @@ export function generateToken(payload: Omit<TokenPayload, 'iat' | 'exp'>, expire
       email: payload.email,
       name: payload.name,
       role: payload.role,
+      tokenVersion: payload.tokenVersion ?? 1,
     },
     secret,
     {

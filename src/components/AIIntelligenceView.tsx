@@ -22,6 +22,7 @@ import { cn } from "../lib/utils";
 
 interface AIIntelligenceViewProps {
   findings: AIFinding[];
+  scanMode?: string | null;
   recommendations: AIRecommendation[];
   technicalDebts: TechnicalDebt[];
   project: Project;
@@ -33,6 +34,7 @@ interface AIIntelligenceViewProps {
 
 export const AIIntelligenceView: React.FC<AIIntelligenceViewProps> = ({
   findings,
+  scanMode,
   recommendations,
   technicalDebts,
   project,
@@ -42,6 +44,7 @@ export const AIIntelligenceView: React.FC<AIIntelligenceViewProps> = ({
   isManagementView
 }) => {
   const [activeTab, setActiveTab] = useState<"findings" | "recommendations" | "techdebt">("findings");
+  const isStaticDemoPreview = scanMode === "STATIC_DEMO_PREVIEW";
   const [isScanning, setIsScanning] = useState(false);
   const [scanSnippet, setScanSnippet] = useState(
     `// OrderController.php
@@ -127,6 +130,19 @@ public function exportDailyReceipts(Request $request) {
       {/* Tab 1: AI Findings */}
       {activeTab === "findings" && (
         <div className="space-y-4">
+          {isStaticDemoPreview && (
+            <div className="flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4" data-testid="demo-mode-banner">
+              <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+              <div>
+                <p className="text-sm font-bold text-amber-900">
+                  Data Demo — Bukan Hasil Pemindaian Nyata
+                </p>
+                <p className="text-xs font-semibold text-amber-800 mt-0.5 font-mono">
+                  mode: STATIC_DEMO_PREVIEW — Temuan berikut dihasilkan dari heuristic fallback karena GEMINI_API_KEY tidak tersedia. Jangan dijadikan dasar keputusan teknis.
+                </p>
+              </div>
+            </div>
+          )}
           {findings.map((fnd) => (
             <div key={fnd.id} className="bg-white rounded-xl border border-slate-200/90 shadow-sm p-6 space-y-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
