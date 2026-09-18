@@ -69,8 +69,8 @@
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
 | 2.1 | work-items-crud-api | Skema Drizzle, endpoint CRUD work items, dan filter query terindeks | done |
-| 2.2 | acceptance-criteria-engine | Checklist kriteria penerimaan & validasi pemblokiran transisi status DONE | ready-for-dev |
-| 2.3 | task-dependency-tracking | Penautan dependensi 'Blocked By' / 'Blocks' dan pencegahan circular loop | ready-for-dev |
+| 2.2 | acceptance-criteria-engine | Checklist kriteria penerimaan & validasi pemblokiran transisi status DONE | done |
+| 2.3 | task-dependency-tracking | Penautan dependensi 'Blocked By' / 'Blocks' dan pencegahan circular loop | done |
 
 **Cross-epic dependencies:**
 - Blocked by: Epic 1 (Butuh users, projects, dan auth)
@@ -130,7 +130,7 @@
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
 | 4.1 | ticket-lifecycle-api | Skema Drizzle tickets, endpoint CRUD, workflow status, dan triase | done |
-| 4.2 | ticket-work-item-linking | Mekanisme penautan dua arah Tiket ↔ Work Item dan validasi resolusi | ready-for-dev |
+| 4.2 | ticket-work-item-linking | Mekanisme penautan dua arah Tiket ↔ Work Item dan validasi resolusi | done |
 | 4.3 | ticket-comments-timeline | Komentar tiket berbasis markdown dan timeline perubahan status | ready-for-dev |
 
 **Cross-epic dependencies:**
@@ -159,7 +159,7 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 5.1 | github-webhook-receiver | Endpoint receiver webhook dengan verifikasi signature HMAC-SHA256 & idempotensi | ready-for-dev |
+| 5.1 | github-webhook-receiver | Endpoint receiver webhook dengan verifikasi signature HMAC-SHA256 & idempotensi | done |
 | 5.2 | git-entity-auto-linker | Parser regex kunci entitas (`WRK-101`) & penautan commit/PR ke evidence_links | ready-for-dev |
 
 **Cross-epic dependencies:**
@@ -230,9 +230,9 @@
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
 - **Total Stories:** 20
-- **Done:** 8
-- **Remaining:** 12
-- **Completion Rate:** 40% (8 / 20)
+- **Done:** 12
+- **Remaining:** 8
+- **Completion Rate:** 60% (12 / 20)
 
 ## Sequencing & Wave Plan
 

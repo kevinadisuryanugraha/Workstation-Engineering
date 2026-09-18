@@ -190,7 +190,7 @@ stories:
   - id: "2.2.acceptance-criteria-engine"
     title: "Acceptance Criteria Checklist Engine & Definition of Done Gate"
     epic_id: "epic-2"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/2.2.acceptance-criteria-engine.story.md"
     parallel_set: 4
     dependencies:
@@ -205,7 +205,7 @@ stories:
   - id: "2.3.task-dependency-tracking"
     title: "Task Dependency & Circular Blocker Prevention"
     epic_id: "epic-2"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/2.3.task-dependency-tracking.story.md"
     parallel_set: 4
     dependencies:
@@ -218,7 +218,7 @@ stories:
   - id: "4.2.ticket-work-item-linking"
     title: "Bi-directional Linking: Ticket ↔ Work Item & Evidence Engine"
     epic_id: "epic-4"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/4.2.ticket-work-item-linking.story.md"
     parallel_set: 4
     dependencies:
@@ -232,7 +232,7 @@ stories:
   - id: "5.1.github-webhook-receiver"
     title: "GitHub Webhook Receiver with HMAC-SHA256 Verification & Idempotency"
     epic_id: "epic-5"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/5.1.github-webhook-receiver.story.md"
     parallel_set: 4
     dependencies:
@@ -248,7 +248,7 @@ stories:
   - id: "4.3.ticket-comments-timeline"
     title: "Ticket Comments & Chronological Activity Timeline"
     epic_id: "epic-4"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/4.3.ticket-comments-timeline.story.md"
     parallel_set: 5
     dependencies:
@@ -263,7 +263,7 @@ stories:
   - id: "5.2.git-entity-auto-linker"
     title: "Git Entity Auto-Linker & Evidence Attachment Engine"
     epic_id: "epic-5"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/5.2.git-entity-auto-linker.story.md"
     parallel_set: 5
     dependencies:
@@ -278,7 +278,7 @@ stories:
   - id: "6.1.deployment-recording-api"
     title: "Release & Deployment Recording API"
     epic_id: "epic-6"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/6.1.deployment-recording-api.story.md"
     parallel_set: 5
     dependencies:
@@ -292,7 +292,7 @@ stories:
   - id: "6.2.rollback-authorization-ops"
     title: "Rollback Authorization Operations & Tamper-Evident Audit"
     epic_id: "epic-6"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/6.2.rollback-authorization-ops.story.md"
     parallel_set: 5
     dependencies:
@@ -306,7 +306,7 @@ stories:
   - id: "7.2.audit-log-viewer-api"
     title: "Audit Log Viewer API & Filtering Engine"
     epic_id: "epic-7"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/7.2.audit-log-viewer-api.story.md"
     parallel_set: 5
     dependencies:
@@ -321,7 +321,7 @@ stories:
   - id: "3.1.my-work-aggregation-api"
     title: "Developer 'My Work' Aggregation Endpoint & Workspace Data Feed"
     epic_id: "epic-3"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/3.1.my-work-aggregation-api.story.md"
     parallel_set: 5
     dependencies:
@@ -335,7 +335,7 @@ stories:
   - id: "3.2.client-store-decomposition"
     title: "Client-Side Store Decomposition & REST Integration"
     epic_id: "epic-3"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/3.2.client-store-decomposition.story.md"
     parallel_set: 5
     dependencies:
@@ -352,7 +352,7 @@ stories:
   - id: "3.3.quick-status-and-evidence-ui"
     title: "Quick Status 1-Click Action & Interactive Evidence Drill-Down UI"
     epic_id: "epic-3"
-    status: backlog
+    status: ready-for-dev
     file: "bmad-output/stories/3.3.quick-status-and-evidence-ui.story.md"
     parallel_set: 5
     dependencies:

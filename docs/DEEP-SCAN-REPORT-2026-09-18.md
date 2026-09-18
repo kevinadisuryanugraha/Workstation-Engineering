@@ -10,9 +10,9 @@
 | **Disusun oleh** | Tim Teknis — pemeriksaan berkala & eksekusi perbaikan kerangka kerja BMAD |
 | **Ditujukan kepada** | Manajemen / Pemilik Produk |
 | **Objek Pemeriksaan** | Kode program (aplikasi web + server), keamanan akses, penyimpanan data, dokumentasi, kesiapan rilis |
-| **Basis Pemeriksaan** | Hasil eksekusi Sprint Wave 1, Wave 2, dan Wave 3 (Komit `b2b4069` di branch `main`) |
+| **Basis Pemeriksaan** | Hasil eksekusi Sprint Wave 1 s.d. Wave 4 (Komit `5ac24e0` di branch `main`) |
 | **Jumlah Temuan** | **18 temuan** — **11 Selesai (61%)** · 3 Perlu Perhatian · 3 Rutin · 1 dalam kondisi baik |
-| **Status Laporan** | 🟢 **Pembaruan ke-2** — Wave 1, 2, & 3 Selesai (8/20 Stories Selesai — Organisasi, Tugas, dan Tiket Aktif) |
+| **Status Laporan** | 🟢 **Pembaruan ke-3** — Wave 1 s.d. 4 Selesai (12/20 Stories Selesai — DoD Gate, Dependency Cycle Check, & Webhook Aktif) |
 
 ---
 
@@ -162,8 +162,10 @@ Pemeriksaan awal pada 18 September 2026 menemukan **18 poin** tindak lanjutan. H
 | 1 | Story 1.5 | API Manajemen Organisasi & Proyek | ✅ Selesai | Validasi Zod key ^[A-Z]{2,6}$, tolak duplikat HTTP 409 |
 | 2 | Story 2.1 | API Manajemen Work Items & Tugas | ✅ Selesai | Auto-sequencer key (WRK-101), pagination & index query |
 | 3 | Story 4.1 | API Manajemen Tiket & Isu ITSM | ✅ Selesai | Pemisahan Severity vs Priority, transisi triage & resolve |
-| 4 | Story 2.2, 2.3 | Kriteria selesai (DoD) & pelacakan ketergantungan | 🟡 Siap Dev | Dijadwalkan di Wave 4 |
-| 5 | Story 5.1 | Integrasi receiver webhook resmi GitHub | 🟡 Siap Dev | Dijadwalkan di Wave 4 |
+| 4 | Story 2.2 | Checklist kriteria selesai (DoD Gate) & override | ✅ Selesai | Tolak status DONE jika AC incomplete tanpa override |
+| 5 | Story 2.3 | Deteksi & pencegahan circular dependency (DFS) | ✅ Selesai | Tolak loop ketergantungan HTTP 400 CIRCULAR_DEP |
+| 6 | Story 4.2 | Penautan dua arah Tiket ↔ Work Item (Evidence) | ✅ Selesai | Tabel evidence_links N..N aktif |
+| 7 | Story 5.1 | Webhook receiver resmi GitHub (HMAC-SHA256) | ✅ Selesai | Verifikasi signature kriptografis, respons < 50ms |
 
 ### ⚪ Tahap 3 — Penguatan & Penyempurnaan Antarmuka (Wave 5)
 
