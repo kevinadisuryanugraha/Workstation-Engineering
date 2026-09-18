@@ -31,7 +31,6 @@ function scheduleNext(config: AgentConfig): void {
     await tick(config);
     scheduleNext(config);
   }, config.intervalSeconds * 1000);
-  if (typeof timer.unref === 'function') timer.unref();
 }
 
 async function main(): Promise<void> {
