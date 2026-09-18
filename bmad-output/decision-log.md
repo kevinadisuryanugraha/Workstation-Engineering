@@ -5,6 +5,14 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-18 — Course Correction #2: Epic 11/12/13 (Fase V1 gelombang 2 — Master PRD §30)
+- **Decision:** Menambah 3 epic (7 story) sesuai peta jalan Master PRD Section 30: **Epic 11** Agent Service Monitoring (Nginx/MySQL/Redis), **Epic 12** Scheduled Reporting (daily/weekly/monthly + arsip + narasi eksekutif + tren), **Epic 13** Incident Room & SLA (lifecycle + SLA engine + timeline immutable + wiring UI).
+- **Rationale:** MVP dan Fase V1 gelombang 1 (Epic 8/9/10) tuntas 28/28; Master PRD §30 menetapkan ekspansi berikutnya. Koneksi layanan & insiden/SLA belum ada sama sekali di backend — perlu perencanaan terstruktur sebelum eksekusi.
+- **Impact:** epics.md (+3 epic, 35 story total, wave plan +9/10/11); stories/ (+7 file); sprint-status.yaml (parallel_set 9/10/11).
+- **In-progress stories affected:** none.
+- **Made by:** bmad-correct-course
+- **Supersedes:** none (additive)
+
 ### 2026-09-18 — Fase V1 Tuntas: Epic 8/9/10 selesai dieksekusi (Wave 6-8)
 - **Decision:** Seluruh 8 story Fase V1 hasil course-correction dieksekusi, diuji, dan dikomit: **Wave 6** (Epic 8 — SEC-01 s.d. SEC-05: rate limit, helmet, body limit 500kb, token_version revocation, AI demo integrity flag), **Wave 7** (Epic 9 — agent daemon + ingest API server_metrics + server health cards), **Wave 8** (Epic 10 — aggregation API + generator laporan Bahasa Indonesia + ReportView).
 - **Rationale:** Eksekusi penuh roadmap Fase V1 sesuai Deep Scan Report §8; seluruh temuan audit kini tuntas (23/23).

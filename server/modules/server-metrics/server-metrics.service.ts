@@ -6,12 +6,22 @@ import { serverMetrics, NewServerMetric, ServerMetric } from '../../db/schema/se
  * Server metrics service (Story 9.2) — ingestion + read queries for agent telemetry.
  */
 
+export interface ServiceProbeInput {
+  name: string;
+  kind: 'http' | 'tcp';
+  target: string;
+  healthy: boolean;
+  latencyMs: number | null;
+  checkedAt: string;
+}
+
 export interface AgentSample {
   serverName: string;
   cpu: number;
   memory: { total: number; used: number; free: number };
   disks: Array<{ filesystem?: string; mount?: string; total: number; used: number; available?: number; usePercent?: number }>;
   recordedAt: string;
+  services?: ServiceProbeInput[]; // Story 11.2 — optional for agent backward compatibility
 }
 
 export class ValidationError extends Error {
@@ -44,6 +54,21 @@ export function validateAgentSample(raw: unknown): AgentSample {
     if (!isFiniteNumber(d.total) || d.total < 0) throw new ValidationError('disk.total must be a non-negative number');
     if (!isFiniteNumber(d.used) || d.used < 0) throw new ValidationError('disk.used must be a non-negative number');
   }
+  // Story 11.2 — optional services validation (AC #2)
+  let services: ServiceProbeInput[] | undefined;
+  if (s.services !== undefined) {
+    if (!Array.isArray(s.services)) throw new ValidationError('services must be an array when present');
+    services = s.services.map((raw: any) => {
+      if (!raw || typeof raw !== 'object') throw new ValidationError('each service must be an object');
+      if (typeof raw.name !== 'string' || raw.name.trim().length === 0) throw new ValidationError('service.name is required');
+      if (raw.kind !== 'http' && raw.kind !== 'tcp') throw new ValidationError('service.kind must be http or tcp');
+      if (typeof raw.target !== 'string' || raw.target.trim().length === 0) throw new ValidationError('service.target is required');
+      if (typeof raw.healthy !== 'boolean') throw new ValidationError('service.healthy must be a boolean');
+      if (raw.latencyMs !== null && !isFiniteNumber(raw.latencyMs)) throw new ValidationError('service.latencyMs must be a number or null');
+      if (typeof raw.checkedAt !== 'string' || Number.isNaN(Date.parse(raw.checkedAt))) throw new ValidationError('service.checkedAt must be a valid ISO timestamp');
+      return { name: raw.name.trim(), kind: raw.kind, target: raw.target.trim(), healthy: raw.healthy, latencyMs: raw.latencyMs, checkedAt: raw.checkedAt };
+    });
+  }
   const recordedAt = typeof s.recordedAt === 'string' ? s.recordedAt : null;
   if (!recordedAt || Number.isNaN(Date.parse(recordedAt))) {
     throw new ValidationError('recordedAt must be a valid ISO 8601 timestamp');
@@ -53,6 +78,7 @@ export function validateAgentSample(raw: unknown): AgentSample {
     cpu: s.cpu,
     memory: { total: memory.total, used: memory.used, free: memory.free },
     disks: s.disks,
+    services,
     recordedAt,
   };
 }
@@ -65,6 +91,7 @@ function toRow(sample: AgentSample): NewServerMetric {
     memoryUsed: sample.memory.used,
     memoryFree: sample.memory.free,
     disks: sample.disks,
+    services: sample.services ?? [],
     recordedAt: new Date(sample.recordedAt),
   };
 }

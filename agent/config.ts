@@ -13,6 +13,16 @@ export interface AgentConfig {
   serverName: string;
   intervalSeconds: number;
   bufferMaxSamples: number;
+  /** Story 11.1 — parsed service probe targets */
+  services: ServiceProbeTarget[];
+  probeTimeoutMs: number;
+}
+
+export interface ServiceProbeTarget {
+  name: string;
+  kind: 'http' | 'tcp';
+  host: string;
+  port: number;
 }
 
 function requireEnv(name: string): string {
@@ -34,6 +44,46 @@ function readPositiveInt(name: string, fallback: number): number {
     process.exit(1);
   }
   return parsed;
+}
+
+export const SERVICE_PROBE_DEFAULTS = [
+  { name: 'nginx', kind: 'http' as const, host: '127.0.0.1', port: 80 },
+  { name: 'mysql', kind: 'tcp' as const, host: '127.0.0.1', port: 3306 },
+  { name: 'redis', kind: 'tcp' as const, host: '127.0.0.1', port: 6379 },
+];
+
+export const DEFAULT_PROBE_TIMEOUT_MS = 3000;
+
+/**
+ * Parses AGENT_SERVICES env: "name:kind:host:port;name:kind:host:port"
+ * (Story 11.1 / AC #1). Falls back to the default Nginx/MySQL/Redis localhost set
+ * when the env var is absent or empty.
+ */
+export function parseServiceTargets(raw: string | undefined): ServiceProbeTarget[] {
+  if (!raw || raw.trim().length === 0) {
+    return [...SERVICE_PROBE_DEFAULTS];
+  }
+  return raw
+    .split(';')
+    .map((entry) => entry.trim())
+    .filter((entry) => entry.length > 0)
+    .map((entry) => {
+      const parts = entry.split(':');
+      if (parts.length !== 4) {
+        throw new Error(
+          `[agent] FAIL-FAST: AGENT_SERVICES entry "${entry}" is invalid. Expected name:kind:host:port (kind = http|tcp).`
+        );
+      }
+      const [name, kind, host, portRaw] = parts;
+      if (kind !== 'http' && kind !== 'tcp') {
+        throw new Error(`[agent] FAIL-FAST: service "${name}" has invalid kind "${kind}" (expected http or tcp).`);
+      }
+      const port = Number.parseInt(portRaw, 10);
+      if (!Number.isFinite(port) || port <= 0 || port > 65535) {
+        throw new Error(`[agent] FAIL-FAST: service "${name}" has invalid port "${portRaw}".`);
+      }
+      return { name: name.trim(), kind, host: host.trim(), port };
+    });
 }
 
 export function loadAgentConfig(env: NodeJS.ProcessEnv = process.env): AgentConfig {
@@ -62,6 +112,8 @@ export function loadAgentConfig(env: NodeJS.ProcessEnv = process.env): AgentConf
     serverName: get('AGENT_SERVER_NAME'),
     intervalSeconds: readInt('AGENT_INTERVAL_SECONDS', 60),
     bufferMaxSamples: readInt('AGENT_BUFFER_MAX', 60),
+    services: parseServiceTargets(env.AGENT_SERVICES),
+    probeTimeoutMs: readInt('AGENT_PROBE_TIMEOUT_MS', DEFAULT_PROBE_TIMEOUT_MS),
   };
 }
 

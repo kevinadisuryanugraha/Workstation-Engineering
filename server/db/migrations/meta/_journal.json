@@ -50,6 +50,20 @@
       "when": 1789714460466,
       "tag": "0006_add_server_metrics",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1789717109115,
+      "tag": "0007_add_server_metrics_services",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1789717248404,
+      "tag": "0008_add_generated_reports",
+      "breakpoints": true
     }
   ]
 }

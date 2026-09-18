@@ -64,6 +64,7 @@ serverMetricsRouter.get('/', requirePermission('PERM_SERVER_TELEMETRY'), async (
           memoryUsed: latest.memoryUsed,
           memoryFree: latest.memoryFree,
           disks: latest.disks,
+          services: (latest.services as unknown) ?? [], // Story 11.2 (AC #3): legacy rows -> []
           recordedAt: latest.recordedAt,
         },
       })),

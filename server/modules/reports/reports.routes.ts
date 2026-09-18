@@ -3,6 +3,7 @@ import { AuthenticatedRequest } from '../../middlewares/authenticate.ts';
 import { requirePermission } from '../../middlewares/rbac.ts';
 import { buildPeriodSummary } from './reports.repository.ts';
 import { generateIdReport } from './idGenerator.ts';
+import { generatedReportsService, REPORT_TYPES, ReportType } from './generated-reports.service.ts';
 
 /**
  * Reports routes (Story 10.1 / 10.2).
@@ -103,5 +104,73 @@ reportsRouter.get(
       },
       timestamp: new Date().toISOString(),
     });
+  }
+);
+
+// ===== Scheduled report archives (Story 12.1) =====
+
+// POST /api/v1/reports/generate — generate & archive DAILY/WEEKLY/MONTHLY report
+reportsRouter.post(
+  '/generate',
+  requirePermission('PERM_AUDIT_LOGS_VIEW'),
+  async (req: AuthenticatedRequest, res: Response) => {
+    const { type } = req.body as { type?: string };
+    if (!type || !REPORT_TYPES.includes(type as ReportType)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_FAILED', message: `type is required and must be one of: ${REPORT_TYPES.join(', ')}` },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const report = await generatedReportsService.generate(type as ReportType, req.user?.userId);
+    return res.status(201).json({
+      success: true,
+      data: report,
+      timestamp: new Date().toISOString(),
+    });
+  }
+);
+
+// GET /api/v1/reports/history — archived report list (metadata + preview)
+reportsRouter.get(
+  '/history',
+  requirePermission('PERM_AUDIT_LOGS_VIEW'),
+  async (req: AuthenticatedRequest, res: Response) => {
+    const typeParam = req.query.type as string | undefined;
+    if (typeParam && !REPORT_TYPES.includes(typeParam as ReportType)) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_FAILED', message: `type must be one of: ${REPORT_TYPES.join(', ')}` },
+        timestamp: new Date().toISOString(),
+      });
+    }
+    const limitRaw = Number.parseInt((req.query.limit as string) || '20', 10);
+    const history = await generatedReportsService.history(
+      typeParam as ReportType | undefined,
+      Number.isFinite(limitRaw) ? limitRaw : 20
+    );
+    return res.json({
+      success: true,
+      data: { reports: history, count: history.length },
+      timestamp: new Date().toISOString(),
+    });
+  }
+);
+
+// GET /api/v1/reports/history/:id — full archived report
+reportsRouter.get(
+  '/history/:id',
+  requirePermission('PERM_AUDIT_LOGS_VIEW'),
+  async (req: AuthenticatedRequest, res: Response) => {
+    const report = await generatedReportsService.byId(req.params.id);
+    if (!report) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'Report archive not found' },
+        timestamp: new Date().toISOString(),
+      });
+    }
+    return res.json({ success: true, data: report, timestamp: new Date().toISOString() });
   }
 );

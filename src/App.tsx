@@ -936,6 +936,18 @@ function mergeServerTelemetry(base: ServerTelemetry[], entries: ServerHealthEntr
     const diskUsage = latest.disks.length > 0 ? Math.max(...latest.disks.map((d) => d.usePercent ?? 0)) : 0;
     const peak = Math.max(cpuUsage, ramUsage, diskUsage);
 
+    // Story 11.2 (AC #4): map agent service probes to the UI services panel
+    const liveServices = ((latest.services ?? []) as any[]).map((svc) => {
+      const portRaw = typeof svc.target === "string" ? svc.target.split(":")[1] : undefined;
+      const port = portRaw ? Number.parseInt(portRaw, 10) : undefined;
+      return {
+        name: `${svc.name} (${svc.target})`,
+        status: (svc.healthy ? "Running" : "Stopped") as "Running" | "Stopped",
+        port: Number.isFinite(port) ? port : undefined,
+        memoryMb: 0, // probe-based monitoring: latency instead of RSS
+      };
+    });
+
     const minutesAgo = Math.max(0, Math.round((Date.now() - new Date(latest.recordedAt).getTime()) / 60000));
     const lastHeartbeat = minutesAgo < 1 ? "Just now" : `${minutesAgo} min ago`;
 
@@ -948,6 +960,7 @@ function mergeServerTelemetry(base: ServerTelemetry[], entries: ServerHealthEntr
         ramUsage,
         diskUsage,
         lastHeartbeat,
+        services: liveServices.length > 0 ? liveServices : existing.services,
       };
     }
 
@@ -966,7 +979,7 @@ function mergeServerTelemetry(base: ServerTelemetry[], entries: ServerHealthEntr
       diskUsage,
       loadAverage: "—",
       uptime: "—",
-      services: [],
+      services: liveServices,
     };
   });
 }

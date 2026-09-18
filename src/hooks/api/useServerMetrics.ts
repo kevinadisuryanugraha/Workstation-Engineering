@@ -6,12 +6,22 @@ import { apiRequest } from '../../lib/apiClient.ts';
  * Reads agent telemetry ingested by the Workstation Linux Server Agent (Epic 9).
  */
 
+export interface ServerServiceProbe {
+  name: string;
+  kind: 'http' | 'tcp';
+  target: string;
+  healthy: boolean;
+  latencyMs: number | null;
+  checkedAt: string;
+}
+
 export interface ServerMetricLatest {
   cpuUsage: number;
   memoryTotal: number;
   memoryUsed: number;
   memoryFree: number;
   disks: Array<{ filesystem?: string; mount?: string; total: number; used: number; available?: number; usePercent?: number }>;
+  services?: ServerServiceProbe[]; // Story 11.2
   recordedAt: string;
 }
 

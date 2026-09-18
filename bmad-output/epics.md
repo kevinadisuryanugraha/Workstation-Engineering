@@ -327,14 +327,97 @@
 
 ---
 
+## Epic 11: Server Agent — Service Monitoring (Nginx/MySQL/Redis)
+
+> # COURSE-CORRECTION-2 (2026-09-18, via bmad-correct-course)
+> Ekspansi Epic 9 — Master PRD Section 30: pemantauan layanan, bukan hanya hardware.
+
+**Goal:** Agent memeriksa kesehatan layanan kritis (Nginx, MySQL, Redis) di tiap server dan menampilkannya di kartu Infrastructure yang sudah punya panel "Systemd Services Monitored by Agent".
+
+**In scope (cited):**
+- Master PRD §30 — Fase V1: Server Agent (CPU, RAM, Disk, Nginx, MySQL, Redis) [Source: docs/WORKSTATION_Super_Duper_PRD.pdf#30]
+- FR-015 — persistensi telemetri nyata [Source: prd.md#FR-015]
+
+**Architecture touchpoints:**
+- Modular Layered Monolith — modul agent & server-metrics diperluas [Source: architecture.md#ADR-001]
+
+**Out of scope:** query mendalam (slow query log MySQL, hit ratio Redis) — cukup kesehatan koneksi/latensi probe.
+
+**Stories (ordered):**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 11.1 | agent-service-probes | Probe Nginx (HTTP), MySQL & Redis (TCP + handshake) yang dapat dikonfigurasi per server | done |
+| 11.2 | service-metrics-persistence | Kolom `services` JSONB, ingest + validasi, API latest menyertakan layanan, kartu UI live | done |
+
+**Cross-epic dependencies:** Blocked by Epic 9 · Blocks: None
+
+---
+
+## Epic 12: Scheduled Reporting Engine (Daily/Weekly/Monthly)
+
+> # COURSE-CORRECTION-2 (2026-09-18, via bmad-correct-course)
+> Ekspansi Epic 10 — Master PRD Section 30: laporan berkala otomatis berbahasa manajemen.
+
+**Goal:** Laporan harian/mingguan/bulanan yang dapat dibuat & disimpan sebagai arsip (riwayat immutable), dengan narasi eksekutif Bahasa Indonesia dan perbandingan tren vs periode sebelumnya.
+
+**In scope (cited):**
+- Master PRD §30 — Fase V1: laporan harian, mingguan, bulanan otomatis [Source: docs/WORKSTATION_Super_Duper_PRD.pdf#30]
+
+**Architecture touchpoints:**
+- Modular Layered Monolith — modul reports diperluas [Source: architecture.md#ADR-001]
+
+**Out of scope:** pengiriman email/WhatsApp otomatis; penyusunan jadwal cron produksi (endpoint pembuatan on-demand + arsip cukup untuk fase ini).
+
+**Stories (ordered):**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 12.1 | generated-reports-storage | Tabel `generated_reports`, POST generate DAILY/WEEKLY/MONTHLY, riwayat & detail arsip | done |
+| 12.2 | executive-narrative-trends | Paragraf eksekutif Bahasa manajemen + tren vs periode sebelumnya (delta otomatis) | ready-for-dev |
+
+**Cross-epic dependencies:** Blocked by Epic 10 · Blocks: None
+
+---
+
+## Epic 13: Incident Room & SLA Management
+
+> # COURSE-CORRECTION-2 (2026-09-18, via bmad-correct-course)
+> Modul baru — Master PRD Section 30: pengelolaan waktu tanggap insiden & timeline immutable.
+
+**Goal:** Backend insiden sungguhan yang menggantikan data mock Incident Room: deklarasi insiden, mesin status lifecycle, target SLA tanggap/penyelesaian per severity dengan deteksi pelanggaran, dan timeline append-only yang tidak dapat diubah/dihapus.
+
+**In scope (cited):**
+- Master PRD §30 — Fase V1: Incident Room & SLA [Source: docs/WORKSTATION_Super_Duper_PRD.pdf#30]
+- FR-014 — pola append-only immutable [Source: prd.md#FR-014]
+- NFR-002 — integritas forensik [Source: prd.md#NFR-002]
+
+**Architecture touchpoints:**
+- Immutable Append-Only Audit (pola yang sama untuk timeline insiden) [Source: architecture.md#ADR-007]
+- Server-Authoritative RBAC [Source: architecture.md#ADR-003]
+
+**Out of scope:** notifikasi PagerDuty/Slack; on-call scheduling; post-mortem template generator (postmortem disimpan sebagai event timeline bertipe note).
+
+**Stories (ordered):**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 13.1 | incident-schema-lifecycle | Skema `incidents` + API deklarasi & transisi status tervalidasi mesin status | ready-for-dev |
+| 13.2 | incident-sla-engine | Target SLA tanggap/resolve per severity, perhitungan status MET/BREACHED/PENDING | ready-for-dev |
+| 13.3 | incident-immutable-timeline-ui | Tabel `incident_events` append-only + wiring IncidentRoomView ke API nyata | ready-for-dev |
+
+**Cross-epic dependencies:** Blocked by Epic 1 (auth/RBAC), Epic 7 (pola audit) · Blocks: None
+
+---
+
 ## Delivery Tracking (Count-Based)
 
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
-- **Total Stories:** 28 (20 MVP + 8 Fase V1)
-- **Done:** 28 (100% — MVP + Fase V1 Epic 8/9/10 tuntas)
-- **Remaining:** 0
-- **Completion Rate:** 100% (28 / 28)
+- **Total Stories:** 35 (20 MVP + 8 Fase V1 gel.1 + 7 Fase V1 gel.2)
+- **Done:** 31 (MVP + gelombang 1 + Wave 9)
+- **Remaining:** 4 (12.2, 13.1, 13.2, 13.3)
+- **Completion Rate:** 89% (31 / 35)
 
 ## Sequencing & Wave Plan
 
@@ -382,6 +465,19 @@ Wave 7 (Server Agent — Sprint V1.2) [COURSE-CORRECTION]:
 Wave 8 (Reporting — Sprint V1.3) [COURSE-CORRECTION]:
   ├── Story 10.1 (Report Aggregation API)
   └── Story 10.2 (ID Report Generator)
+
+Wave 9 (Service Monitor + Arsip Laporan) [COURSE-CORRECTION-2]:
+  ├── Story 11.1 (Agent Service Probes)
+  ├── Story 11.2 (Service Metrics Persistence)
+  └── Story 12.1 (Generated Reports Storage)
+
+Wave 10 (Narasi Eksekutif + Incident Core) [COURSE-CORRECTION-2]:
+  ├── Story 12.2 (Executive Narrative & Trends)
+  └── Story 13.1 (Incident Schema & Lifecycle)
+
+Wave 11 (SLA + Timeline Immutable) [COURSE-CORRECTION-2]:
+  ├── Story 13.2 (Incident SLA Engine)
+  └── Story 13.3 (Immutable Timeline & Incident Room UI)
 ```
 
 ---

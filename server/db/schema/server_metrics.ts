@@ -13,6 +13,8 @@ export const serverMetrics = pgTable('server_metrics', {
   memoryUsed: doublePrecision('memory_used').notNull(), // bytes
   memoryFree: doublePrecision('memory_free').notNull(), // bytes
   disks: jsonb('disks').notNull(), // [{ filesystem, mount, total, used, available, usePercent }]
+  // Story 11.2 — service probe results (nullable for backward compatibility with pre-11 rows)
+  services: jsonb('services'), // [{ name, kind, target, healthy, latencyMs, checkedAt }]
   recordedAt: timestamp('recorded_at', { withTimezone: true }).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [

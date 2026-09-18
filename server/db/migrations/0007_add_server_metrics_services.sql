@@ -1,0 +1,1 @@
+ALTER TABLE "server_metrics" ADD COLUMN "services" jsonb;

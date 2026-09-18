@@ -17,7 +17,7 @@ let timer: ReturnType<typeof setTimeout> | null = null;
 
 async function tick(config: AgentConfig): Promise<void> {
   try {
-    const sample = await collectSample(config.serverName);
+    const sample = await collectSample(config.serverName, config.services, config.probeTimeoutMs);
     const inserted = await transport!.flush([sample]);
     console.log(`[agent] ${new Date().toISOString()} sample sent (${inserted} inserted, ${transport!.bufferedCount} buffered)`);
   } catch (err: any) {

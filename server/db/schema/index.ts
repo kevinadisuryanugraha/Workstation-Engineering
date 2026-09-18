@@ -10,3 +10,4 @@ export * from './evidence_links.ts';
 export * from './repositories.ts';
 export * from './webhook_deliveries.ts';
 export * from './server_metrics.ts';
+export * from './generated_reports.ts';
