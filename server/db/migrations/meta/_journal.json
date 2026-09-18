@@ -15,6 +15,13 @@
       "when": 1789702080775,
       "tag": "0001_dashing_lightspeed",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789702483908,
+      "tag": "0002_dear_king_bedlam",
+      "breakpoints": true
     }
   ]
 }

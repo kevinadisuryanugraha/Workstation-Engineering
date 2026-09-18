@@ -12,6 +12,9 @@ import { authenticateToken, AuthenticatedRequest } from "./server/middlewares/au
 import { requirePermission, requireRole } from "./server/middlewares/rbac.ts";
 import { authRouter } from "./server/modules/auth/auth.routes.ts";
 import { loginHandler } from "./server/modules/auth/auth.controller.ts";
+import { projectRouter } from "./server/modules/projects/project.routes.ts";
+import { workItemRouter } from "./server/modules/work-items/work-item.routes.ts";
+import { ticketRouter } from "./server/modules/tickets/ticket.routes.ts";
 import { UserRole, Permission, SERVER_ROLE_PERMISSIONS } from "./server/constants/permissions.ts";
 
 export type { UserRole, Permission, AuthenticatedRequest };
@@ -31,6 +34,11 @@ app.use(requestCorrelationId);
 // Mount modular auth routers (v1 and backward-compatible /api/auth)
 app.use("/api/v1/auth", authRouter);
 app.post("/api/auth/login", loginHandler);
+
+// Mount domain routes
+app.use("/api/v1/projects", projectRouter);
+app.use("/api/v1/work-items", workItemRouter);
+app.use("/api/v1/tickets", ticketRouter);
 
 // Public sanitized user directory metadata (profiles without password hashes)
 const PUBLIC_USERS = [
