@@ -21,7 +21,12 @@ export function buildHelmetOptions(nodeEnv: string = process.env.NODE_ENV ?? 'de
         'style-src': ["'self'", 'https://fonts.googleapis.com', "'unsafe-inline'"],
         'font-src': ["'self'", 'https://fonts.gstatic.com', 'data:'],
         'img-src': ["'self'", 'data:', 'blob:'],
-        'connect-src': isDev ? ["'self'", 'ws:', 'wss:', 'http://localhost:*'] : ["'self'", 'wss:'],
+        // HOTFIX 2026-09-19: domain Google Fonts ditambahkan — service worker
+        // (workbox runtimeCaching) me-fetch CSS font via fetch(), butuh izin
+        // connect-src eksplisit (sebelumnya diblok CSP di produksi).
+        'connect-src': isDev
+          ? ["'self'", 'ws:', 'wss:', 'http://localhost:*', 'https://fonts.googleapis.com']
+          : ["'self'", 'wss:', 'https://fonts.googleapis.com', 'https://fonts.gstatic.com'],
         'worker-src': ["'self'", 'blob:'], // PWA service worker
       },
     },
