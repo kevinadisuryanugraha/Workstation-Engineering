@@ -22,6 +22,7 @@ import { projectRouter } from "./server/modules/projects/project.routes.ts";
 import { workItemRouter } from "./server/modules/work-items/work-item.routes.ts";
 import { ticketRouter } from "./server/modules/tickets/ticket.routes.ts";
 import { gitWebhookRouter } from "./server/modules/git/git.routes.ts";
+import { gitEntityRouter } from "./server/modules/git/git-entity.routes.ts";
 import { deploymentRouter } from "./server/modules/deployments/deployment.routes.ts";
 import { auditRouter } from "./server/modules/audit/audit.routes.ts";
 import { myWorkRouter } from "./server/modules/my-work/my-work.routes.ts";
@@ -79,6 +80,7 @@ app.use("/api/v1/projects", projectRouter);
 app.use("/api/v1/work-items", workItemRouter);
 app.use("/api/v1/tickets", ticketRouter);
 app.use("/api/v1/webhooks", gitWebhookRouter);
+app.use("/api/v1/git", gitEntityRouter); // Story 18.1 (CC-5): read API git entities — additive, ingest webhook tak tersentuh
 app.use("/api/v1/deployments", deploymentRouter);
 app.use("/api/v1/audit-logs", auditRouter);
 app.use("/api/v1/my-work", myWorkRouter);
