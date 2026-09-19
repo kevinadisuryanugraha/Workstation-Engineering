@@ -34,6 +34,7 @@ import {
   mapPullRequestDto
 } from "./hooks/api/useGitEntities";
 import { useDeployments, mapDeploymentDto } from "./hooks/api/useDeployments";
+import { useKbArticles, mapKbArticleDto } from "./hooks/api/useKbArticles";
 import { hasPermission, ROLE_PERMISSIONS } from "./lib/rbac";
 import { NAV_ITEMS, filterNavigation } from "./config/navigation";
 
@@ -202,7 +203,15 @@ export default function App() {
     setPullRequests(apiPullRequests.map(mapPullRequestDto));
   }, [apiPullRequests]);
   const [events, setEvents] = useState<EngineeringEvent[]>(initialData.events);
-  const [articles] = useState(initialData.articles);
+  const [articles, setArticles] = useState(initialData.articles);
+
+  // Story 18.3 (CC-5): artikel KB nyata dari API (15.1) — boot real
+  // MENGANTIKAN seed; mode demo tetap utuh.
+  const { data: apiArticles } = useKbArticles({ enabled: !DEMO_MODE && Boolean(session?.user) });
+  useEffect(() => {
+    if (DEMO_MODE || !Array.isArray(apiArticles)) return;
+    setArticles(apiArticles.map(mapKbArticleDto));
+  }, [apiArticles]);
 
   // Filter project-specific items
   const projectWorkItems = workItems.filter((w) => w.projectId === currentProject?.id);
