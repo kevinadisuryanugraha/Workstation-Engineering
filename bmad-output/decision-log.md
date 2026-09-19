@@ -5,6 +5,16 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-19 — HOTFIX Produksi #2–#4: Stale SW, CSP Fonts, Empty-Selection Guards, No-Cache
+- **Decision:** Rangkaian tiga hotfix lanjutan pasca-deploy Epic 17/18 atas laporan user: **#2** service worker workbox mem-precache bundle lama → `skipWaiting`+`clientsClaim` eksplisit; **#3** CSP `connect-src` memblokir fetch font oleh SW → domain fonts diizinkan + runtimeCaching fonts dihapus dari SW (font dimuat langsung halaman); **#4** crash `reading 'author'` di KnowledgeBaseView — `useState(articles[0])` menghasilkan undefined saat boot real → guard render + fallback jujur (pola sama dicegah di InfrastructureView), plus `Cache-Control: no-cache` untuk `/sw.js` & `index.html`.
+- **Rationale:** Kontrak deploy WORKSTATION baru: (1) setiap array yang mungkin kosong TIDAK boleh jadi initial state yang di-dereference tanpa guard; (2) `sw.js`+`index.html` wajib no-cache; (3) SW tidak meng-intercept resource lintas-origin yang dibatasi CSP-nya sendiri.
+- **Impact:** security.ts, vite.config.ts, server.ts, KnowledgeBaseView, InfrastructureView; test 234/234 hijau; produksi di `0f3ca99`, bundle `index-wHXVDmt1.js` terverifikasi memuat semua guard.
+- **In-progress stories affected:** none.
+- **Made by:** bmad-epic-pipeline-worktree (hotfix loop ×3)
+- **Supersedes:** none (lanjutan HOTFIX Produksi #1 DTO contract mappers)
+
+---
+
 ### 2026-09-19 — HOTFIX Produksi: DTO→UI Contract Mappers + Gate Permission Hook
 - **Decision:** Hotfix pasca-deploy Blok 14 atas laporan user: (1) crash `TypeError: reading 'name'` di WorkItemsView — API work-items/tickets mengirim baris DB mentah, mapper kontrak UI terlewat; (2) 403 berulang `audit-logs` — hook 18.4 menembak tanpa cek permission. Perbaikan: `src/lib/contractMappers.ts` (mapWorkItemDto/mapTicketDto dengan placeholder jujur), gate `PERM_AUDIT_LOGS_VIEW` & `PERM_AI_SCAN_TRIGGER` pada hook terkait, 10 test baru (234/234 hijau), redeploy & verifikasi publik.
 - **Rationale:** Tiping TypeScript tidak menjamin bentuk runtime — setiap hydrasi API wajib lewat mapper eksplisit; endpoint ber-permission tidak boleh di-fetch untuk role tanpa permission.
