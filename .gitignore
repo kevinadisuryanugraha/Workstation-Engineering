@@ -8,3 +8,7 @@ coverage/
 .env*
 !.env.example
 docs/AKUN-PRODUKSI-RAHASIA.md
+
+# BMAD worktrees & artefak audit runtime (CC-4)
+.pi/bmad-worktrees/
+.pi/ui-audit/
