@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-19T09:40:00Z" # CC-5: 18.1-18.5 done (git/deployments/kb/audit/ai wiring); tinggal 18.6
+last_updated: "2026-09-19T10:30:00Z" # CC-5 TUNTAS: 18.6 done — Epic 18 selesai 6/6; seluruh 52 story done
 
 epics:
   - id: "epic-1"
@@ -136,10 +136,14 @@ epics:
   - id: "epic-18"
     title: "Client API Wiring — Honest Data Everywhere"
     description: "Course Correction 5 (2026-09-19): hubungkan 6 domain (Git, Deployments, KB, Audit, AI, Global Search) ke API nyata — menutup honest-empty notice warisan CC-4"
+    status: done
     story_ids:
-      - "17.1.role-based-grouped-navigation"
-      - "17.2.demo-data-exit-strategy"
-      - "17.3.blueprint-surface-removal"
+      - "18.1.git-entities-wiring"
+      - "18.2.deployments-wiring"
+      - "18.3.kb-wiring"
+      - "18.4.audit-ledger-wiring"
+      - "18.5.ai-intelligence-wiring"
+      - "18.6.global-search-wiring"
 
 stories:
   # Wave 1 (Immediate Foundation)
@@ -932,7 +936,7 @@ stories:
   - id: "18.6.global-search-wiring"
     title: "Global Search — Modal Query Debounced ke API"
     epic_id: "epic-18"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/18.6.global-search-wiring.story.md"
     parallel_set: 18
     dependencies:

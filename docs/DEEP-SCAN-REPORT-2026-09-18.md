@@ -32,6 +32,7 @@
 | **ke-10** | **18 Sep 2026** | **Re-set password 7 akun produksi atas permintaan owner** — nilai baru hanya di file lokal rahasia (git-ignored) · verifikasi login baru OK / lama 401 | `fadc72f` |
 | **ke-11** | **18 Sep 2026** | **Audit UI menyeluruh 15 halaman** (skill better-interface + runtime Playwright) — 15 temuan sistemik: 4 HIGH (markdown mentah, reduced-motion, metrik kontradiktif, kontras) · 10 MEDIUM · 1 LOW · detail: `docs/UI-AUDIT-2026-09-18.md` | `0 console error` |
 | **ke-12** | **19 Sep 2026** | **COURSE CORRECTION 4 TUNTAS — UI Clarity & Role-Based Navigation (Epic 17, 3/3 story done)** — remediasi 14 temuan UI audit Blok 11 · nav ber-role + 3 grup seksi (15→14 menu, Blueprint keluar & diarsip) · demo gating `VITE_DEMO_MODE` (boot default = data API nyata + empty state jujur + banner SEC-05) · **195/195 test · lint strict bersih · build sukses** · detail: **BLOK 12** | `b432d23`, `dde3aa0`, `4ad2050`, `2b72d0e` |
+| **ke-13** | **19 Sep 2026** | **COURSE CORRECTION 5 TUNTAS — Client API Wiring (Epic 18, 6/6 story done)** — 6 domain terhubung data nyata: Git (+endpoint read baru), Deployments, KB, Audit, AI, Global Search · honest-empty hilang saat data mengalir · **224/224 test · lint bersih · build sukses · repo pulih dari korupsi objek git + 27 komit di-push backup** · detail: **BLOK 13** | `a945413`, `d2c9cdf`, `e9cad6b`, `515fac5`, `5e01ec5`, `4dbfb60`, `9f08466` |
 
 ---
 
@@ -47,7 +48,7 @@
 8. [Rencana Kerja Penyelesaian & Roadmap Fase V1](#8-rencana-kerja-penyelesaian)
 9. [Koordinasi yang Dibutuhkan](#9-koordinasi-yang-dibutuhkan)
 10. [Lampiran: Keterangan Teknis & Matriks 49 Pengujian Otomatis](#10-lampiran-keterangan-teknis)
-11. 📊 **Log Progres Berkelanjutan** — Blok 7 · 8 · 9 · 10 · 11 · **12** (append-only)
+11. 📊 **Log Progres Berkelanjutan** — Blok 7 · 8 · 9 · 10 · 11 · 12 · **13** (append-only)
 
 ---
 
@@ -499,6 +500,83 @@ gunzip -c /opt/workstation/backups/workstation_db_<TIMESTAMP>.sql.gz | \
 |:---:|---|
 | 1 | Kualitas dasar kuat: 0 console error, design system konsisten, telemetri live nyata, provenance chips |
 | 2 | 4 HIGH bersifat sistemik namun fixable upaya rendah–sedang; urutan sarankan: **H-1 → H-4 → H-3 → M-6 → M-4** → sisanya |
+
+---
+
+### 📦 BLOK 13 — COURSE CORRECTION 5: CLIENT API WIRING — HONEST DATA EVERYWHERE (EPIC 18)
+**📅 19 September 2026 · Status: 🟢 SELESAI — EPIC 18 TUNTAS 6/6** · Komit: `a945413` · `d2c9cdf` · `e9cad6b` · merge per-story di `main`
+
+**0. Konteks & Keputusan (CC-5)**
+
+| No. | Aspek | Detail |
+|:---:|---|---|
+| 1 | Pemicu | Temuan Dev Agent Record 17.2 / BLOK 12.6: 6 domain punya data/API nyata tapi UI belum terhubung — di boot produksi tampil kosong + honest notice |
+| 2 | Keputusan | Epic 18 (6 story, wave 18, sequential): wire semua jalur BACA ke API; non-goal yang ditunda: persistensi mutasi lokal & pengayaan field proyek |
+| 3 | Pelacakan | `bmad-output/sprint-status.yaml` epic-18 · decision-log CC-5 · tracker akhir: **52/52 story done (18/18 epic, 100%)** |
+
+**1. Story 18.1 — Git Entities (satu-satunya yang butuh endpoint server baru)**
+
+| No. | Aksi | Detail |
+|:---:|---|---|
+| 1 | Server (BARU) | `GET /api/v1/git/commits` & `/pull-requests` — JWT + `PERM_VIEW_ENGINEERING`, join repositories (projectId nyata), limit 50/max 200, urut terbaru; murni additive — ingest webhook (HMAC+idempotensi) utuh |
+| 2 | Client (BARU) | `useGitEntities` + mapper DTO→UI; kode item (WRK-101 dst.) diekstrak dari teks nyata pesan/branch |
+| 3 | Bonus kejujuran | Badge statis palsu "4 Commits" di nav Git dihapus |
+
+**2. Story 18.2 — Deployments**
+
+| No. | Aksi | Detail |
+|:---:|---|---|
+| 1 | Client (BARU) | `useDeployments` (endpoint 6.1 eksisting, tak disentuh) + mapper env/status (PENDING/IN_PROGRESS→RUNNING) |
+| 2 | Kejujuran | `code` diturunkan dari id nyata; `gates`=[] (belum dimodelkan DB); rilis fiktif "v2.8.1" kini otomatis hilang dari boot real |
+
+**3. Story 18.3 — Knowledge Base**
+
+| No. | Aksi | Detail |
+|:---:|---|---|
+| 1 | Client (BARU) | `useKbArticles` (endpoint 15.1) + mapper; kategori UI diturunkan dari tags (case-insensitive), default netral Troubleshooting |
+| 2 | Bonus | `originTicketCode` dari `sourceTicketKey` (draft dari tiket resolved) |
+
+**4. Story 18.4 — Audit Ledger**
+
+| No. | Aksi | Detail |
+|:---:|---|---|
+| 1 | Client (BARU) | `useAuditLogs` (halaman 1, limit 50) + adapter DTO→event feed; `evidenceRef` = correlation ID (traceable) |
+| 2 | Tipe baru | Union `SYSTEM_AUDIT` (additive di types.ts) — aksi tak dikenal jujur, tidak dipaksakan ke kategori lain |
+| 3 | Bug tertangkap test | Substring "AI" cocok dengan "FAILED" → heuristik diperketat (`AI_`/`SCAN`, PR posisi-token) |
+
+**5. Story 18.5 — AI Intelligence**
+
+| No. | Aksi | Detail |
+|:---:|---|---|
+| 1 | Client (BARU) | `useAiFindings` + `useAiRecommendations` (endpoint 16.x) + mapper normalisasi kasus (fallback jujur) |
+| 2 | Efek samping jujur | Badge sidebar AI findings kini menghitung data nyata; `technicalDebts` tetap kosong di real (belum ada endpoint — dicatat) |
+
+**6. Story 18.6 — Global Search (penutup)**
+
+| No. | Aksi | Detail |
+|:---:|---|---|
+| 1 | Client (BARU) | `useGlobalSearch` — debounce 250ms, min 2 karakter, fetch hanya saat modal terbuka; jalur demo (props lokal) tetap utuh |
+| 2 | UI jujur | Loading/error/kosong dengan pesan eksplisit + data-testid |
+
+**7. Verifikasi Kualitas & Insiden Repo**
+
+| No. | Uji | Hasil |
+|:---:|---|:---:|
+| 1 | `npm run lint` (tsc strict) | 🟢 0 error |
+| 2 | `npx vitest run` | 🟢 **224/224 test · 45 file** (195 → 224; +29 test baru selama Epic 18) |
+| 3 | `npm run build` | 🟢 sukses per story |
+| 4 | Tracker BMAD | 🟢 **52/52 story done · 18/18 epic (100%)** |
+| 5 | ⚠️ Insiden | Loose object git korup (`.pi/ui-audit/03-workitems.png`) — terdeteksi saat prepare worktree 18.6, **dipulihkan 100%** via `git hash-object -w` dari file disk (SHA cocok) + fsck bersih |
+| 6 | Backup | **27 komit di-push ke origin** (`b432d23..103c37f`) — sinkron 0/0 |
+
+**8. Rekomendasi Lanjutan**
+
+| No. | Item | Catatan |
+|:---:|---|---|
+| 1 | Persistensi mutasi | Handler create/update work item, ticket, incident masih setState lokal — wire ke mutation API (CC-6) |
+| 2 | Drill-down pencarian | `onNavigate` belum memakai entityId untuk membuka entitas spesifik |
+| 3 | Statistik diff commit | Ingest webhook belum menyimpan filesChanged/additions/deletions |
+| 4 | Endpoint technical debt & pengayaan field proyek | Masih placeholder jujur |
 
 ---
 

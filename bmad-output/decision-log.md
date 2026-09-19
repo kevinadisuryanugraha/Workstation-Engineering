@@ -5,6 +5,16 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-19 — Epic 18 (CC-5) Tuntas: Client API Wiring 6/6 selesai
+- **Decision:** Seluruh 6 story Epic 18 dieksekusi, diuji, dan di-merge ke `main` via worktree loop: **18.1** Git entities (endpoint read baru `GET /api/v1/git/commits` & `/pull-requests` — additive, ingest webhook utuh + hydration client), **18.2** Deployments, **18.3** KB, **18.4** Audit ledger (adapter DTO→event feed + tipe `SYSTEM_AUDIT`), **18.5** AI findings/recommendations, **18.6** Global Search modal (debounced, jalur real/demo ganda).
+- **Rationale:** Menuntaskan CC-5 — seluruh view kini menampilkan data nyata di boot produksi; honest-empty notice hilang otomatis saat data mengalir; mock hanya hidup di mode demo (VITE_DEMO_MODE).
+- **Impact:** +5 hook client (useGitEntities, useDeployments, useKbArticles, useAuditLogs, useAiIntel) + useGlobalSearch; +1 endpoint server (git entities read, 2 route); test suite 44→45 file, 195→224 test hijau; badge statis palsu "4 Commits" dihapus; tracker 52/52 story done (18/18 epic).
+- **In-progress stories affected:** none.
+- **Made by:** bmad-epic-pipeline-worktree (dev loop) → review → gate → finalize
+- **Supersedes:** none
+
+---
+
 ### 2026-09-19 — Course Correction 5: Tambah Epic 18 — Client API Wiring (Honest Data Everywhere)
 - **Decision:** Menambahkan Epic 18 (6 story, wave 18) hasil temuan Dev Agent Record 17.2 / BLOK 12.6 Deep Scan Report: 6 domain punya data/API nyata tapi UI belum terhubung — **18.1** Git entities (perlu read endpoint server kecil: GET /api/v1/git/commits & /pull-requests; data sudah terkumpul via webhook 5.x), **18.2** Deployments, **18.3** KB, **18.4** Audit ledger (adapter DTO→event feed), **18.5** AI findings/recommendations, **18.6** Global Search modal (debounced query). Non-goal yang ditunda eksplisit: persistensi mutasi lokal ke API dan pengayaan field proyek (owner/techLead/currentSprint/latestRelease) — kandidat CC berikutnya.
 - **Rationale:** CC-4 berhasil mengeluarkan mock dari boot default (honest-empty state), tetapi 6 layar masih kosong di produksi. Agar prinsip "data nyata secara default" benar-benar tuntas, jalur baca ke API harus di_wire_ sekarang — datanya sudah ada, yang kurang hanya pipa client-nya (kecuali Git yang perlu 2 endpoint list kecil).

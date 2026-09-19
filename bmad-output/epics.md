@@ -507,12 +507,12 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 18.1 | git-entities-wiring | GET /api/v1/git/commits & /pull-requests (server) + hook client + hydration | ready-for-dev |
-| 18.2 | deployments-wiring | Hook useDeployments + hydration view Deployments | ready-for-dev |
-| 18.3 | kb-wiring | Hook useKbArticles + hydration view Knowledge Base | ready-for-dev |
-| 18.4 | audit-ledger-wiring | Hook useAuditLogs + adapter DTO→event feed view Audit | ready-for-dev |
-| 18.5 | ai-intelligence-wiring | Hook findings/recommendations + hydration view AI | ready-for-dev |
-| 18.6 | global-search-wiring | GlobalSearchModal query debounced ke /api/v1/search | ready-for-dev |
+| 18.1 | git-entities-wiring | GET /api/v1/git/commits & /pull-requests (server) + hook client + hydration | done |
+| 18.2 | deployments-wiring | Hook useDeployments + hydration view Deployments | done |
+| 18.3 | kb-wiring | Hook useKbArticles + hydration view Knowledge Base | done |
+| 18.4 | audit-ledger-wiring | Hook useAuditLogs + adapter DTO→event feed view Audit | done |
+| 18.5 | ai-intelligence-wiring | Hook findings/recommendations + hydration view AI | done |
+| 18.6 | global-search-wiring | GlobalSearchModal query debounced ke /api/v1/search | done |
 
 **Dependencies:** semua depend on 17.2 (infra gating, done) · 18.1 → 18.2 → 18.3 → 18.4 → 18.5 → 18.6 (sequential; shared scope blok sumber data `App.tsx`) · 18.6 tidak menyentuh App.tsx data-block (modal self-fetch)
 
@@ -523,11 +523,11 @@
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
 - **Total Stories:** 52 (20 MVP + 15 Fase V1 gel.1-2 + 8 Fase V2 gel.12-14 + 3 Epic 17 CC-4 + 6 Epic 18 CC-5)
-- **Done:** 46
-- **Remaining:** 6 (18.1 s.d. 18.6 — ready-for-dev)
-- **Completion Rate:** 88% (46 / 52)
+- **Done:** 52
+- **Remaining:** 0
+- **Completion Rate:** 100% (52 / 52)
 - **Koreksi 2026-09-19 (CC-4):** angka lama (33/35, remaining 13.2–13.3) tidak mencerminkan penyelesaian Waves 12–14; factual: 43/43 done sebelum Epic 17.
-- **Koreksi 2026-09-19 (CC-5):** Epic 17 tuntas 3/3 (46/46 done, 100%) sebelum Epic 18 dibuka.
+- **Koreksi 2026-09-19 (CC-5):** Epic 17 tuntas 3/3 (46/46 done, 100%) sebelum Epic 18 dibuka; Epic 18 tuntas 6/6 di hari yang sama.
 
 ## Sequencing & Wave Plan
 
