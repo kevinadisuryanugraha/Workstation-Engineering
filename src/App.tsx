@@ -36,6 +36,12 @@ import {
 import { useDeployments, mapDeploymentDto } from "./hooks/api/useDeployments";
 import { useKbArticles, mapKbArticleDto } from "./hooks/api/useKbArticles";
 import { useAuditLogs, mapAuditLogDto } from "./hooks/api/useAuditLogs";
+import {
+  useAiFindings,
+  useAiRecommendations,
+  mapFindingDto,
+  mapRecommendationDto
+} from "./hooks/api/useAiIntel";
 import { hasPermission, ROLE_PERMISSIONS } from "./lib/rbac";
 import { NAV_ITEMS, filterNavigation } from "./config/navigation";
 
@@ -179,6 +185,20 @@ export default function App() {
   const [aiScanMode, setAiScanMode] = useState<string | null>(null); // SEC-05: integrity flag from /api/ai/scan
   const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>(initialData.aiRecommendations);
   const [technicalDebts, setTechnicalDebts] = useState(initialData.technicalDebts);
+
+  // Story 18.5 (CC-5): findings & recommendations nyata dari API (16.x) —
+  // boot real MENGANTIKAN seed; mode demo tetap utuh. technicalDebts belum
+  // punya endpoint → tetap kosong di boot real (jujur, lihat story 18.5).
+  const { data: apiAiFindings } = useAiFindings({ enabled: !DEMO_MODE && Boolean(session?.user) });
+  useEffect(() => {
+    if (DEMO_MODE || !Array.isArray(apiAiFindings)) return;
+    setAiFindings(apiAiFindings.map(mapFindingDto));
+  }, [apiAiFindings]);
+  const { data: apiAiRecommendations } = useAiRecommendations({ enabled: !DEMO_MODE && Boolean(session?.user) });
+  useEffect(() => {
+    if (DEMO_MODE || !Array.isArray(apiAiRecommendations)) return;
+    setAiRecommendations(apiAiRecommendations.map(mapRecommendationDto));
+  }, [apiAiRecommendations]);
   const [incidents, setIncidents] = useState(initialData.incidents);
 
   // Story 13.3 + 17.2: live incident feed — boot real MENGANTIKAN (bukan
