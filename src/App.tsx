@@ -26,7 +26,8 @@ import { LoginView } from "./components/LoginView";
 import { authManager, authFetch, DIRECTORY_USERS } from "./lib/auth";
 import { useServerMetrics, ServerHealthEntry } from "./hooks/api/useServerMetrics";
 import { useIncidents, IncidentDto } from "./hooks/api/useIncidents";
-import { hasPermission } from "./lib/rbac";
+import { hasPermission, ROLE_PERMISSIONS } from "./lib/rbac";
+import { NAV_ITEMS, filterNavigation } from "./config/navigation";
 
 import {
   mockProjects,
@@ -90,6 +91,16 @@ export default function App() {
     });
     return () => unsubscribe();
   }, []);
+
+  // CC-4 (Story 17.1): fallback ke overview bila view aktif tidak lagi
+  // terlihat oleh role ini (menu difilter per permission).
+  useEffect(() => {
+    const permissions = ROLE_PERMISSIONS[currentUser.role] ?? [];
+    const visibleIds = new Set(filterNavigation(NAV_ITEMS, permissions).map((i) => i.id));
+    if (!visibleIds.has(activeTab)) {
+      setActiveTab("overview");
+    }
+  }, [currentUser.role, activeTab]);
 
   // Strict RBAC Guard Helper
   const checkRBAC = (permission: Permission, actionName: string, minRole?: string): boolean => {
@@ -730,6 +741,7 @@ export default function App() {
         <Sidebar
           activeTab={activeTab}
           onSelectTab={setActiveTab}
+          role={currentUser.role}
           openTicketsCount={projectTickets.filter((t) => t.status !== "RESOLVED" && t.status !== "CLOSED").length}
           criticalIncidentsCount={projectIncidents.filter((i) => i.severity === "CRITICAL").length}
           aiFindingsCount={aiFindings.filter((f) => f.status === "PENDING").length}
