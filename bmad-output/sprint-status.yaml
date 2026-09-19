@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-19T09:10:00Z" # CC-5: 18.1-18.4 done (git/deployments/kb/audit wiring); lanjut 18.5
+last_updated: "2026-09-19T09:40:00Z" # CC-5: 18.1-18.5 done (git/deployments/kb/audit/ai wiring); tinggal 18.6
 
 epics:
   - id: "epic-1"
@@ -919,7 +919,7 @@ stories:
   - id: "18.5.ai-intelligence-wiring"
     title: "AI Intelligence — Findings & Recommendations dari API"
     epic_id: "epic-18"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/18.5.ai-intelligence-wiring.story.md"
     parallel_set: 18
     dependencies:
