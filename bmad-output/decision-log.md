@@ -5,6 +5,16 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-19 — Epic 17 (CC-4) Tuntas: 17.1/17.2/17.3 selesai dieksekusi
+- **Decision:** Seluruh 3 story Epic 17 dieksekusi, diuji, dan di-merge ke `main` via worktree loop (`bmad_worktree` prepare→finalize): **17.1** registry navigasi ber-role + 3 grup; **17.2** demo gating — boot default kini mengonsumsi API nyata (work items, tickets, incidents, server metrics, projects) via React Query, mock hanya aktif lewat `VITE_DEMO_MODE=1` + banner label SEC-05, empty state jujur di semua view; **17.3** Blueprint keluar dari produk (nav 15→14), konten diarsip verbatim di `docs/BLUEPRINT-ARCHIVE-2026-09.md` dengan disclaimer.
+- **Rationale:** Menuntaskan Course Correction 4 — menghilangkan kepadatan semu data mock dan dokumen arsitektur internal yang menyesatkan dari pengalaman harian produksi.
+- **Impact:** `src/mockData.ts` (seksi gating, tanpa kehilangan data); `src/App.tsx` (blok sumber data + honest empty states + banner demo); `src/config/navigation.ts` (ActiveTab 14 anggota); RetroDesktopShell/OverviewView (navigasi blueprint dihapus); BlueprintView.tsx & blueprintData.ts dihapus dari src/; test suite 39 file / 195 test hijau; lint tsc strict bersih; build produksi sukses. Temuan lanjutan tercatat di Dev Agent Record 17.2 (domain tanpa hook client: AI, Git, Deployments, KB, Audit, GlobalSearch modal — kandid course correction berikutnya).
+- **In-progress stories affected:** none.
+- **Made by:** bmad-epic-pipeline-worktree (dev loop) → review → gate → finalize
+- **Supersedes:** none
+
+---
+
 ### 2026-09-19 — Course Correction 4: Epic 17 UI Clarity & Role-Based Navigation + disiplin scope pasca-MVP
 - **Decision:** Berdasarkan umpan balik owner ("tampilan padat & membingungkan — apakah over-engineering?") dan diagnosis meja diskusi (backend TIDAK over-engineered; masalahnya over-EXPOSURE: 15 menu rata tanpa filter role + data demo di semua layar), disepakati:
   - (A+B) **Navigasi berbasis role + pengelompokan 3 seksi** (Kerjaanku / Operations / Governance) memanfaatkan `PERM_*` dan `SERVER_ROLE_PERMISSIONS` yang sudah ada — story 17.1.

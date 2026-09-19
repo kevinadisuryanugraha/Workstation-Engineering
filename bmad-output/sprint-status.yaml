@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-19T05:20:00Z" # CC-4: 17.2 done (demo gating + banner SEC-05 + honest empty states); lanjut 17.3
+last_updated: "2026-09-19T06:05:00Z" # CC-4 TUNTAS: 17.3 done (Blueprint keluar dari produk, arsip di docs/) — epic-17 selesai 3/3
 
 epics:
   - id: "epic-1"
@@ -127,7 +127,7 @@ epics:
   - id: "epic-17"
     title: "UI Clarity & Role-Based Navigation"
     description: "Course Correction 4 (2026-09-19): progressive disclosure — nav difilter per permission, 3 grup seksi, data demo digating, Blueprint keluar dari produk"
-    status: in-progress # 17.1 done, 17.2 done; tinggal 17.3
+    status: done
     story_ids:
       - "17.1.role-based-grouped-navigation"
       - "17.2.demo-data-exit-strategy"
@@ -839,7 +839,7 @@ stories:
   - id: "17.3.blueprint-surface-removal"
     title: "Remove Blueprint from Product Surface, Archive Content to docs/"
     epic_id: "epic-17"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/17.3.blueprint-surface-removal.story.md"
     parallel_set: 17
     dependencies:
