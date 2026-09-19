@@ -79,7 +79,6 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
     ai: "AI Code Scanner",
     reports: "Automated Reports",
     "report-id": "Laporan Manajemen (ID)",
-    blueprint: "Blueprint 01–21",
     knowledge: "Knowledge Runbooks",
     audit: "Audit Event Ledger",
     security: "Security & RBAC Engine"
@@ -376,15 +375,6 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
                   className="w-full p-2 rounded-lg hover:bg-[#FAF7EE] border border-transparent hover:border-slate-900 flex items-center gap-2.5 cursor-pointer text-left"
                 >
                   <span>🚀</span> Production Releases
-                </button>
-                <button
-                  onClick={() => {
-                    onSelectTab("blueprint");
-                    setIsStartOpen(false);
-                  }}
-                  className="w-full p-2 rounded-lg hover:bg-[#FAF7EE] border border-transparent hover:border-slate-900 flex items-center gap-2.5 cursor-pointer text-left"
-                >
-                  <span>💾</span> Technical Blueprint Specs
                 </button>
                 <div className="border-t border-slate-200 my-1" />
                 <button

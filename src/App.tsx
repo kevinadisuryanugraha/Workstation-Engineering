@@ -14,7 +14,6 @@ import { AIIntelligenceView } from "./components/AIIntelligenceView";
 import { ReportsView } from "./components/ReportsView";
 import { ReportView } from "./components/ReportView";
 import { SprintPanel } from "./components/SprintPanel";
-import { BlueprintView } from "./components/BlueprintView";
 import { KnowledgeBaseView } from "./components/KnowledgeBaseView";
 import { AuditLogView } from "./components/AuditLogView";
 import { SecurityView } from "./components/SecurityView";
@@ -989,8 +988,6 @@ export default function App() {
               servers={servers}
             />
           )}
-
-          {activeTab === "blueprint" && <BlueprintView />}
 
           {activeTab === "knowledge" && (
             <>

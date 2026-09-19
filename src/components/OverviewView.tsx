@@ -69,15 +69,6 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => onNavigateTab("blueprint")}
-              className="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-mono font-bold text-slate-950 border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] flex items-center gap-1.5 transition-all cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
-            >
-              <span>Architecture Specs</span>
-              <ArrowRight className="w-3.5 h-3.5 text-slate-950 stroke-[2.5]" />
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
               onClick={() => onNavigateTab("reports")}
               className="px-4 py-2 rounded-xl bg-[#2ec4b6] hover:bg-[#25ad9f] text-xs font-mono font-bold text-slate-950 border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] flex items-center gap-1.5 transition-all cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
             >

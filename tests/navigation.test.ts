@@ -27,10 +27,12 @@ describe('Navigation Registry (Story 17.1)', () => {
     }
   });
 
-  it('id nav unik dan mencakup 15 item eksisting', () => {
+  it('id nav unik dan mencakup 14 item (blueprint keluar di story 17.3)', () => {
     const ids = NAV_ITEMS.map((i) => i.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(NAV_ITEMS.length).toBe(15);
+    expect(NAV_ITEMS.length).toBe(14);
+    // Story 17.3 (AC5): blueprint tidak boleh ada lagi di registry.
+    expect(ids).not.toContain('blueprint');
   });
 
   it('Developer hanya melihat item Kerjaanku + Operations yang diizinkan (AC 4)', () => {
