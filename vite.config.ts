@@ -49,36 +49,9 @@ export default defineConfig(() => {
           // klien, mencegah pengguna terjebak bundle lama (stale precache).
           skipWaiting: true,
           clientsClaim: true,
-          runtimeCaching: [
-            {
-              urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'google-fonts-cache',
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365,
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
-            },
-            {
-              urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'gstatic-fonts-cache',
-                expiration: {
-                  maxEntries: 10,
-                  maxAgeSeconds: 60 * 60 * 24 * 365,
-                },
-                cacheableResponse: {
-                  statuses: [0, 200],
-                },
-              },
-            },
-          ],
+          // HOTFIX 2026-09-19: runtimeCaching Google Fonts DIHAPUS — fetch font
+          // oleh SW diblok CSP-nya sendiri (connect-src). Font kini dimuat
+          // langsung oleh halaman (style-src/font-src sudah mengizinkan).
         },
         devOptions: {
           enabled: true,
