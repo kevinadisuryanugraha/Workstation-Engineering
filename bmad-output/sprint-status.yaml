@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-19T03:00:00Z" # CC-4: +epic-17 (17.1-17.3, ready-for-dev, wave 15-17)
+last_updated: "2026-09-19T05:20:00Z" # CC-4: 17.2 done (demo gating + banner SEC-05 + honest empty states); lanjut 17.3
 
 epics:
   - id: "epic-1"
@@ -127,7 +127,7 @@ epics:
   - id: "epic-17"
     title: "UI Clarity & Role-Based Navigation"
     description: "Course Correction 4 (2026-09-19): progressive disclosure — nav difilter per permission, 3 grup seksi, data demo digating, Blueprint keluar dari produk"
-    status: in-progress
+    status: in-progress # 17.1 done, 17.2 done; tinggal 17.3
     story_ids:
       - "17.1.role-based-grouped-navigation"
       - "17.2.demo-data-exit-strategy"
@@ -825,7 +825,7 @@ stories:
   - id: "17.2.demo-data-exit-strategy"
     title: "Demo Data Gating — Default Real API Data, Demo Behind Flag"
     epic_id: "epic-17"
-    status: in-progress
+    status: done
     file: "bmad-output/stories/17.2.demo-data-exit-strategy.story.md"
     parallel_set: 16
     dependencies:
