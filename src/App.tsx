@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { MotionConfig } from "motion/react";
 import { Header } from "./components/Header";
 import { Sidebar, ActiveTab } from "./components/Sidebar";
@@ -26,24 +26,14 @@ import { LoginView } from "./components/LoginView";
 import { authManager, authFetch, DIRECTORY_USERS } from "./lib/auth";
 import { useServerMetrics, ServerHealthEntry } from "./hooks/api/useServerMetrics";
 import { useIncidents, IncidentDto } from "./hooks/api/useIncidents";
+import { useQuery } from "@tanstack/react-query";
+import { apiRequest } from "./lib/apiClient";
 import { hasPermission, ROLE_PERMISSIONS } from "./lib/rbac";
 import { NAV_ITEMS, filterNavigation } from "./config/navigation";
 
-import {
-  mockProjects,
-  mockWorkItems,
-  mockTickets,
-  mockDeployments,
-  mockServers,
-  mockAIFindings,
-  mockAIRecommendations,
-  mockTechnicalDebts,
-  mockIncidents,
-  mockCommits,
-  mockPullRequests,
-  mockEngineeringEvents,
-  mockKnowledgeArticles
-} from "./mockData";
+// Story 17.2 (CC-4): Demo Data Gating — seed mock HANYA saat VITE_DEMO_MODE
+// aktif; boot default memakai data nyata via React Query (AC1).
+import { DEMO_MODE, getInitialDataSource } from "./mockData";
 
 import {
   Project,
@@ -71,7 +61,8 @@ export default function App() {
   const [currentUser, setCurrentUser] = useState<User>(
     authManager.getUser() || DIRECTORY_USERS[0]
   );
-  const [currentProject, setCurrentProject] = useState<Project>(mockProjects[0]);
+  const initialData = useMemo(() => getInitialDataSource(DEMO_MODE), []);
+  const [currentProject, setCurrentProject] = useState<Project | null>(initialData.currentProject);
   const [isSearchOpen, setIsSearchOpen] = useState<boolean>(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState<boolean>(false);
   const [rbacDenial, setRbacDenial] = useState<{
@@ -116,43 +107,83 @@ export default function App() {
     return true;
   };
 
-  // Core Data States
-  const [projects, setProjects] = useState<Project[]>(mockProjects);
-  const [workItems, setWorkItems] = useState<WorkItem[]>(mockWorkItems);
-  const [tickets, setTickets] = useState<Ticket[]>(mockTickets);
-  const [deployments, setDeployments] = useState<Deployment[]>(mockDeployments);
-  const [servers, setServers] = useState<ServerTelemetry[]>(mockServers);
+  // Core Data States — Story 17.2 (CC-4): seed mock HANYA saat mode demo.
+  // Boot default (tanpa flag) mulai kosong lalu ter-hydrate dari API nyata.
+  const [projects, setProjects] = useState<Project[]>(initialData.projects);
+  const [workItems, setWorkItems] = useState<WorkItem[]>(initialData.workItems);
+  const [tickets, setTickets] = useState<Ticket[]>(initialData.tickets);
+  const [deployments, setDeployments] = useState<Deployment[]>(initialData.deployments);
+  const [servers, setServers] = useState<ServerTelemetry[]>(initialData.servers);
 
-  // Story 9.3: live server health from the Workstation Linux Agent ingestion API
-  const { data: serverHealthData } = useServerMetrics({ enabled: Boolean(session?.user) });
+  // Story 9.3 + 17.2: live server health. Boot real → hanya telemetri agent
+  // (tanpa fallback palsu); mode demo → telemetri live di-merge ke seed mock.
+  const { data: serverHealthData, refetch: refetchServerHealth } = useServerMetrics({ enabled: Boolean(session?.user) });
   useEffect(() => {
     if (!serverHealthData?.servers?.length) return;
-    setServers((prev) => mergeServerTelemetry(prev, serverHealthData.servers));
+    setServers((prev) => mergeServerTelemetry(DEMO_MODE ? prev : [], serverHealthData.servers));
   }, [serverHealthData]);
-  const [aiFindings, setAiFindings] = useState<AIFinding[]>(mockAIFindings);
-  const [aiScanMode, setAiScanMode] = useState<string | null>(null); // SEC-05: integrity flag from /api/ai/scan
-  const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>(mockAIRecommendations);
-  const [technicalDebts, setTechnicalDebts] = useState(mockTechnicalDebts);
-  const [incidents, setIncidents] = useState(mockIncidents);
 
-  // Story 13.3: live incident feed from the Incident Room API
+  // Story 17.2 (AC1): hydration work items & tickets dari API nyata.
+  // Inline useQuery (bukan hook useWorkItems/useTickets) supaya fetch bisa
+  // digating `enabled` — tidak ada request 401 di login screen atau request
+  // percuma saat mode demo. QueryKey sama dengan hook agar cache berbagi.
+  const { data: apiWorkItems } = useQuery({
+    queryKey: ["workItems"],
+    queryFn: () => apiRequest<WorkItem[]>("/api/v1/work-items"),
+    enabled: !DEMO_MODE && Boolean(session?.user)
+  });
+  useEffect(() => {
+    if (DEMO_MODE || !Array.isArray(apiWorkItems)) return;
+    setWorkItems(apiWorkItems);
+  }, [apiWorkItems]);
+  const { data: apiTickets } = useQuery({
+    queryKey: ["tickets"],
+    queryFn: () => apiRequest<Ticket[]>("/api/v1/tickets"),
+    enabled: !DEMO_MODE && Boolean(session?.user)
+  });
+  useEffect(() => {
+    if (DEMO_MODE || !Array.isArray(apiTickets)) return;
+    setTickets(apiTickets);
+  }, [apiTickets]);
+
+  // Story 17.2: proyek nyata untuk boot produksi (project picker & filter
+  // project-scoped). Query inline di blok sumber data — tanpa file hook baru.
+  const { data: apiProjects, isLoading: projectsLoading } = useQuery({
+    queryKey: ["projects"],
+    queryFn: () => apiRequest<Project[]>("/api/v1/projects"),
+    enabled: !DEMO_MODE && Boolean(session?.user)
+  });
+  useEffect(() => {
+    if (DEMO_MODE || !Array.isArray(apiProjects) || apiProjects.length === 0) return;
+    setProjects(apiProjects.map(mapProjectDto));
+    setCurrentProject((prev) => prev ?? mapProjectDto(apiProjects[0]));
+  }, [apiProjects]);
+
+  const [aiFindings, setAiFindings] = useState<AIFinding[]>(initialData.aiFindings);
+  const [aiScanMode, setAiScanMode] = useState<string | null>(null); // SEC-05: integrity flag from /api/ai/scan
+  const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>(initialData.aiRecommendations);
+  const [technicalDebts, setTechnicalDebts] = useState(initialData.technicalDebts);
+  const [incidents, setIncidents] = useState(initialData.incidents);
+
+  // Story 13.3 + 17.2: live incident feed — boot real MENGANTIKAN (bukan
+  // memperkaya) seed; mode demo tetap merge ke mock.
   const { data: incidentFeed } = useIncidents({ enabled: Boolean(session?.user) });
   useEffect(() => {
     if (!incidentFeed?.items?.length) return;
-    setIncidents((prev) => mapIncidentDtos(prev, incidentFeed.items));
+    setIncidents((prev) => mapIncidentDtos(DEMO_MODE ? prev : [], incidentFeed.items));
   }, [incidentFeed]);
-  const [commits, setCommits] = useState(mockCommits);
-  const [pullRequests, setPullRequests] = useState(mockPullRequests);
-  const [events, setEvents] = useState<EngineeringEvent[]>(mockEngineeringEvents);
-  const [articles] = useState(mockKnowledgeArticles);
+  const [commits, setCommits] = useState(initialData.commits);
+  const [pullRequests, setPullRequests] = useState(initialData.pullRequests);
+  const [events, setEvents] = useState<EngineeringEvent[]>(initialData.events);
+  const [articles] = useState(initialData.articles);
 
   // Filter project-specific items
-  const projectWorkItems = workItems.filter((w) => w.projectId === currentProject.id);
-  const projectTickets = tickets.filter((t) => t.projectId === currentProject.id);
-  const projectDeployments = deployments.filter((d) => d.projectId === currentProject.id);
-  const projectCommits = commits.filter((c) => !c.projectId || c.projectId === currentProject.id);
-  const projectPullRequests = pullRequests.filter((pr) => !pr.projectId || pr.projectId === currentProject.id);
-  const projectIncidents = incidents.filter((i) => !i.projectId || i.projectId === currentProject.id);
+  const projectWorkItems = workItems.filter((w) => w.projectId === currentProject?.id);
+  const projectTickets = tickets.filter((t) => t.projectId === currentProject?.id);
+  const projectDeployments = deployments.filter((d) => d.projectId === currentProject?.id);
+  const projectCommits = commits.filter((c) => !c.projectId || c.projectId === currentProject?.id);
+  const projectPullRequests = pullRequests.filter((pr) => !pr.projectId || pr.projectId === currentProject?.id);
+  const projectIncidents = incidents.filter((i) => !i.projectId || i.projectId === currentProject?.id);
 
   // Recalculate project progress dynamically from evidence
   const calculateProgress = () => {
@@ -162,6 +193,27 @@ export default function App() {
   };
 
   const dynamicProgress = calculateProgress();
+
+  // Story 17.2 (AC1/AC3): boot real menunggu proyek nyata dari API —
+  // TIDAK ada fallback ke proyek fiktif. Tampilkan status jujur.
+  if (!DEMO_MODE && !currentProject) {
+    return (
+      <div data-testid="boot-loading" className="flex min-h-screen items-center justify-center bg-slate-50 p-6">
+        <div className="max-w-md rounded-xl border border-slate-200 bg-white p-8 text-center">
+          <p className="text-base font-semibold text-slate-700">
+            {projectsLoading ? "Memuat data proyek…" : "Belum ada proyek tersedia"}
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
+            {projectsLoading
+              ? "Mengambil daftar proyek dari API."
+              : "Buat proyek pertama melalui API atau seed database, lalu muat ulang halaman."}
+          </p>
+        </div>
+      </div>
+    );
+  }
+  if (!currentProject) return null; // demo mode selalu punya seed — guard narrowing TS
+
   const activeProject: Project = {
     ...currentProject,
     progress: dynamicProgress
@@ -736,6 +788,22 @@ export default function App() {
         onOpenMobileMenu={() => setIsMobileNavOpen(true)}
       />
 
+      {/* Story 17.2 (AC2): banner label demo — konsisten pola SEC-05
+          "honestly labeled demo data" (amber, eksplisit, tidak bisa diabaikan). */}
+      {DEMO_MODE && (
+        <div
+          data-testid="app-demo-mode-banner"
+          role="status"
+          className="mx-3 sm:mx-6 mt-3 flex items-start gap-3 rounded-xl border border-amber-300 bg-amber-50 p-4"
+        >
+          <span aria-hidden="true">⚠️</span>
+          <p className="text-sm text-amber-900">
+            <strong>MODE DEMO (VITE_DEMO_MODE aktif)</strong> — Aplikasi menampilkan data contoh
+            statis, bukan data produksi. Jangan dijadikan dasar keputusan teknis.
+          </p>
+        </div>
+      )}
+
       {/* Main Body: Sidebar + Dynamic Content Canvas */}
       <div className="flex-1 flex flex-row overflow-hidden">
         <Sidebar
@@ -752,14 +820,19 @@ export default function App() {
 
         <main className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 sm:py-5 max-w-7xl mx-auto w-full pb-20 lg:pb-6">
           {activeTab === "overview" && (
-            <OverviewView
-              projects={projects.map((p) => (p.id === activeProject.id ? activeProject : p))}
-              events={events}
-              servers={servers}
-              isManagementView={isManagementView}
-              onSelectProject={setCurrentProject}
-              onNavigateTab={(tab: any) => setActiveTab(tab)}
-            />
+            <>
+              {!DEMO_MODE && projects.length === 0 && (
+                <HonestEmptyState title="Belum ada proyek" hint="Buat proyek pertama, lalu ringkasan operasional akan tampil di sini." />
+              )}
+              <OverviewView
+                projects={projects.map((p) => (p.id === activeProject.id ? activeProject : p))}
+                events={events}
+                servers={servers}
+                isManagementView={isManagementView}
+                onSelectProject={setCurrentProject}
+                onNavigateTab={(tab: any) => setActiveTab(tab)}
+              />
+            </>
           )}
 
           {activeTab === "project360" && (
@@ -778,74 +851,110 @@ export default function App() {
           )}
 
           {activeTab === "workitems" && (
-            <WorkItemsView
-              workItems={projectWorkItems}
-              project={activeProject}
-              onUpdateWorkItemStatus={handleUpdateWorkItemStatus}
-              onToggleAcceptanceCriteria={handleToggleAcceptanceCriteria}
-              onAddEvidence={handleAddEvidence}
-              onCreateWorkItem={handleCreateWorkItem}
-              isManagementView={isManagementView}
-            />
+            <>
+              {!DEMO_MODE && projectWorkItems.length === 0 && (
+                <HonestEmptyState title="Belum ada work item" hint="Gunakan tombol buat work item di bawah untuk menambahkan yang pertama." />
+              )}
+              <WorkItemsView
+                workItems={projectWorkItems}
+                project={activeProject}
+                onUpdateWorkItemStatus={handleUpdateWorkItemStatus}
+                onToggleAcceptanceCriteria={handleToggleAcceptanceCriteria}
+                onAddEvidence={handleAddEvidence}
+                onCreateWorkItem={handleCreateWorkItem}
+                isManagementView={isManagementView}
+              />
+            </>
           )}
 
           {activeTab === "tickets" && (
-            <TicketingView
-              tickets={projectTickets}
-              incidents={projectIncidents}
-              project={activeProject}
-              currentUser={currentUser}
-              onUpdateTicketStatus={handleUpdateTicketStatus}
-              onCreateTicket={handleCreateTicket}
-              isManagementView={isManagementView}
-            />
+            <>
+              {!DEMO_MODE && projectTickets.length === 0 && (
+                <HonestEmptyState title="Belum ada tiket masuk" hint="Gunakan intake ticketing di bawah untuk mengirim bug atau insiden pertama." />
+              )}
+              <TicketingView
+                tickets={projectTickets}
+                incidents={projectIncidents}
+                project={activeProject}
+                currentUser={currentUser}
+                onUpdateTicketStatus={handleUpdateTicketStatus}
+                onCreateTicket={handleCreateTicket}
+                isManagementView={isManagementView}
+              />
+            </>
           )}
 
           {activeTab === "incidents" && (
-            <IncidentRoomView
-              incidents={projectIncidents}
-              project={activeProject}
-              currentUser={currentUser}
-              onDeclareIncident={handleDeclareIncident}
-              onUpdateIncidentStatus={handleUpdateIncidentStatus}
-              onAddTimelineEvent={handleAddIncidentTimeline}
-              onNavigateTab={(tab: any, entityId?: string) => setActiveTab(tab)}
-              isManagementView={isManagementView}
-            />
+            <>
+              {!DEMO_MODE && projectIncidents.length === 0 && (
+                <HonestEmptyState title="Tidak ada insiden" hint="Semua sistem berjalan normal. Deklarasikan insiden dari tombol di bawah bila terjadi." />
+              )}
+              <IncidentRoomView
+                incidents={projectIncidents}
+                project={activeProject}
+                currentUser={currentUser}
+                onDeclareIncident={handleDeclareIncident}
+                onUpdateIncidentStatus={handleUpdateIncidentStatus}
+                onAddTimelineEvent={handleAddIncidentTimeline}
+                onNavigateTab={(tab: any, entityId?: string) => setActiveTab(tab)}
+                isManagementView={isManagementView}
+              />
+            </>
           )}
 
           {activeTab === "git" && (
-            <GitIntelligenceView
-              commits={projectCommits}
-              pullRequests={projectPullRequests}
-              project={activeProject}
-              isManagementView={isManagementView}
-            />
+            <>
+              {!DEMO_MODE && projectCommits.length === 0 && projectPullRequests.length === 0 && (
+                <HonestEmptyState title="Belum ada aktivitas Git" hint="Hubungkan repository via webhook GitHub — commit & PR nyata akan tertaut otomatis." />
+              )}
+              <GitIntelligenceView
+                commits={projectCommits}
+                pullRequests={projectPullRequests}
+                project={activeProject}
+                isManagementView={isManagementView}
+              />
+            </>
           )}
 
           {activeTab === "deployments" && (
-            <DeploymentsView
-              deployments={projectDeployments}
-              project={activeProject}
-              onTriggerRollback={handleTriggerRollback}
-              isManagementView={isManagementView}
-            />
+            <>
+              {!DEMO_MODE && projectDeployments.length === 0 && (
+                <HonestEmptyState title="Belum ada deployment tercatat" hint="Deployment tercatat otomatis saat rilis didaftarkan melalui API releases." />
+              )}
+              <DeploymentsView
+                deployments={projectDeployments}
+                project={activeProject}
+                onTriggerRollback={handleTriggerRollback}
+                isManagementView={isManagementView}
+              />
+            </>
           )}
 
           {activeTab === "infrastructure" && (
-            <InfrastructureView
-              servers={servers}
-              onRefreshTelemetry={() => {
-                setServers((prev: ServerTelemetry[]) =>
-                  prev.map((s: ServerTelemetry) => ({
-                    ...s,
-                    cpuUsage: Math.floor(15 + Math.random() * 25),
-                    lastHeartbeat: "Just now"
-                  }))
-                );
-              }}
-              isManagementView={isManagementView}
-            />
+            <>
+              {!DEMO_MODE && servers.length === 0 && (
+                <HonestEmptyState title="Belum ada server terhubung" hint="Jalankan workstation-agent di server untuk mengirim telemetri nyata." />
+              )}
+              <InfrastructureView
+                servers={servers}
+                onRefreshTelemetry={() => {
+                  // Story 17.2: refresh produksi = refetch telemetri agent;
+                  // randomisasi CPU palsu hanya boleh terjadi di mode demo.
+                  if (!DEMO_MODE) {
+                    void refetchServerHealth();
+                    return;
+                  }
+                  setServers((prev: ServerTelemetry[]) =>
+                    prev.map((s: ServerTelemetry) => ({
+                      ...s,
+                      cpuUsage: Math.floor(15 + Math.random() * 25),
+                      lastHeartbeat: "Just now"
+                    }))
+                  );
+                }}
+                isManagementView={isManagementView}
+              />
+            </>
           )}
 
           {activeTab === "ai" && (
@@ -884,11 +993,21 @@ export default function App() {
           {activeTab === "blueprint" && <BlueprintView />}
 
           {activeTab === "knowledge" && (
-            <KnowledgeBaseView articles={articles} isManagementView={isManagementView} />
+            <>
+              {!DEMO_MODE && articles.length === 0 && (
+                <HonestEmptyState title="Belum ada artikel KB" hint="Artikel knowledge base akan tampil di sini setelah dibuat atau didraft dari tiket resolved." />
+              )}
+              <KnowledgeBaseView articles={articles} isManagementView={isManagementView} />
+            </>
           )}
 
           {activeTab === "audit" && (
-            <AuditLogView events={events} isManagementView={isManagementView} />
+            <>
+              {!DEMO_MODE && events.length === 0 && (
+                <HonestEmptyState title="Belum ada aktivitas audit" hint="Log transaksi sistem (append-only) akan tampil di sini begitu aktivitas tercatat." />
+              )}
+              <AuditLogView events={events} isManagementView={isManagementView} />
+            </>
           )}
 
           {activeTab === "security" && (
@@ -942,6 +1061,50 @@ export default function App() {
     </RetroDesktopShell>
     </MotionConfig>
   );
+}
+
+/**
+ * Story 17.2 (AC3) — Honest empty state: an informative notice rendered ABOVE
+ * a real-data view whose API content is still empty. The view stays mounted
+ * (action buttons keep working) and NO fabricated data fills the gap.
+ */
+function HonestEmptyState({ title, hint }: { title: string; hint?: string }) {
+  return (
+    <div
+      data-testid="honest-empty-state"
+      className="mb-4 rounded-xl border border-dashed border-slate-300 bg-white p-5 text-center"
+    >
+      <p className="text-sm font-semibold text-slate-700">{title}</p>
+      {hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+    </div>
+  );
+}
+
+/**
+ * Story 17.2 — Maps a projects API row (GET /api/v1/projects) onto the UI
+ * Project contract. Display fields without an API source yet are filled with
+ * honest placeholders (never fabricated values) — noted in Dev Agent Record.
+ */
+function mapProjectDto(dto: any): Project {
+  return {
+    id: dto.id,
+    key: dto.key,
+    name: dto.name,
+    tagline: dto.tagline ?? "",
+    status: (dto.status ?? "ACTIVE") as Project["status"],
+    progress: dto.progress ?? 0,
+    health: dto.health ?? 100,
+    owner: "—",
+    techLead: "—",
+    currentSprint: "—",
+    openTickets: 0,
+    blockersCount: 0,
+    latestRelease: "—",
+    productionStatus: "Healthy",
+    repoName: "—",
+    modulesCount: 0,
+    description: dto.description ?? ""
+  };
 }
 
 /**

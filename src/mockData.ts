@@ -15,6 +15,97 @@ import {
   User
 } from "./types";
 
+/**
+ * Story 17.2 (CC-4) — Demo Data Gating.
+ *
+ * Prinsip SEC-05 "honestly labeled demo data": boot default aplikasi
+ * TIDAK boleh menampilkan data statis dari modul ini pada view yang sudah
+ * memiliki sumber data API nyata. Data demo hanya di-seed ketika flag
+ * VITE_DEMO_MODE aktif, dan selalu diberi label demo yang jelas.
+ */
+
+/**
+ * Pure resolver flag demo — testable tanpa DOM.
+ * Accepts: "1", "true", "yes", "on" (case-insensitive) → aktif; selain itu non-aktif.
+ */
+export function isDemoModeEnabled(rawFlag: string | boolean | undefined | null): boolean {
+  if (typeof rawFlag === "boolean") return rawFlag;
+  if (rawFlag === undefined || rawFlag === null) return false;
+  const normalized = String(rawFlag).trim().toLowerCase();
+  return normalized === "1" || normalized === "true" || normalized === "yes" || normalized === "on";
+}
+
+/**
+ * Flag demo runtime — dibaca sekali saat module load dari Vite env.
+ * Default (flag tidak diset): FALSE → boot produksi memakai data nyata.
+ */
+export const DEMO_MODE: boolean = isDemoModeEnabled(
+  typeof import.meta !== "undefined" ? (import.meta as any).env?.VITE_DEMO_MODE : undefined
+);
+
+/** Bentuk sumber data awal yang dikonsumsi blok data App.tsx. */
+export interface InitialDataSource {
+  projects: Project[];
+  currentProject: Project | null;
+  workItems: WorkItem[];
+  tickets: Ticket[];
+  deployments: Deployment[];
+  servers: ServerTelemetry[];
+  aiFindings: AIFinding[];
+  aiRecommendations: AIRecommendation[];
+  technicalDebts: TechnicalDebt[];
+  incidents: Incident[];
+  commits: Commit[];
+  pullRequests: PullRequest[];
+  events: EngineeringEvent[];
+  articles: KnowledgeArticle[];
+}
+
+/**
+ * Seed data awal aplikasi.
+ * - demoMode FALSE → seluruh koleksi KOSONG (view beralih ke hook API React
+ *   Query; domain tanpa hook API mengikuti AC4 story 17.2 dan dicatat di
+ *   Dev Agent Record untuk course correction berikutnya).
+ * - demoMode TRUE → seed mock lengkap (perilaku lama), WAJIB diberi banner
+ *   label demo di App.tsx.
+ */
+export function getInitialDataSource(demoMode: boolean): InitialDataSource {
+  if (!demoMode) {
+    return {
+      projects: [],
+      currentProject: null,
+      workItems: [],
+      tickets: [],
+      deployments: [],
+      servers: [],
+      aiFindings: [],
+      aiRecommendations: [],
+      technicalDebts: [],
+      incidents: [],
+      commits: [],
+      pullRequests: [],
+      events: [],
+      articles: []
+    };
+  }
+  return {
+    projects: mockProjects,
+    currentProject: mockProjects[0],
+    workItems: mockWorkItems,
+    tickets: mockTickets,
+    deployments: mockDeployments,
+    servers: mockServers,
+    aiFindings: mockAIFindings,
+    aiRecommendations: mockAIRecommendations,
+    technicalDebts: mockTechnicalDebts,
+    incidents: mockIncidents,
+    commits: mockCommits,
+    pullRequests: mockPullRequests,
+    events: mockEngineeringEvents,
+    articles: mockKnowledgeArticles
+  };
+}
+
 export const mockUsers: User[] = [
   { id: "usr-1", name: "Kevin Santoso", email: "kevin@workstation.io", avatar: "KS", role: "Developer", team: "Web Team" },
   { id: "usr-2", name: "Rina Wijaya", email: "rina@workstation.io", avatar: "RW", role: "Tech Lead", team: "Engineering" },
