@@ -358,7 +358,8 @@ export interface EngineeringEvent {
     | "DEPLOYMENT_FAILED"
     | "SERVER_ALERT"
     | "INCIDENT_TRIGGERED"
-    | "INCIDENT_RESOLVED";
+    | "INCIDENT_RESOLVED"
+    | "SYSTEM_AUDIT"; // Story 18.4 (CC-5): log audit yang tak masuk kategori lain — jujur, bukan dipaksakan
   actor: string;
   projectId?: string;
   source?: string;

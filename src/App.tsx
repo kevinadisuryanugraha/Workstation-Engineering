@@ -35,6 +35,7 @@ import {
 } from "./hooks/api/useGitEntities";
 import { useDeployments, mapDeploymentDto } from "./hooks/api/useDeployments";
 import { useKbArticles, mapKbArticleDto } from "./hooks/api/useKbArticles";
+import { useAuditLogs, mapAuditLogDto } from "./hooks/api/useAuditLogs";
 import { hasPermission, ROLE_PERMISSIONS } from "./lib/rbac";
 import { NAV_ITEMS, filterNavigation } from "./config/navigation";
 
@@ -203,6 +204,14 @@ export default function App() {
     setPullRequests(apiPullRequests.map(mapPullRequestDto));
   }, [apiPullRequests]);
   const [events, setEvents] = useState<EngineeringEvent[]>(initialData.events);
+
+  // Story 18.4 (CC-5): audit ledger nyata dari API (7.2, halaman pertama) —
+  // boot real MENGANTIKAN seed; mode demo tetap utuh.
+  const { data: auditPayload } = useAuditLogs({ page: 1, limit: 50 }, { enabled: !DEMO_MODE && Boolean(session?.user) });
+  useEffect(() => {
+    if (DEMO_MODE || !auditPayload?.items) return;
+    setEvents(auditPayload.items.map(mapAuditLogDto));
+  }, [auditPayload]);
   const [articles, setArticles] = useState(initialData.articles);
 
   // Story 18.3 (CC-5): artikel KB nyata dari API (15.1) — boot real
