@@ -4,7 +4,7 @@
 **Version:** 1.0-MVP (derived from Master PRD v1.0, 17 Sep 2026)  
 **Date:** 18 September 2026  
 **Author:** John (BMAD PM Facilitator)  
-**Status:** DRAFT (Ready for Review)  
+**Status:** APPROVED — MVP (2026-09-19 via Course Correction 4; lihat `decision-log.md`). Epic 8–16 tereksekusi sebagai gelombang V1/V2 pra-jadwal; fitur baru wajib lewat course correction.  
 **Track:** BMad Method  
 
 > **Source of truth for WHAT and WHY for the MVP phase.**  

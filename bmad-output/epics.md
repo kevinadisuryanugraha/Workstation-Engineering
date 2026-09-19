@@ -473,14 +473,36 @@
 
 ---
 
+## Epic 17: UI Clarity & Role-Based Navigation
+
+> # COURSE-CORRECTION-4 (2026-09-19) — Umpan balik owner: UI terasa padat & membingungkan. Diagnosis: over-EXPOSURE (15 menu rata tanpa filter role + data demo), bukan over-engineering backend. Lihat decision-log 2026-09-19.
+
+**Goal:** Menurunkan beban kognitif via *progressive disclosure* — menu difilter per permission (memakai `PERM_*`/`SERVER_ROLE_PERMISSIONS` eksisting), dikelompokkan 3 seksi, data demo keluar dari jalur default, dan Blueprint keluar dari permukaan produk.
+
+**In scope:** IA navigasi (Sidebar/App), gating mock data, higienitas konten.
+**Out of scope:** penghapusan fitur backend, perubahan RBAC server, fitur baru, redesign visual.
+
+**Stories:**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 17.1 | role-based-grouped-navigation | Registry navigasi + filter permission + 3 grup (Kerjaanku/Operations/Governance) | ready-for-dev |
+| 17.2 | demo-data-exit-strategy | mockData digating (VITE_DEMO_MODE); default data API nyata | ready-for-dev |
+| 17.3 | blueprint-surface-removal | Blueprint keluar dari nav/view; konten diarsipkan ke docs/ + disclaimer | ready-for-dev |
+
+**Dependencies:** 17.1 → 17.2 → 17.3 (sequential; shared scope `App.tsx`/`Sidebar.tsx`) · Blocks: perencanaan UX V1
+
+---
+
 ## Delivery Tracking (Count-Based)
 
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
-- **Total Stories:** 35 (20 MVP + 8 Fase V1 gel.1 + 7 Fase V1 gel.2)
-- **Done:** 33
-- **Remaining:** 2 (13.2, 13.3)
-- **Completion Rate:** 94% (33 / 35)
+- **Total Stories:** 46 (20 MVP + 15 Fase V1 gel.1-2 + 8 Fase V2 gel.12-14 + 3 Epic 17 CC-4)
+- **Done:** 43
+- **Remaining:** 3 (17.1, 17.2, 17.3 — ready-for-dev)
+- **Completion Rate:** 93% (43 / 46)
+- **Koreksi 2026-09-19 (CC-4):** angka lama (33/35, remaining 13.2–13.3) tidak mencerminkan penyelesaian Waves 12–14; factual: 43/43 done sebelum Epic 17.
 
 ## Sequencing & Wave Plan
 

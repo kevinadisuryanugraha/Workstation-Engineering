@@ -1,15 +1,19 @@
 # Project Documentation — WORKSTATION (Engineering Intelligence & Operations)
 
 > **BROWNFIELD ground truth.** Dihasilkan oleh skill BMAD `bmad-document-project` melalui
-> scan codebase READ-ONLY. Dokumen ini menjadi input bagi skill BMAD lanjutan (PRD,
-> architecture, tech-spec, project-context) agar mulai dari kondisi nyata. Jangan edit
-> manual tanpa catatan; jalankan scan Update agar tetap akurat.
+> scan codebase READ-ONLY (6 pass: skeleton, stack, entry points, modul, konvensi, integrasi).
+> Dokumen ini menjadi input bagi skill BMAD lanjutan (PRD, architecture, tech-spec,
+> project-context) agar mulai dari kondisi nyata. Jangan edit manual tanpa catatan;
+> jalankan scan Update agar tetap akurat.
 
-- **Tanggal scan:** 18 September 2026
+- **Tanggal scan:** 19 September 2026 (full re-scan; menggantikan scan 18 Sep 2026)
 - **Root codebase:** `/home/smod-dev/Documents/kevin-work/workstation-engineering-intelligence-&-operations`
-- **BMAD track:** belum diinisialisasi (`bmad-output/` baru dibuat oleh scan ini)
-- **Konteks:** Applet Google AI Studio (metadata.json) — prototipe full-stack dengan klaim produk "platform engineering intelligence"
-- **Skala:** ± 12.324 baris TS/TSX/JS/CSS · ± 40 file sumber · 0 pengujian otomatis · tidak berada di bawah version control
+- **BMAD track:** BMad Method — `bmad-output/` berisi prd.md, architecture.md, epics.md,
+  stories/, sprint-status.yaml, decision-log.md, handoff-manifest.json
+- **Konteks:** Awalnya applet Google AI Studio; kini aplikasi full-stack mandiri
+  (React SPA + Express API + PostgreSQL + agent daemon) yang ter-deploy di VPS produksi
+- **Skala:** ± 24.266 baris TS/TSX/CSS (src 12.386 · server 7.593 · agent 453 · tests +
+  scripts) · 51 commit di git (`b432d23`, 19 Sep 2026) · 37 file test · CI GitHub Actions
 
 ---
 
@@ -19,45 +23,56 @@
 
 ```
 .
-├── index.html                  # SPA shell + meta PWA + Google Fonts
-├── server.ts                   # Backend Express + Vite middleware + auth + AI (801 baris, SATU file)
-├── vite.config.ts              # Vite 8 + React + Tailwind 4 + PWA (manifest + workbox)
-├── tsconfig.json               # ES2022, noEmit, alias @/* — TANPA "strict"
-├── package.json                # name "react-example" (boilerplate AI Studio)
-├── bun.lock                    # package manager: bun (lockfile)
-├── metadata.json               # applet AI Studio: server-side Gemini capability
-├── .env.example                # GEMINI_API_KEY, APP_URL (placeholder)
-├── scripts/
-│   └── generate-pwa-icons.js   # generator ikon PWA
-├── public/                     # ikon PWA 192/512/maskable, favicon, icon.svg
-├── src/
-│   ├── main.tsx                # bootstrap React (StrictMode)
-│   ├── App.tsx                 # god component 885 baris — routing tab + 13 state slices
-│   ├── types.ts                # domain model terpusat (376 baris): 9 role, 20 permission
-│   ├── mockData.ts             # seluruh data demo (763 baris) — satu-satunya sumber data
-│   ├── blueprintData.ts        # blueprint teks arsitektur target Laravel+PG (661 baris, tidak sesuai implementasi)
-│   ├── index.css               # Tailwind 4 + design system retro/neo-brutalist
-│   ├── components/             # 16 view fitur + 2 modal/layout
-│   │   ├── ui/                 # 10 komponen UI reusable (RetroDesktopShell, RetroDialogs, dst.)
-│   │   └── ...views
-│   ├── hooks/                  # useOnlineStatus, usePWAInstall
-│   └── lib/                    # auth.ts (AuthManager + DIRECTORY_USERS), rbac.ts, utils.ts
-├── TEMPLATE-DEEP-SCAN-REPORT.md# template laporan manajer (Bahasa Indonesia)
-└── WORKSTATION_Super_Duper_PRD.pdf  # PRD sumber (PDF, 673 KB)
+├── server.ts                    # Bootstrap Express (438 brs): middleware chain + mount 19 router + SPA serve
+├── vite.config.ts               # Vite 8 (rolldown) + React + Tailwind 4 + PWA (manifest + workbox)
+├── drizzle.config.ts            # Drizzle Kit (migrasi PostgreSQL)
+├── tsconfig.json                # ES2022, strict: TRUE, alias @/*, allowImportingTsExtensions
+├── package.json                 # name "workstation-engineering-intelligence", type: module (ESM)
+├── bun.lock + package-lock.json # DUA lockfile: bun (CI) & npm (deploy VPS)
+├── metadata.json                # Sisa metadata applet AI Studio (server-side Gemini)
+├── .env.example                 # DATABASE_URL, JWT_SECRET, RATE_LIMIT_*, AGENT_* (Epic 9 & 11)
+├── .github/workflows/ci.yml     # CI: bun install → tsc strict → vitest (push main + PR)
+├── agent/                       # Daemon telemetri Linux (453 brs): index, config, collectors, transport
+├── server/                      # Backend modular (7.593 brs) — lihat §4
+│   ├── config/                  # auth.ts (JWT secret), security.ts (helmet options)
+│   ├── constants/               # permissions.ts: 9 UserRole, Permission PERM_*, SERVER_ROLE_PERMISSIONS
+│   ├── db/                      # client.ts (pool pg), migrate.ts, seed*.ts, 15 migrasi SQL, schema/ (26 file)
+│   ├── middlewares/             # agentAuth, authenticate (JWT), correlationId, rateLimit, rbac, safeAsync
+│   └── modules/                 # 16 domain: ai, audit, auth, deployments, git, incidents, kb,
+│                                #   my-work, projects, reports, search, server-metrics, sprints,
+│                                #   tickets, users, work-items
+├── src/                         # Frontend SPA (12.386 brs)
+│   ├── main.tsx                 # Bootstrap React 19 (StrictMode)
+│   ├── App.tsx                  # Orchestrator view + routing tab (1.059 brs)
+│   ├── components/              # 23 komponen: 15 view fitur + modal + layout (Sidebar, Header, MobileBottomBar)
+│   ├── hooks/api/               # 7 hook TanStack Query (useTickets, useIncidents, useSprints, ...)
+│   ├── hooks/                   # useOnlineStatus, usePWAInstall
+│   ├── stores/                  # appStore.ts, authStore.ts (Zustand)
+│   ├── lib/                     # apiClient.ts (envelope ADR-004), auth.ts, rbac.ts, utils.ts
+│   ├── types.ts                 # Domain model terpusat
+│   ├── mockData.ts              # Data demo mode DEMO (masih di-import App.tsx, label SEC-05)
+│   ├── blueprintData.ts         # ⚠ Teks blueprint target lama (Laravel+PG) — TIDAK sesuai implementasi
+│   └── index.css                # Tailwind 4 + design system retro/neo-brutalist (+ .md-view)
+├── tests/                       # 37 file test vitest (unit, service, RBAC, e2e workflow, agent, webhook)
+├── deploy/                      # workstation.service, workstation-agent.service (systemd), README deploy VPS
+├── docs/                        # AKUN-PRODUKSI-RAHASIA.md ⚠, UI-AUDIT-2026-09-18.md, DEEP-SCAN-REPORT, PRD PDF
+├── scripts/generate-pwa-icons.js
+└── bmad-output/                 # Workspace BMAD (artikel planning)
 ```
 
-_Depth-3 snapshot; node_modules, dist, cache dikecualikan._
+_Depth-3; node_modules, .git, dist, dev-dist, .pi, .agents dikecualikan._
 
 ### Monorepo / Workspace Signals
 
-Tidak terdeteksi. Single app (client + server dalam satu root), tanpa `packages/`/`apps/`.
+Tidak ada — single app (SPA + API dalam satu repo, di-deploy sebagai satu unit systemd
+`workstation` + satu unit terpisah `workstation-agent`).
 
 ### Documentation Roots
 
-- `README.md` — boilerplate default AI Studio (belum disesuaikan)
-- `TEMPLATE-DEEP-SCAN-REPORT.md` — template laporan pemeriksaan untuk manajemen
-- `WORKSTATION_Super_Duper_PRD.pdf` — PRD produk sumber
-- `src/blueprintData.ts` — dokumentasi arsitektur tertanam sebagai data UI (informatif)
+- `README.md` (root)
+- `docs/` — UI audit, deep-scan report, kredensial produksi (⚠ lihat Planning Notes), PRD PDF
+- `deploy/README.md` — panduan deploy VPS Kontabo (Node 22, PostgreSQL 16, systemd, nginx)
+- `bmad-output/` — prd.md, architecture.md (dengan ADR), epics.md, stories/, decision-log.md
 
 ---
 
@@ -67,44 +82,57 @@ Tidak terdeteksi. Single app (client + server dalam satu root), tanpa `packages/
 
 | Language | Version | Evidence File |
 |----------|---------|---------------|
-| TypeScript | ^7.0.2 (devDep) | package.json, tsconfig.json |
-| Node.js (server) | ES2022 target, ESM | server.ts, tsconfig.json |
+| TypeScript | ^7.0.2 (devDep), target ES2022, `strict: true` | package.json, tsconfig.json |
+| Node.js | 22+ (produksi VPS: v24.20.0) | deploy/README.md, verifikasi VPS 19 Sep |
+| SQL | PostgreSQL 16 (15 migrasi drizzle) | server/db/migrations/ |
 
 ### Framework(s)
 
 | Framework | Version | Role |
 |-----------|---------|------|
-| React | ^19.0.1 | SPA UI (16 view fitur) |
-| Express | ^4.21.2 | API server + static host (server.ts) |
-| Vite | ^8.3.0 | Bundler + dev server (middleware mode di server.ts) |
-| Tailwind CSS | ^4.3.3 | Styling (via @tailwindcss/vite) |
-| vite-plugin-pwa | ^1.3.0 | PWA: manifest, workbox precache + runtime caching |
+| React | 19.0.1 | SPA frontend |
+| Vite (rolldown) | 8.3.0 | Bundler + dev server middleware di server.ts |
+| Express | 4.21.2 | REST API `/api/v1/*` |
+| Drizzle ORM | 0.45.2 | ORM + migrasi PostgreSQL |
+| Tailwind CSS | 4.3.3 | Styling (via @tailwindcss/vite) |
 
 ### Key Dependencies
 
 **Runtime:**
-- `@google/genai` ^2.4.0 — SDK Gemini AI (server-side, dipakai server.ts saja)
-- `motion` ^12.23.24 — animasi (import "motion/react")
-- `animejs` ^4.5.0 — animasi (duplikasi fungsi dengan motion — catatan planning)
-- `recharts` ^3.10.1 — chart (OverviewView, ReportsView, dsb.)
-- `lucide-react` ^0.546.0 — ikon
-- `clsx` + `tailwind-merge` — class utilities (src/lib/utils.ts)
-- `dotenv` ^17.2.3 — env loading (server)
+- `@google/genai` 2.4.0 — Gemini AI (AI Intelligence view; fallback demo preview SEC-05)
+- `@tanstack/react-query` ^5.103.1 — data fetching frontend (7 hook di src/hooks/api)
+- `zustand` ^5.0.15 — state global (appStore, authStore)
+- `zod` ^4.6.5 — validasi input (project.schema.ts, ticket.schema.ts, work-item.schema.ts)
+- `jsonwebtoken` 9 + `bcryptjs` 3 — autentikasi JWT + hash password
+- `helmet` 8.3 + `express-rate-limit` 8.7 — hardening HTTP (SEC-03) + rate limit login (SEC-02)
+- `pg` 8.23 — driver PostgreSQL (pool max 20)
+- `react-markdown` 10 + `remark-gfm` 4 — render markdown laporan (fix audit H-1)
+- `recharts` 3, `motion` 12, `animejs` 4, `lucide-react` — visualisasi, animasi, ikon
+- `vite-plugin-pwa` 1.3 — PWA (manifest, workbox precache 17 entri)
 
 **Build / Dev toolchain:**
-- Package manager: **bun** (bun.lock); skrip npm-compatible
-- `tsx` — menjalankan server.ts saat dev (`npm run dev` = `tsx server.ts`)
-- `esbuild` — bundle server ke `dist/server.cjs` (format cjs, packages=external)
-- TypeScript: `npm run lint` = `tsc --noEmit` (TIDAK ada ESLint/Prettier config)
-- Tidak ada Dockerfile / docker-compose / IaC / CI-CD (.github tidak ada)
+- Package manager: **bun** (bun.lock — dipakai CI) + **npm** (package-lock.json — dipakai deploy VPS; perlu `--legacy-peer-deps` karena konflik peer vite 8 ↔ esbuild 0.25)
+- `tsx` 4.21 — runtime TS untuk dev (`npm run dev`) & migrasi/seed
+- `esbuild` 0.25 — bundle server.ts → dist/server.cjs (CJS, packages external)
+- `drizzle-kit` 0.31 — generate & migrasi skema
+- `playwright-core` 1.63 — dipakai audit UI runtime (dev-only)
+- `vitest` 5 — test runner
 
 ### Test Framework(s)
 
-**Tidak terdeteksi.** Tidak ada test framework, tidak ada file `*.test.*` / `*.spec.*`.
+- **Vitest 5** — 37 file test di `tests/*.test.ts`: auth, rbac, token-revocation,
+  http-hardening, webhook, db, work-items, tickets (+comments/linking), incidents
+  (+lifecycle/sla/timeline), sprints, kb-articles, projects, deployments, reports
+  (+generator), generated-reports, ai-mode/translate/snapshots, agent-daemon/ingestion/
+  service-probes, git-linker, finding-lifecycle, recommendation-conversion,
+  executive-narrative, acceptance-criteria, dependencies, sanity, server-health,
+  workflow-e2e. **Dicatat saja, tidak dieksekusi saat scan.**
 
 ### Container / Infrastructure
 
-Tidak terdeteksi. Model deploy: Google AI Studio applet → Cloud Run (injeksi `GEMINI_API_KEY` & `APP_URL` saat runtime, lihat .env.example & metadata.json). Tidak ada CI/CD pipeline.
+- Tanpa Dockerfile untuk app; PostgreSQL 16 berjalan sebagai container di VPS (`workstation-db`, port 127.0.0.1:5433)
+- Deploy: VPS Kontabo Ubuntu 24.04, systemd (`workstation.service` API+SPA di port 3020, `workstation-agent.service` daemon), nginx reverse proxy + SSL → https://workstation.zamzami.or.id
+- CI: GitHub Actions `ci.yml` — bun install frozen → `tsc --noEmit` (strict) → `vitest run` (push main + PR). **Tidak ada auto-deploy** (deploy manual: git pull → npm install → build → restart systemd)
 
 ---
 
@@ -114,22 +142,38 @@ Tidak terdeteksi. Model deploy: Google AI Studio applet → Cloud Run (injeksi `
 
 | Entry File | Role |
 |------------|------|
-| `server.ts` | Bootstrap Express (port 3000, 0.0.0.0); dev = Vite middleware, prod = static `dist/` |
-| `src/main.tsx` | Mount React app ke #root (StrictMode) |
-| `src/App.tsx` | Komposisi seluruh UI: tab navigation, session RBAC, 13 state slices data mock |
+| `server.ts` | Bootstrap Express: helmet → cors → json(500kb) → correlationId → rate limit login → mount 19 router `/api/v1/*` → SPA fallback → `app.listen(PORT 0.0.0.0)` (default 3000; VPS 3020) |
+| `src/main.tsx` | Bootstrap React 19 (StrictMode) → App.tsx |
+| `agent/index.ts` | Daemon telemetri (Epic 9/Story 9.1): sampling CPU/RAM/disk + probe layanan (http/tcp) tiap AGENT_INTERVAL_SECONDS, kirim ke `/api/v1/agent` dengan buffer retry, graceful shutdown SIGTERM/SIGINT |
+| `server/db/migrate.ts` | Runner migrasi drizzle (`npm run db:migrate`) |
 
 ### Primary Routing Layer
 
-- **Backend:** Express flat routes — `/api/auth/*` (login, me, logout, users, verify-action), `/api/actions/*` (rollback, declare-incident), `/api/ai/*` (scan, translate), `/api/health`. Tidak ada router terpisah.
-- **Frontend:** SPA tab-state (`ActiveTab` di Sidebar) — bukan URL router. 16 tampilan: Overview, Project360, WorkItems, Ticketing, IncidentRoom, GitIntelligence, Deployments, Infrastructure, AIIntelligence, Reports, Blueprint, KnowledgeBase, AuditLog, Security + GlobalSearchModal & RetroDesktopShell.
+- **Backend:** Express Router per domain di `server/modules/<domain>/<domain>.routes.ts`,
+  di-mount di server.ts dengan pola `/api/v1/<domain>`. Group: auth, projects,
+  work-items, tickets, webhooks (git), deployments, audit-logs, my-work, users,
+  agent (token khusus), server-metrics, reports, incidents, sprints, milestones,
+  kb, search, ai. Ada alias legacy `/api/auth/login` + `/api/v1/auth/login`.
+- **Frontend:** SPA tanpa react-router — view switching via state tab di App.tsx
+  (Overview, Project360, Work Items, Ticketing, Incident Room, Sprint, Git Intelligence,
+  Deployments, Infrastructure, Security, Audit Log, Knowledge Base, Reports, Report,
+  AI Intelligence, Blueprint) + GlobalSearchModal + MobileBottomBar.
 
 ### Authentication / Middleware Chain
 
-`express.json({limit:"10mb"})` → (route) `authenticateToken` → `requirePermission(...)` / `requireRole(...)` → handler. Implementasi JWT manual (HMAC-SHA256 via node:crypto), tanpa library auth. **Tiga celah fatal terdeteksi — lihat §7 Planning Notes.**
+`helmet(buildHelmetOptions)` → `cors()` → `express.json({limit:"500kb"})` →
+`requestCorrelationId` → [`loginRateLimiter` di /auth/login] →
+[`authenticateToken` (JWT Bearer) di route terproteksi] →
+[`requirePermission`/`requireRole` (RBAC 9 role × PERM_*)] → handler.
+Khusus `/api/v1/agent`: `agentAuth` (shared token AGENT_INGEST_TOKEN, bukan JWT — Story 9.2).
+Webhook git: verifikasi HMAC `GITHUB_WEBHOOK_SECRET` (webhook.crypto.ts).
+Revokasi token via `users.token_version` (kolom DB, ada test token-revocation).
 
 ### Background Workers / Queues
 
-None detected. (Kafka/Redis/queue hanya disebut di data mock & blueprint.)
+- Tidak ada message queue eksternal.
+- `agent/` = poller terpisah (setInterval-style setTimeout loop), bukan antrian.
+- `incident.events.ts` + SLA timer di modul incidents (in-process).
 
 ---
 
@@ -139,24 +183,31 @@ None detected. (Kafka/Redis/queue hanya disebut di data mock & blueprint.)
 
 | Layer / Module | Path(s) | Inferred Responsibility |
 |---------------|---------|------------------------|
-| Server/API | `server.ts` | Monolith: auth engine, RBAC matrix, user directory, 9 endpoint API, AI client, Vite/static hosting |
-| Views (fitur) | `src/components/*View.tsx` | 16 layar domain: overview, work items, ticketing, incident, git, deployment, infra, AI, report, blueprint, KB, audit, security |
-| UI primitives | `src/components/ui/` | Design system retro: shell, dialogs, card, badge, sparkline, toast, counter, PWA button |
-| State/session | `src/lib/auth.ts` | AuthManager singleton: sesi localStorage, login/offline-fallback, authFetch |
-| RBAC klien | `src/lib/rbac.ts` | Duplikat matriks permission per role (sisi klien) |
-| Domain model | `src/types.ts` | User, Project, WorkItem, Ticket, Incident, Deployment, AIFinding, ServerTelemetry, dsb. |
-| Data demo | `src/mockData.ts`, `src/blueprintData.ts` | Seluruh konten aplikasi (tidak ada backend data nyata) |
-| Hooks | `src/hooks/` | PWA install, online status |
+| Bootstrap API | `server.ts` | Wiring middleware + router + serving SPA build |
+| Domain modules | `server/modules/{auth,projects,work-items,tickets,deployments,audit,my-work,users,server-metrics,reports,sprints,kb,search,incidents,git,ai}` | Pola konsisten: `<x>.routes.ts` → `<x>.controller.ts` → `<x>.service.ts` (+ `<x>.repository.ts`, `<x>.schema.ts` zod) |
+| Persistence | `server/db/` | client pool pg + drizzle, 26 tabel schema, 15 migrasi, seed |
+| Cross-cutting | `server/middlewares/`, `server/config/`, `server/constants/` | JWT, RBAC, rate limit, correlation id, safeAsync, helmet, permissions |
+| Telemetry agent | `agent/` | Daemon ringan di server termonitor → ingestion API |
+| SPA views | `src/components/*View.tsx` (15) | Satu view per fitur, data via hooks/api (react-query) |
+| SPA shared | `src/lib/`, `src/stores/`, `src/hooks/` | apiClient envelope, auth manager, rbac mirror, zustand |
+| Demo/legacy data | `src/mockData.ts`, `src/blueprintData.ts` | Mode demo berlabel SEC-05; blueprint teks lama (tidak akurat vs implementasi) |
 
 ### Cross-Cutting Utilities
 
-- `src/lib/utils.ts` — helper class names (cn)
-- `authFetch()` (lib/auth.ts) — wrapper fetch + Bearer token
-- `crypto` (node) di server.ts — hashing, HMAC, timing-safe compare
+- `server/middlewares/safeAsync.ts` — wrapper async route: error DB → HTTP 503 `DATABASE_UNAVAILABLE` (degraded-mode contract, kode PG ECONNREFUSED/28P01/42P01/…)
+- `server/modules/ai/ai.fallback.ts` — preview demo statis berlabel jujur ketika Gemini gagal/tanpa key (SEC-05, Story 8.3)
+- `server/modules/git/entity-parser.ts` + `git-linker.service.ts` — link commit/PR → work item/ticket
+- `src/lib/apiClient.ts` — ApiError + JSON Envelope ADR-004 (`{data}` / `{error:{code,message,details}}`)
+- `server/constants/permissions.ts` — matriks 9 role (Super Admin … Viewer) × permission `PERM_*`; dimirror di `src/lib/rbac.ts`
 
 ### Notable Domain Concepts (from naming)
 
-Project, WorkItem, Evidence, Ticket, Incident (commander/severity), Deployment (rollback), ServerTelemetry, AIFinding/Recommendation, TechnicalDebt, Commit/PR, EngineeringEvent, KnowledgeArticle, AuditLog, RBAC (9 role × 20 permission). PRD PDF menegaskan konsep "engineering activity → measurable, traceable, evidence-backed progress" + "dual-language (teknis ↔ manajemen)".
+Organisasi → Proyek → Work Items (+ dependencies, acceptance criteria) · Sprints &
+Milestones · Tickets (komentar, riwayat, evidence links) · Incidents (events, SLA) ·
+Git Intelligence (repositories, commits, pull requests, webhook deliveries) ·
+Deployments · Server Metrics (layanan termonitor) · AI Intelligence (scans,
+recommendations, generated reports, translate) · Knowledge Base · Audit Logs ·
+RBAC + Users (token_version).
 
 ---
 
@@ -166,36 +217,44 @@ Project, WorkItem, Evidence, Ticket, Incident (commander/severity), Deployment (
 
 | Artifact | Convention | Example |
 |----------|-----------|---------|
-| Files (komponen) | PascalCase | `IncidentRoomView.tsx`, `RetroDesktopShell.tsx` |
-| Files (lib/hooks) | camelCase | `auth.ts`, `usePWAInstall.ts` |
-| Classes / Types | PascalCase interface/type union | `AuthSession`, `UserRole`, `Permission` |
-| Functions | camelCase | `authenticateToken`, `hashPassword` |
-| Constants | SCREAMING_SNAKE | `PERM_VIEW_DASHBOARD`, `SERVER_ROLE_PERMISSIONS` |
-| CSS | custom utility classes | `.bg-retro-grid`, `.retro-shadow-sm` |
+| Files | kebab-case + suffix peran | `audit-log.service.ts`, `work-item.routes.ts`, `useWorkItems.ts` |
+| Komponen React | PascalCase + suffix View/Modal/Panel | `IncidentRoomView.tsx`, `RBACDenialModal.tsx` |
+| Functions/vars | camelCase | `buildStaticDemoPreview`, `agentIngestRouter` |
+| Types/constants | UPPER_SNAKE untuk enum-like | `PERM_VIEW_DASHBOARD`, `AGENT_INGEST_TOKEN`, `SERVER_ROLE_PERMISSIONS` |
 
 ### Module Resolution
 
-ESM (`"type":"module"`), relative imports di src, alias `@/*` → root (terdaftar tapi jarang dipakai — import relatif dominan).
+ESM (`"type": "module"`) dengan **ekstensi .ts eksplisit** pada import server
+(`allowImportingTsExtensions`); frontend memakai bundler resolution + alias `@/*`;
+tidak ada barrel export dominan (schema/index.ts satu-satunya barrel).
 
 ### Concurrency Model
 
-async/await + Promise (Express handler async untuk endpoint AI; fetch di klien). Tidak ada worker/queue.
+async/await di seluruh backend; pool koneksi pg (max 20); setTimeout loop pada agent;
+tidak ada worker thread / antrian eksternal.
 
 ### Error Handling Style
 
-try/catch per-endpoint → `res.status(500).json({error})`; klien: try/catch + `console.warn/error` + fallback perilaku (offline). Tanpa error middleware terpusat, tanpa error boundary React terdeteksi di App.tsx (perlu konfirmasi saat planning).
+- HTTP: `safeAsync()` → 503 DATABASE_UNAVAILABLE untuk kegagalan DB; envelope error ADR-004
+- Frontend: `ApiError` class (code, status, details) dilempar apiClient
+- Proses: pool `on('error')` di-log tanpa crash; agent buffer + retry dengan console.warn
 
 ### Logging Approach
 
-`console.log/warn/error` saja. Tidak ada logging library, tidak ada structured logging, tidak ada request logging.
+`console.log/warn/error` dengan prefix tag (`[agent]`, `[AI Scan]`, `[DB Pool Error]`) +
+correlation id per request. Tidak ada library logging terstruktur (winston/pino tidak dipakai).
 
 ### Configuration and Secrets
 
-`dotenv` + `process.env` (server): `JWT_SECRET` (punya **fallback hardcoded**), `GEMINI_API_KEY`, `NODE_ENV`, `PORT` (hardcoded 3000, tidak dari env). Klien: localStorage (`workstation_auth_session_v1`). `.gitignore` benar (exclude `.env*` kecuali `.env.example`).
+- dotenv `.env` (lihat `.env.example`): DATABASE_URL, JWT_SECRET (min 32 char),
+  RATE_LIMIT_*, GEMINI_API_KEY, AGENT_INGEST_TOKEN, AGENT_* (daemon & probes Epic 11)
+- Produksi: `.env` di `/opt/workstation`, password DB di `/opt/workstation/.dbpass-workstation` (chmod 600)
+- ⚠ `docs/AKUN-PRODUKSI-RAHASIA.md` berisi kredensial nyata di dalam repo
 
 ### Test File Location Convention
 
-Tidak ada. (Rekomendasi planning: tentukan framework + lokasi sebelum epic pengembangan.)
+Terpusat di `tests/*.test.ts` (bukan colocated), dijalankan vitest; CI mengeksekusi
+dengan env dummy JWT_SECRET/AGENT_INGEST_TOKEN.
 
 ---
 
@@ -205,17 +264,20 @@ Tidak ada. (Rekomendasi planning: tentukan framework + lokasi sebelum epic penge
 
 | Service / Domain | Direction | Notes |
 |-----------------|-----------|-------|
-| Google Gemini API (`@google/genai`) | outbound | Model `"gemini-3.8-flash"` — nama model perlu divalidasi terhadap API berjalan; dipakai untuk scan & translate; JSON response mode |
-| Google Fonts (fonts.googleapis.com, fonts.gstatic.com) | outbound (browser) | Plus Jakarta Sans + JetBrains Mono; CacheFirst via workbox |
-| Internal `/api/*` | inbound | Dikonsumsi `authFetch` klien: auth login/logout, actions, AI |
+| Google Gemini (`@google/genai`) | outbound | AI Intelligence: scan/translate/narrative; fallback demo berlabel bila gagal (SEC-05) |
+| GitHub (webhook) | inbound | `POST /api/v1/webhooks` — HMAC `GITHUB_WEBHOOK_SECRET`, feeding Git Intelligence |
+| Google Fonts | outbound (CDN) | fonts.googleapis.com / fonts.gstatic.com (runtime caching workbox) |
+| Agent → WORKSTATION API | internal | `POST /api/v1/agent` token shared; probes http/tcp ke layanan lokal server termonitor |
 
 ### Database(s)
 
-**Tidak ada.** Seluruh state server in-memory (`SERVER_USERS` array); seluruh data aplikasi klien dari `mockData.ts`. Tidak ada ORM/driver/connection. (MySQL/PostgreSQL/Redis hanya disebut di konten mock & blueprint.)
+| Database | Type | ORM / Driver | Connection Pattern |
+|----------|------|-------------|--------------------|
+| PostgreSQL 16 | Relational | drizzle-orm 0.45 + pg 8 (node-postgres) | Pool max 20, idle 30s; dev `localhost:5432/workstation_dev`, prod container `workstation-db` di 127.0.0.1:5433; 15 migrasi drizzle-kit |
 
 ### Message Queues / Event Buses
 
-None detected. (Hanya narasi mock: "Kafka/Redis event bus" di blueprintData.)
+None detected. (Buffer retry in-process pada agent transport.)
 
 ### Object / File Storage
 
@@ -225,41 +287,52 @@ None detected.
 
 | Service | Category | SDK / Client |
 |---------|---------|-------------|
-| Google Gemini | AI/LLM | @google/genai (server-side) |
-| Google AI Studio / Cloud Run | Hosting/deploy | metadata.json + env injeksi |
+| Google Gemini | AI/LLM | @google/genai 2.4.0 |
+| GitHub | Source control webhooks | HTTP + crypto HMAC |
+| Kontabo VPS + aaPanel | Hosting | systemd ×2, nginx, SSL (manual deploy) |
+| PWA (self-hosted) | Client distribution | vite-plugin-pwa + workbox |
 
 ---
 
 ## 7. Planning Notes
 
-Temuan scan yang relevan untuk planning (bukan tugas implementasi). **Urutan = tingkat kekritisan.**
+_Catatan scan yang relevan untuk planning — BUKAN task implementasi._
 
-1. **🔴 Auth bypass di server:** `authenticateToken` (server.ts) memberi identitas **Super Admin default** untuk request TANPA token. RBAC server efektif tidak melindungi apa pun.
-2. **🔴 Token forgeable:** `verifyJWT` menerima token buatan klien (payload base64 JSON apa pun yang punya field `role`) dan "memperbaiki" permissions dari role tersebut → privilege escalation total.
-3. **🔴 Sesi Super Admin otomatis di klien:** `AuthManager.restoreSession()` mem-bootstrap sesi Super Admin jika belum ada; fallback offline login menerima email mana pun **tanpa password**.
-4. **🔴 Master-password backdoor:** pengecekan login server lolos jika `password === "admin123"` untuk akun mana pun; `switchRole()` klien mengirim `"admin123"` hardcoded.
-5. **🔴 Kredensial plaintext di source:** 7 akun + password hash lemah + **petunjuk sandi plaintext** (`passwordHint`) di `src/lib/auth.ts` — ikut ter-bundle ke browser publik.
-6. **🔴 JWT_SECRET fallback hardcoded** `"workstation-enterprise-rbac-secure-salt-2026"`.
-7. **🔴 Tidak ada version control:** tidak ada `.git` — risiko kehilangan kerja, tanpa audit trail, tanpa rollback.
-8. **🟠 Password hashing SHA-256 tanpa salt** — gunakan bcrypt/argon2 saat auth nyata dibangun.
-9. **🟠 Tanpa persistence:** restart server = hilang; produk mengklaim "evidence-backed" tapi tidak ada DB. Kebutuhan DB (pilihan SQL/vektor/file) = keputusan arsitektur pertama.
-10. **🟠 AI fallback mengembalikan data palsu:** tanpa `GEMINI_API_KEY`, `/api/ai/scan` mengembalikan temuan keamanan hardcoded seolah hasil scan nyata — berbahaya untuk alat yang diklaim "evidence-backed". Nama model `"gemini-3.8-flash"` perlu diverifikasi.
-11. **🟠 Zero test, zero CI, zero linter** (lint = tsc --noEmit; tsconfig tanpa `"strict"`).
-12. **🟠 Server hardening minim:** tanpa helmet/security headers, tanpa rate limit, body 10 MB, PORT hardcoded, bind 0.0.0.0.
-13. **🟡 Matriks RBAC terduplikasi 3×** (server.ts, lib/rbac.ts, types.ts) — sudah ada indikasi drift antara server & klien (Org Admin: `PERM_INCIDENT_RESOLVE`).
-14. **🟡 App.tsx 885 baris (god component)**, 13 useState — pertimbangkan store (zustand/context split) saat refactor.
-15. **🟡 `blueprintData.ts` mendeskripsikan arsitektur target Laravel+PostgreSQL+Kafka** yang tidak cocok dengan implementasi aktual (React/TS/Express) — risiko salah komunikasi ke stakeholder; perlu ADR penyelarasan.
-16. **🟢 Tidak ada XSS surface** (tidak ada dangerouslySetInnerHTML/eval); React default escaping utuh.
+1. **Dua lockfile berisiko drift** — `bun.lock` (CI) vs `package-lock.json` (deploy VPS).
+   npm install di VPS butuh `--legacy-peer-deps` (konflik peer vite 8 ↔ esbuild 0.25).
+   Perlu keputusan: satukan toolchain (ADR kandidat).
+2. **`docs/AKUN-PRODUKSI-RAHASIA.md` berisi kredensial produksi nyata** (password VPS lama
+   masih tercatat meski tidak valid lagi, kredensial lain valid) — ter-commit ke git.
+   Rotasi + pindahkan ke secrets manager, lalu purge dari riwayat bila perlu.
+3. **`src/blueprintData.ts` menonaktifkan akurat** — mendeskripsikan arsitektur target
+   Laravel+PG yang TIDAK sesuai implementasi (Express+PG). Rapikan agar tidak menyesatkan
+   viewer/auditor.
+4. **`mockData.ts` masih di-import App.tsx** — co-existence mode demo vs data live belum
+   punya strategi deprecation terdokumentasi.
+5. **Tidak ada auto-deploy** — CI hanya type-check + test; deploy manual di VPS sudah
+   terbukti (19 Sep) tapi bergantung disiplin manual. Deployment workflow kandidat ADR.
+6. **TypeScript ^7.0.2** — versi mayor baru; pastikan disengaja (bukan typo), karena
+   devDep lain masih di generasi sebelumnya.
+7. **Logging console saja** — tanpa struktur/level/ship; kandidat perbaikan observability
+   bersama correlation id yang sudah ada.
+8. **Deploy terverifikasi 19 Sep 2026**: VPS sudah di `b432d23`, build baru
+   (`index-oP9CXHfP.js`) live dan memuat marker fix UI audit (H-1 md-view, H-2
+   prefers-reduced-motion).
 
 ---
 
 ## 8. Open Questions
 
-1. Apakah target deploy tetap Google AI Studio/Cloud Run applet, atau server mandiri? (menentukan kebutuhan DB, secret manager, domain).
-2. Apakah login/ RBAC harus nyata di produksi (user management, hash bcrypt, sesi server), atau ini memang demo data-mock? (menentukan scope epic keamanan).
-3. Model Gemini mana yang berlaku untuk akun ini (`gemini-3.8-flash` perlu diverifikasi) dan bagaimana provisioning `GEMINI_API_KEY` untuk lingkungan non-AI-Studio?
-4. Apakah PRD PDF (`WORKSTATION_Super_Duper_PRD.pdf`) masih menjadi sumber requirement aktif untuk PRD BMAD berikutnya?
-5. Data: berapa banyak yang harus persisten (work items, tiket, incident, audit) vs tetap agregasi/live-feed?
+1. Apakah dual lockfile (bun untuk CI, npm untuk VPS) disengaja permanen, atau akan
+   distandarkan ke satu package manager?
+2. Kapan dan bagaimana mode demo (`mockData.ts`) dicalkan — tetap fitur (demo landing)
+   atau dihapus setelah data live paripurna?
+3. Apakah blueprint Laravel (blueprintData.ts) masih relevan sebagai arah evolusi,
+   atau sudah resmi ditinggalkan demi Express+Drizzle saat ini?
+4. Strategi rotasi kredensial & pengelolaan secrets: apakah mau pindah ke systemd
+   credentials / secrets manager, dan kapan file akun di `docs/` dibersihkan?
+5. Apakah perlu pipeline deploy otomatis (GitHub Actions → VPS) seiring bertambahnya
+   frekuensi rilis?
 
 ---
 
@@ -267,8 +340,9 @@ Temuan scan yang relevan untuk planning (bukan tugas implementasi). **Urutan = t
 
 | Date | Author | Change |
 |------|--------|--------|
-| 18 September 2026 | BMAD bmad-document-project (pi agent) | Initial scan — 6 pass, READ-ONLY |
+| 18 Sep 2026 | BMAD bmad-document-project | Scan awal (pra-git, era AI Studio applet) |
+| 19 Sep 2026 | BMAD bmad-document-project | Full re-scan: git+CI+37 test, server modular 16 domain, drizzle 15 migrasi, agent Epic 9/11, deploy VPS produksi, fix UI audit ter-deploy |
 
 ---
 
-_BMAD Planning & Orchestrator · Document Project · Mengimplementasikan spirit `bmad-document-project` dari BMAD Method by the BMAD Code Organization (https://github.com/bmad-code-org/BMAD-METHOD)_
+_BMAD Planning & Orchestrator · Document Project · tracks `bmad-document-project` from the BMAD Method by the BMAD Code Organization (https://github.com/bmad-code-org/BMAD-METHOD)_

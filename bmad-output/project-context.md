@@ -28,6 +28,8 @@ Menjadi *single source of truth* dan platform operasional internal yang menghubu
 - **EPIC-006:** Release & Deployment Operations (Manual/API + Rollback otorisasi)
 - **EPIC-007:** Append-Only Audit Trail & System Governance
 
+> **Catatan 2026-09-19 (Course Correction 4):** Epic 8–16 tereksekusi sebagai gelombang V1/V2 pra-jadwal (lihat decision-log). Epic 17 (UI Clarity & Role-Based Navigation) ditambahkan berdasarkan umpan balik owner soal kepadatan UI. Fitur baru wajib lewat course correction.
+
 ## Core Constraints
 1. **Kerapihan Frontend:** Tetap mempertahankan dan memanfaatkan komponen antarmuka React 19 + Tailwind 4 + Vite yang sudah dibangun di `src/` (tidak menulis ulang dari awal).
 2. **Basis Data Wajib Relasional SQL:** Mengharuskan migrasi dari array in-memory ke PostgreSQL 15+ atau MySQL 8.0+ untuk integritas transaksi.

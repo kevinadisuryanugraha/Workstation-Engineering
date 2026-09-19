@@ -5,6 +5,20 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-19 — Course Correction 4: Epic 17 UI Clarity & Role-Based Navigation + disiplin scope pasca-MVP
+- **Decision:** Berdasarkan umpan balik owner ("tampilan padat & membingungkan — apakah over-engineering?") dan diagnosis meja diskusi (backend TIDAK over-engineered; masalahnya over-EXPOSURE: 15 menu rata tanpa filter role + data demo di semua layar), disepakati:
+  - (A+B) **Navigasi berbasis role + pengelompokan 3 seksi** (Kerjaanku / Operations / Governance) memanfaatkan `PERM_*` dan `SERVER_ROLE_PERMISSIONS` yang sudah ada — story 17.1.
+  - (C) **Strategi exit data demo**: `mockData.ts` digating di belakang flag mode demo; default boot memakai data API nyata — story 17.2.
+  - (D) **Blueprint keluar dari permukaan produk**: menu/view dihapus, konten diarsipkan ke `docs/` dengan disclaimer arsitektur aktual (Express+Drizzle, bukan Laravel) — story 17.3.
+  - (E) **Disiplin pasca-MVP**: Epic 8–16 dicatat sebagai eksekusi V1/V2 pra-jadwal (sudah done — tidak dibatalkan); status PRD naik ke APPROVED; fitur baru wajib lewat course correction.
+- **Rationale:** Master PRD menetapkan Developer sebagai pengguna pertama, namun UI melayani 9 role sekaligus tanpa progressive disclosure. RBAC server-side sudah matang — memakainya untuk navigasi adalah perbaikan termurah dengan dampak terbesar. Alternatif yang ditolak: penghapusan fitur (fitur sudah teruji & berguna), redesign UX penuh (ditunda ke V1 UX planning bila perlu).
+- **Impact:** Epic 17 DITAMBAHKAN di epics.md + sprint-status.yaml (story 17.1, 17.2, 17.3 — status ready-for-dev, wave 15–17 sequential karena shared scope `App.tsx`/`Sidebar.tsx`). Tidak ada story lama yang dibatalkan atau di-re-scope. Delivery Tracking epics.md dikoreksi dari 33/35 (stale) menjadi 43/43 done sebelum Epic 17. PRD status DRAFT → APPROVED.
+- **In-progress stories affected:** none.
+- **Made by:** bmad-correct-course (party-mode panel: John/Winston/Mary/Sally/Taylor; owner approve "gas")
+- **Supersedes:** none — melengkapi konteks entri 18 Sep: A-01 (fitur AI) sudah RESOLVED DISetujUI via entri "Fase V2 Tuntas" di bawah.
+
+---
+
 ### 2026-09-18 — Fase V2 Tuntas: Epic 14/15/16 selesai dieksekusi (Wave 12-14)
 - **Decision:** Seluruh 8 story Fase V2 dieksekusi & diuji: **Wave 12** (Epic 14 — sprints/milestones + aturan satu-ACTIVE + sprint board explainable + SprintPanel), **Wave 13** (Epic 15 — KB versioning append-only + draft dari tiket resolved + global search 4 entitas), **Wave 14** (Epic 16 — snapshot scan persisten, finding lifecycle tervalidasi manusia, konversi rekomendasi→work item idempoten (E2E: WRK-6), terjemahan laporan graceful 503).
 - **Rationale:** Eksekusi penuh Fase V2 sesuai Master PRD §11/§30; keputusan AI DISETUJUI dengan prinsip "AI as analyst, not authority".

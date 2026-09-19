@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-18T17:10:00Z"
+last_updated: "2026-09-19T03:00:00Z" # CC-4: +epic-17 (17.1-17.3, ready-for-dev, wave 15-17)
 
 epics:
   - id: "epic-1"
@@ -122,6 +122,16 @@ epics:
       - "13.1.incident-schema-lifecycle"
       - "13.2.incident-sla-engine"
       - "13.3.incident-immutable-timeline-ui"
+
+  # Catatan CC-4 (2026-09-19): epic-14..16 tereksekusi — blok epic-nya berada di seksi stories (warisan format waves); lihat decision-log.
+  - id: "epic-17"
+    title: "UI Clarity & Role-Based Navigation"
+    description: "Course Correction 4 (2026-09-19): progressive disclosure — nav difilter per permission, 3 grup seksi, data demo digating, Blueprint keluar dari produk"
+    status: in-progress
+    story_ids:
+      - "17.1.role-based-grouped-navigation"
+      - "17.2.demo-data-exit-strategy"
+      - "17.3.blueprint-surface-removal"
 
 stories:
   # Wave 1 (Immediate Foundation)
@@ -796,3 +806,48 @@ stories:
       - "server/modules/reports/reports.routes.ts (translate endpoint)"
       - "server/db/schema/generated_reports.ts (kolom terjemahan)"
       - "tests/ai-translate.test.ts"
+
+  # Wave 15 (Course Correction 4 — UI Clarity, sequential: shared App.tsx/Sidebar.tsx)
+  - id: "17.1.role-based-grouped-navigation"
+    title: "Navigation Registry with Permission Filter + 3 Grouped Sections"
+    epic_id: "epic-17"
+    status: ready-for-dev
+    file: "bmad-output/stories/17.1.role-based-grouped-navigation.story.md"
+    parallel_set: 15
+    dependencies: []
+    owned_scope:
+      - "src/config/navigation.ts (BARU — registry nav + permission + grup)"
+      - "src/components/Sidebar.tsx"
+      - "src/lib/rbac.ts (hanya tambahan helper jika perlu)"
+      - "src/App.tsx (konsult nav saja)"
+      - "tests/navigation.test.ts (BARU)"
+
+  - id: "17.2.demo-data-exit-strategy"
+    title: "Demo Data Gating — Default Real API Data, Demo Behind Flag"
+    epic_id: "epic-17"
+    status: ready-for-dev
+    file: "bmad-output/stories/17.2.demo-data-exit-strategy.story.md"
+    parallel_set: 16
+    dependencies:
+      - "17.1.role-based-grouped-navigation"
+    owned_scope:
+      - "src/mockData.ts (gating)"
+      - "src/App.tsx (blok sumber data)"
+      - ".env.example (VITE_DEMO_MODE)"
+      - "tests/demo-mode.test.ts (BARU)"
+
+  - id: "17.3.blueprint-surface-removal"
+    title: "Remove Blueprint from Product Surface, Archive Content to docs/"
+    epic_id: "epic-17"
+    status: ready-for-dev
+    file: "bmad-output/stories/17.3.blueprint-surface-removal.story.md"
+    parallel_set: 17
+    dependencies:
+      - "17.1.role-based-grouped-navigation"
+      - "17.2.demo-data-exit-strategy"
+    owned_scope:
+      - "src/config/navigation.ts (hapus item blueprint)"
+      - "src/components/BlueprintView.tsx (dihapus/diarsipkan)"
+      - "src/blueprintData.ts (pindah konten)"
+      - "src/App.tsx (hapus render view)"
+      - "docs/BLUEPRINT-ARCHIVE-2026-09.md (BARU)"
