@@ -33,6 +33,7 @@
 | **ke-11** | **18 Sep 2026** | **Audit UI menyeluruh 15 halaman** (skill better-interface + runtime Playwright) — 15 temuan sistemik: 4 HIGH (markdown mentah, reduced-motion, metrik kontradiktif, kontras) · 10 MEDIUM · 1 LOW · detail: `docs/UI-AUDIT-2026-09-18.md` | `0 console error` |
 | **ke-12** | **19 Sep 2026** | **COURSE CORRECTION 4 TUNTAS — UI Clarity & Role-Based Navigation (Epic 17, 3/3 story done)** — remediasi 14 temuan UI audit Blok 11 · nav ber-role + 3 grup seksi (15→14 menu, Blueprint keluar & diarsip) · demo gating `VITE_DEMO_MODE` (boot default = data API nyata + empty state jujur + banner SEC-05) · **195/195 test · lint strict bersih · build sukses** · detail: **BLOK 12** | `b432d23`, `dde3aa0`, `4ad2050`, `2b72d0e` |
 | **ke-13** | **19 Sep 2026** | **COURSE CORRECTION 5 TUNTAS — Client API Wiring (Epic 18, 6/6 story done)** — 6 domain terhubung data nyata: Git (+endpoint read baru), Deployments, KB, Audit, AI, Global Search · honest-empty hilang saat data mengalir · **224/224 test · lint bersih · build sukses · repo pulih dari korupsi objek git + 27 komit di-push backup** · detail: **BLOK 13** | `a945413`, `d2c9cdf`, `e9cad6b`, `515fac5`, `5e01ec5`, `4dbfb60`, `9f08466` |
+| **ke-14** | **19 Sep 2026** | **DEPLOY PRODUKSI — Epic 17 + Epic 18 LIVE di `workstation.zamzami.or.id`** (`b432d23` → `f4c7131`, 30 komit) — backup DB+dist pra-deploy, build sukses, migrasi idempotent, restart systemd, verifikasi publik: endpoint baru 401/200-JSON (bukan HTML), login E2E Super Admin OK, bundle frontend baru terverifikasi · detail: **BLOK 14** | `f4c7131` (deployed) |
 
 ---
 
@@ -48,7 +49,7 @@
 8. [Rencana Kerja Penyelesaian & Roadmap Fase V1](#8-rencana-kerja-penyelesaian)
 9. [Koordinasi yang Dibutuhkan](#9-koordinasi-yang-dibutuhkan)
 10. [Lampiran: Keterangan Teknis & Matriks 49 Pengujian Otomatis](#10-lampiran-keterangan-teknis)
-11. 📊 **Log Progres Berkelanjutan** — Blok 7 · 8 · 9 · 10 · 11 · 12 · **13** (append-only)
+11. 📊 **Log Progres Berkelanjutan** — Blok 7 · 8 · 9 · 10 · 11 · 12 · 13 · **14** (append-only)
 
 ---
 
@@ -577,6 +578,40 @@ gunzip -c /opt/workstation/backups/workstation_db_<TIMESTAMP>.sql.gz | \
 | 2 | Drill-down pencarian | `onNavigate` belum memakai entityId untuk membuka entitas spesifik |
 | 3 | Statistik diff commit | Ingest webhook belum menyimpan filesChanged/additions/deletions |
 | 4 | Endpoint technical debt & pengayaan field proyek | Masih placeholder jujur |
+
+---
+
+### 📦 BLOK 14 — DEPLOY PRODUKSI: EPIC 17 + EPIC 18 LIVE
+**📅 19 September 2026 · Status: 🟢 LIVE & TERVERIFIKASI** · Commit terdeploy: `f4c7131` (sebelumnya `b432d23`, 30 komit)
+
+**1. Langkah Deploy (checkpoint per tahap)**
+
+| No. | Tahap | Hasil |
+|:---:|---|---|
+| 1 | Pra-cek server | Service `workstation` active · disk 48% · Node v24 · port 3020/5433 normal |
+| 2 | Sabuk pengaman | Backup DB segar `workstation_db_20260919_091909.sql.gz` (28 tabel) · backup `dist.bak-20260919-0919` · git fetch OK |
+| 3 | Analisis delta | `b432d23..f4c7131`: **0 deps berubah, 0 migrasi baru** — murni kode aplikasi + docs |
+| 4 | Pull + build | `git pull` → `f4c7131` · build sukses · bundle memuat `api/v1/git/commits` |
+| 5 | Migrate + restart | `Migrations applied successfully!` · `systemctl restart` → active · journal tanpa error |
+
+**2. Verifikasi Pasca-Deploy (semua via domain publik)**
+
+| No. | Uji | Hasil |
+|:---:|---|:---:|
+| 1 | `GET /api/health` | 🟢 200 OK |
+| 2 | `GET /api/v1/git/commits` tanpa token | 🟢 401 JSON `AUTH_REQUIRED` (endpoint baru hidup + terproteksi; sebelumnya HTML fallback) |
+| 3 | Login E2E (Super Admin) | 🟢 sukses — bcrypt + JWT + DB utuh (kredensial tidak ditampilkan di log) |
+| 4 | `GET /api/v1/git/commits` + Bearer | 🟢 200 `success:true, total:0` — jujur menunggu ingest webhook nyata |
+| 5 | Bundle frontend publik | 🟢 memuat endpoint baru + string banner `MODE DEMO` (fitur 17.2 hidup) |
+
+**3. Rollback & Pemulihan (siap pakai bila dibutuhkan)**
+
+| No. | Mekanisme | Perintah |
+|:---:|---|---|
+| 1 | Kode + bundle lama | `cd /opt/workstation && rm -rf dist && cp -a dist.bak-20260919-0919 dist && git checkout b432d23 && npm run build && systemctl restart workstation` |
+| 2 | Database | `gzip -dc /root/.../workstation_db_20260919_091909.sql.gz | pg_restore` / psql (tidak diperlukan — tanpa migrasi baru) |
+
+> 📌 Catatan: `npm install` di server melaporkan ERESOLVE (peer-deps) — tidak berefek karena `package.json` tidak berubah di rentang deploy dan build penuh sukses; `node_modules` eksisting sudah sesuai. Direkomendasikan evaluasi `npm install --legacy-peer-deps` atau migrasi ke bun di server saat sesi maintenance berikutnya.
 
 ---
 
