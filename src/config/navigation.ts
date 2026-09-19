@@ -127,8 +127,8 @@ export const NAV_ITEMS: NavItem[] = [
     icon: GitBranch,
     group: "operations",
     requiredPermission: "PERM_VIEW_ENGINEERING",
-    badge: "4 Commits",
-    badgeType: "default"
+    // Story 18.1 (CC-5): badge statis palsu "4 Commits" dihapus —
+    // kejujuran data; hitungan live bisa jadi enhancement berikutnya.
   },
   {
     id: "deployments",

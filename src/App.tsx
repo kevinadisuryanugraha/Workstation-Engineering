@@ -27,6 +27,12 @@ import { useServerMetrics, ServerHealthEntry } from "./hooks/api/useServerMetric
 import { useIncidents, IncidentDto } from "./hooks/api/useIncidents";
 import { useQuery } from "@tanstack/react-query";
 import { apiRequest } from "./lib/apiClient";
+import {
+  useGitCommits,
+  useGitPullRequests,
+  mapCommitDto,
+  mapPullRequestDto
+} from "./hooks/api/useGitEntities";
 import { hasPermission, ROLE_PERMISSIONS } from "./lib/rbac";
 import { NAV_ITEMS, filterNavigation } from "./config/navigation";
 
@@ -173,6 +179,19 @@ export default function App() {
   }, [incidentFeed]);
   const [commits, setCommits] = useState(initialData.commits);
   const [pullRequests, setPullRequests] = useState(initialData.pullRequests);
+
+  // Story 18.1 (CC-5): git entities nyata dari ingest webhook (5.x) — boot
+  // real MENGANTIKAN seed; mode demo tetap merge ke mock.
+  const { data: apiCommits } = useGitCommits(undefined, { enabled: !DEMO_MODE && Boolean(session?.user) });
+  useEffect(() => {
+    if (DEMO_MODE || !Array.isArray(apiCommits)) return;
+    setCommits(apiCommits.map(mapCommitDto));
+  }, [apiCommits]);
+  const { data: apiPullRequests } = useGitPullRequests(undefined, { enabled: !DEMO_MODE && Boolean(session?.user) });
+  useEffect(() => {
+    if (DEMO_MODE || !Array.isArray(apiPullRequests)) return;
+    setPullRequests(apiPullRequests.map(mapPullRequestDto));
+  }, [apiPullRequests]);
   const [events, setEvents] = useState<EngineeringEvent[]>(initialData.events);
   const [articles] = useState(initialData.articles);
 
