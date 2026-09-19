@@ -1090,6 +1090,7 @@ export default function App() {
       <GlobalSearchModal
         isOpen={isSearchOpen}
         onClose={() => setIsSearchOpen(false)}
+        isAuthenticated={Boolean(session?.user)}
         workItems={workItems}
         tickets={tickets}
         deployments={deployments}

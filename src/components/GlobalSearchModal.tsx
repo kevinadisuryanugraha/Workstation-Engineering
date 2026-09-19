@@ -4,6 +4,8 @@ import { Search, ArrowRight, CheckCircle2, FileText, Ticket, GitBranch, Rocket, 
 import { WorkItem, Ticket as TicketType, Deployment, Incident, Commit } from "../types";
 import { Badge } from "./ui/Badge";
 import { cn } from "../lib/utils";
+import { DEMO_MODE } from "../mockData";
+import { useGlobalSearch, searchTabFor, isQueryReady } from "../hooks/api/useGlobalSearch";
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -14,6 +16,8 @@ interface GlobalSearchModalProps {
   incidents: Incident[];
   commits: Commit[];
   onNavigate: (tab: string, entityId?: string) => void;
+  /** Story 18.6 (CC-5): boot real memakai API search; demo memakai props. */
+  isAuthenticated?: boolean;
 }
 
 export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
@@ -24,9 +28,20 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
   deployments,
   incidents,
   commits,
-  onNavigate
+  onNavigate,
+  isAuthenticated
 }) => {
   const [query, setQuery] = useState("");
+
+  // Story 18.6 (CC-5): jalur pencarian nyata via API /api/v1/search — hanya
+  // boot real & modal terbuka; mode demo memakai filter props lokal.
+  const realMode = !DEMO_MODE && Boolean(isAuthenticated);
+  const {
+    data: searchPayload,
+    isFetching: searchFetching,
+    isError: searchError
+  } = useGlobalSearch(query, { enabled: realMode && isOpen });
+  const apiResults = searchPayload?.results ?? [];
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -93,8 +108,59 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
 
         {/* Results List */}
         <div className="overflow-y-auto p-4 space-y-4 divide-y divide-slate-900/10">
+          {/* Story 18.6 (CC-5): hasil pencarian nyata dari API */}
+          {realMode && (
+            <>
+              {searchFetching && (
+                <p className="text-xs text-slate-500 font-mono text-center py-4" data-testid="search-loading">
+                  Mencari “{query.trim()}”…
+                </p>
+              )}
+              {!searchFetching && searchError && (
+                <p className="text-xs text-red-700 font-mono text-center py-4" data-testid="search-error">
+                  Pencarian gagal — periksa koneksi lalu coba lagi.
+                </p>
+              )}
+              {!searchFetching && !searchError && isQueryReady(query) && apiResults.length === 0 && (
+                <p className="text-xs text-slate-500 font-mono text-center py-4" data-testid="search-empty">
+                  Tidak ada hasil untuk “{query.trim()}”.
+                </p>
+              )}
+              {!searchFetching && apiResults.length > 0 && (
+                <div>
+                  <p className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-950 mb-2">
+                    Hasil ({apiResults.length})
+                  </p>
+                  <div className="space-y-1">
+                    {apiResults.map((r) => (
+                      <motion.div
+                        key={`${r.entityType}-${r.ref}`}
+                        whileHover={{ x: 2 }}
+                        onClick={() => {
+                          onNavigate(searchTabFor(r.entityType), r.ref);
+                          onClose();
+                        }}
+                        className="p-2.5 rounded-xl hover:bg-[#FAF7EE] cursor-pointer flex items-center justify-between transition-colors border border-transparent hover:border-slate-900"
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <span className="font-mono text-xs font-bold text-slate-950 bg-[#FAF7EE] px-2 py-0.5 rounded-md border border-slate-900 shadow-[1px_1px_0px_#18181b]">
+                            {r.ref}
+                          </span>
+                          <span className="text-xs text-slate-950 font-mono font-bold truncate max-w-sm">{r.title}</span>
+                        </div>
+                        <Badge variant="secondary" size="sm">
+                          {r.entityType.replaceAll("_", " ")}
+                        </Badge>
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
           {/* Work Items */}
-          {matchedWorkItems.length > 0 && (
+          {!realMode && matchedWorkItems.length > 0 && (
             <div>
               <p className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-950 mb-2">
                 Work Items ({matchedWorkItems.length})
@@ -126,7 +192,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
           )}
 
           {/* Tickets */}
-          {matchedTickets.length > 0 && (
+          {!realMode && matchedTickets.length > 0 && (
             <div className="pt-3">
               <p className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-950 mb-2">
                 Tickets ({matchedTickets.length})
@@ -158,7 +224,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
           )}
 
           {/* Deployments */}
-          {matchedDeployments.length > 0 && (
+          {!realMode && matchedDeployments.length > 0 && (
             <div className="pt-3">
               <p className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-950 mb-2">
                 Deployments ({matchedDeployments.length})
@@ -188,7 +254,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
           )}
 
           {/* Incidents */}
-          {matchedIncidents.length > 0 && (
+          {!realMode && matchedIncidents.length > 0 && (
             <div className="pt-3">
               <p className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-950 mb-2">
                 Incidents ({matchedIncidents.length})
@@ -220,7 +286,7 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
           )}
 
           {/* Commits */}
-          {matchedCommits.length > 0 && (
+          {!realMode && matchedCommits.length > 0 && (
             <div className="pt-3">
               <p className="text-[10px] font-mono font-black uppercase tracking-wider text-slate-950 mb-2">
                 Commits ({matchedCommits.length})
