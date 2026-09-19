@@ -14,6 +14,7 @@
 | 6 | **Hasil Temuan Awal** | **15 dari 18 temuan awal tuntas (83% Selesai)** · 100% Celah Kritis DS-01 s.d. DS-07 Tertutup |
 | 7 | **Temuan Baru Audit** | **5 Rekomendasi Penguatan Keamanan Lanjutan (SEC-01 s.d. SEC-05)** — ✅ SELURUHNYA TUNTAS via Epic 8 (Fase V1) |
 | 8 | **Status Laporan** | 🟢 **Pembaruan ke-7 (PRODUKSI LIVE + HTTPS + HARDENING)** — riwayat lengkap semua pembaruan ada di tabel **Riwayat Pembaruan** di bawah (prinsip catatan: hanya DITAMBAH, tidak pernah ditimpa) |
+| 9 | **Status Terkini** | 🟢 **Pembaruan ke-12 (19 Sep 2026) — COURSE CORRECTION 4 TUNTAS: UI Clarity & Role-Based Navigation (Epic 17 selesai 3/3)** — detail lengkap di **BLOK 12** |
 
 ### 📜 Riwayat Pembaruan (Kumulatif — Append-Only)
 
@@ -30,6 +31,7 @@
 | 9 | **ke-9** | **18 Sep 2026** | **Purge kredensial plaintext dari UI & bundle produksi** — LoginView (peta 7 password + pre-fill admin123 + panel directory) dibersihkan total, seed hash dirotasi tanpa komentar pengungkap, lazy-import @google/genai memperbaiki 3 test suite · 178/178 hijau · bundle produksi terverifikasi bebas kredensial | `65b7eed`, `4e82086` |
 | **ke-10** | **18 Sep 2026** | **Re-set password 7 akun produksi atas permintaan owner** — nilai baru hanya di file lokal rahasia (git-ignored) · verifikasi login baru OK / lama 401 | `fadc72f` |
 | **ke-11** | **18 Sep 2026** | **Audit UI menyeluruh 15 halaman** (skill better-interface + runtime Playwright) — 15 temuan sistemik: 4 HIGH (markdown mentah, reduced-motion, metrik kontradiktif, kontras) · 10 MEDIUM · 1 LOW · detail: `docs/UI-AUDIT-2026-09-18.md` | `0 console error` |
+| **ke-12** | **19 Sep 2026** | **COURSE CORRECTION 4 TUNTAS — UI Clarity & Role-Based Navigation (Epic 17, 3/3 story done)** — remediasi 14 temuan UI audit Blok 11 · nav ber-role + 3 grup seksi (15→14 menu, Blueprint keluar & diarsip) · demo gating `VITE_DEMO_MODE` (boot default = data API nyata + empty state jujur + banner SEC-05) · **195/195 test · lint strict bersih · build sukses** · detail: **BLOK 12** | `b432d23`, `dde3aa0`, `4ad2050`, `2b72d0e` |
 
 ---
 
@@ -45,7 +47,7 @@
 8. [Rencana Kerja Penyelesaian & Roadmap Fase V1](#8-rencana-kerja-penyelesaian)
 9. [Koordinasi yang Dibutuhkan](#9-koordinasi-yang-dibutuhkan)
 10. [Lampiran: Keterangan Teknis & Matriks 49 Pengujian Otomatis](#10-lampiran-keterangan-teknis)
-11. 📊 **Log Progres Berkelanjutan** — Blok 7 · 8 · 9 (append-only)
+11. 📊 **Log Progres Berkelanjutan** — Blok 7 · 8 · 9 · 10 · 11 · **12** (append-only)
 
 ---
 
@@ -500,6 +502,82 @@ gunzip -c /opt/workstation/backups/workstation_db_<TIMESTAMP>.sql.gz | \
 
 ---
 
+### 📦 BLOK 12 — COURSE CORRECTION 4: UI CLARITY & ROLE-BASED NAVIGATION (EPIC 17) + EKSEKUSI TEMUAN UI AUDIT
+**📅 19 September 2026 · Status: 🟢 SELESAI — EPIC 17 TUNTAS 3/3** · Komit: `b432d23` · `dde3aa0` · `4ad2050` · `2b72d0e`
+
+**0. Konteks & Keputusan (CC-4)**
+
+| No. | Aspek | Detail |
+|:---:|---|---|
+| 1 | Umpan balik owner | "Tampilan padat & membingungkan — apakah over-engineering?" |
+| 2 | Diagnosis meja diskusi (19 Sep) | Backend TIDAK over-engineered; masalahnya **over-EXPOSURE**: 15 menu rata tanpa filter role + data demo di semua layar + dokumen arsitektur internal (Blueprint, target Laravel) nyasar ke product surface |
+| 3 | Keputusan (A–D) | (A+B) nav ber-role + 3 grup seksi · (C) demo data digating flag · (D) Blueprint keluar dari produk, diarsip docs/ |
+| 4 | Pelacakan BMAD | Epic 17 di `bmad-output/sprint-status.yaml` · keputusan di `bmad-output/decision-log.md` · eksekusi via worktree loop (`prepare → dev → review → gate → finalize`) |
+
+**1. Remediasi Temuan UI Audit (lanjutan Blok 11) — Komit `b432d23`**
+
+| No. | Temuan | Perbaikan |
+|:---:|:---:|---|
+| 1 | 🔴 H-1 Markdown mentah | Renderer markdown untuk Laporan & Blueprint |
+| 2 | 🔴 H-2 Reduced-motion | Hormati `prefers-reduced-motion` di animasi |
+| 3 | 🔴 H-3 Metrik kontradiktif | Sinkron Explainable Progress ke 82% (revisi) |
+| 4 | 🔴 H-4 Kontras rendah | `text-slate-400` → slate-600 di 48 lokasi (≈ 4,5:1 di krem) |
+| 5 | 🟡 MEDIUM | Versi seragam · RAM % konsisten · focus-trap + Escape modal · aria-label 29 input · clipping sidebar/chip · hostname asli · event ledger terurut · copy retensi sesuai keputusan |
+
+**2. Story 17.1 — Registry Navigasi Ber-Role + 3 Grup Seksi — Komit `dde3aa0` (merge `fa34252`)**
+
+| No. | Aksi | Detail |
+|:---:|---|---|
+| 1 | `src/config/navigation.ts` (BARU) | Registry NAV_ITEMS + `ActiveTab` + grup (`kerjaanku` / `operations` / `governance`) + `requiredPermission` per item |
+| 2 | `filterNavigation()` | Pure function — menu difilter per `ROLE_PERMISSIONS` yang sudah ada (server-authoritative, bukan RBAC baru) |
+| 3 | `Sidebar.tsx` | 3 seksi collapsible; badge hitung tiket/insiden/temuan tetap live |
+| 4 | Fallback aman | View aktif yang tak lagi terlihat oleh role → otomatis kembali ke `overview` |
+| 5 | Test | `tests/navigation.test.ts` (BARU) — keunikan id, filter per role, permission valid |
+
+**3. Story 17.2 — Demo Data Gating: Boot Default = Data API Nyata — Komit `4ad2050` (merge `5d0191e`)**
+
+| No. | Aksi | Detail |
+|:---:|---|---|
+| 1 | `src/mockData.ts` (gating) | `isDemoModeEnabled()` + `DEMO_MODE` + `getInitialDataSource()` — seed mock HANYA saat flag aktif; tanpa satu pun data mock hilang |
+| 2 | Hydration API nyata | Work items, tickets, incidents, server metrics, projects — via React Query (`enabled: !DEMO_MODE && isAuth`); sprints & reports sudah hook-backed (SprintPanel/ReportView) |
+| 3 | Banner demo (AC2) | Banner amber `VITE_DEMO_MODE aktif` di bawah Header — pola label jujur SEC-05 |
+| 4 | Empty state jujur (AC3) | Notice informatif DI ATAS view yang datanya kosong (view tetap mounted — tombol aksi tidak hilang); boot tanpa proyek → panel "Belum ada proyek" |
+| 5 | Kejujuran refresh | Refresh telemetri produksi = `refetch()` agent — randomisasi CPU palsu hanya di mode demo |
+| 6 | Test | `tests/demo-mode.test.ts` (BARU, 6 test) — kontrak flag resolver, seed kosong vs seed demo, tanpa kebocoran referensi mock |
+
+**4. Story 17.3 — Blueprint Keluar dari Product Surface — Komit `2b72d0e` (merge `bf0cd71`)**
+
+| No. | Aksi | Detail |
+|:---:|---|---|
+| 1 | Arsip (bukan penghapusan sejarah) | `docs/BLUEPRINT-ARCHIVE-2026-09.md` (685 brs) = disclaimer eksplisit + konten verbatim `blueprintData.ts` — blueprint menarget Laravel yang TIDAK pernah diimplementasi; realitas: Express + Drizzle + PostgreSQL 16 |
+| 2 | Registry | Item + id `blueprint` dihapus dari `navigation.ts` — **nav 15 → 14**, grup governance tetap valid |
+| 3 | Permukaan lain | Import/render `BlueprintView` (App.tsx), entri `tabLabels` + tombol start-menu (RetroDesktopShell), tombol "Architecture Specs" (OverviewView) — semua navigasi blueprint dihapus |
+| 4 | File dihapus | `src/components/BlueprintView.tsx` · `src/blueprintData.ts` — grep `src/` = **zero referensi** |
+| 5 | Test | `navigation.test.ts` diperbarui: 14 item + asersi `not.toContain('blueprint')` |
+
+**5. Verifikasi Kualitas (State Akhir di `main`)**
+
+| No. | Uji | Hasil |
+|:---:|---|:---:|
+| 1 | `npm run lint` (tsc strict) | 🟢 0 error |
+| 2 | `npx vitest run` | 🟢 **195/195 test · 39 file** (49 → 98 → 178 → **195**) |
+| 3 | `npm run build` | 🟢 sukses (warning chunk-size >500kB terverifikasi pre-existing, bukan orphan) |
+| 4 | Grep `blueprint` di `src/` | 🟢 zero hasil |
+| 5 | Tracker BMAD | 🟢 **46/46 story done · 17/17 epic done** · decision-log + Dev Agent Record terisi |
+
+**6. Temuan Lanjutan (Input CC Berikutnya — dari Dev Agent Record 17.2)**
+
+| No. | Temuan | Rekomendasi |
+|:---:|---|---|
+| 1 | 6 domain punya API nyata tapi belum ada wiring UI→API: AI (16.x), Git commits/PRs (5.x), Deployments (6.1), KB (15.1), Audit ledger (7.2), Global Search modal (15.2) | Buat hook React Query + mapping DTO → UI (saat ini tampil kosong + honest notice di boot real; mock hanya di mode demo) |
+| 2 | Handler mutasi lokal (create/update work item, ticket, incident, rollback) masih `setState` tanpa persist API | Wire ke mutation hook agar aksi user tersimpan |
+| 3 | Field tampilan `Project` tanpa sumber API (owner, techLead, currentSprint, latestRelease, repoName, productionStatus) diisi placeholder "—" oleh `mapProjectDto` | Perkaya endpoint projects atau endpoint agregat proyek |
+| 4 | Worktree git tidak membawa `.env` (gitignored) → e2e gagal palsu di worktree ("Invalid password provided") | Prosedur `bmad_worktree prepare` idealnya menyalin `.env`, atau dokumentasikan untuk dev agent |
+
+---
+
 *Laporan ini telah diperbarui pada 18 September 2026 (Pembaruan ke-7) berdasarkan hasil eksekusi nyata Full System Workflow Testing, Audit Keamanan Menyeluruh, Deployment Produksi VPS, setup Domain HTTPS, dan Hardening Keamanan Kredensial menggunakan metodologi BMAD dan standar OWASP. Seluruh temuan, hasil uji, dan verifikasi produksi telah dicek langsung pada basis kode aktif dan server produksi.*
+
+*Laporan ini telah diperbarui lagi pada **19 September 2026 (Pembaruan ke-12)** berdasarkan eksekusi nyata Course Correction 4 — remediasi 14 temuan UI Audit (Blok 11) serta penuntasan Epic 17 (UI Clarity & Role-Based Navigation): navigasi ber-role 3 seksi, demo data gating `VITE_DEMO_MODE`, dan pengarsipan Blueprint — terverifikasi 195/195 test, lint strict bersih, dan build produksi sukses. Detail lengkap di **BLOK 12**.*
 
 **Disusun oleh:** Tim Teknis (pi · BMAD) · **Diperiksa oleh:** _______________ · **Disetujui oleh:** _______________
