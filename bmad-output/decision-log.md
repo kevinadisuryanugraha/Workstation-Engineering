@@ -5,6 +5,16 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-19 — Course Correction 5: Tambah Epic 18 — Client API Wiring (Honest Data Everywhere)
+- **Decision:** Menambahkan Epic 18 (6 story, wave 18) hasil temuan Dev Agent Record 17.2 / BLOK 12.6 Deep Scan Report: 6 domain punya data/API nyata tapi UI belum terhubung — **18.1** Git entities (perlu read endpoint server kecil: GET /api/v1/git/commits & /pull-requests; data sudah terkumpul via webhook 5.x), **18.2** Deployments, **18.3** KB, **18.4** Audit ledger (adapter DTO→event feed), **18.5** AI findings/recommendations, **18.6** Global Search modal (debounced query). Non-goal yang ditunda eksplisit: persistensi mutasi lokal ke API dan pengayaan field proyek (owner/techLead/currentSprint/latestRelease) — kandidat CC berikutnya.
+- **Rationale:** CC-4 berhasil mengeluarkan mock dari boot default (honest-empty state), tetapi 6 layar masih kosong di produksi. Agar prinsip "data nyata secara default" benar-benar tuntas, jalur baca ke API harus di_wire_ sekarang — datanya sudah ada, yang kurang hanya pipa client-nya (kecuali Git yang perlu 2 endpoint list kecil).
+- **Impact:** epics.md (+Epic 18, total 52 story, delivery tracking 46/52 = 88%; status Epic 17 dikoreksi menjadi done 3/3); stories/ (+6 file ready-for-dev); sprint-status.yaml (+epic-18, parallel_set 18, sequential shared App.tsx).
+- **In-progress stories affected:** none (semua story Epic 17 sudah done sebelum CC-5 dibuka).
+- **Made by:** bmad-correct-course
+- **Supersedes:** none (additive terhadap CC-4)
+
+---
+
 ### 2026-09-19 — Epic 17 (CC-4) Tuntas: 17.1/17.2/17.3 selesai dieksekusi
 - **Decision:** Seluruh 3 story Epic 17 dieksekusi, diuji, dan di-merge ke `main` via worktree loop (`bmad_worktree` prepare→finalize): **17.1** registry navigasi ber-role + 3 grup; **17.2** demo gating — boot default kini mengonsumsi API nyata (work items, tickets, incidents, server metrics, projects) via React Query, mock hanya aktif lewat `VITE_DEMO_MODE=1` + banner label SEC-05, empty state jujur di semua view; **17.3** Blueprint keluar dari produk (nav 15→14), konten diarsip verbatim di `docs/BLUEPRINT-ARCHIVE-2026-09.md` dengan disclaimer.
 - **Rationale:** Menuntaskan Course Correction 4 — menghilangkan kepadatan semu data mock dan dokumen arsitektur internal yang menyesatkan dari pengalaman harian produksi.

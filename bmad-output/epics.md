@@ -486,11 +486,35 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 17.1 | role-based-grouped-navigation | Registry navigasi + filter permission + 3 grup (Kerjaanku/Operations/Governance) | ready-for-dev |
-| 17.2 | demo-data-exit-strategy | mockData digating (VITE_DEMO_MODE); default data API nyata | ready-for-dev |
-| 17.3 | blueprint-surface-removal | Blueprint keluar dari nav/view; konten diarsipkan ke docs/ + disclaimer | ready-for-dev |
+| 17.1 | role-based-grouped-navigation | Registry navigasi + filter permission + 3 grup (Kerjaanku/Operations/Governance) | done |
+| 17.2 | demo-data-exit-strategy | mockData digating (VITE_DEMO_MODE); default data API nyata | done |
+| 17.3 | blueprint-surface-removal | Blueprint keluar dari nav/view; konten diarsipkan ke docs/ + disclaimer | done |
 
 **Dependencies:** 17.1 → 17.2 → 17.3 (sequential; shared scope `App.tsx`/`Sidebar.tsx`) · Blocks: perencanaan UX V1
+
+---
+
+## Epic 18: Client API Wiring — Honest Data Everywhere
+
+> # COURSE-CORRECTION-5 (2026-09-19) — Lanjutan langsung CC-4. Temuan Dev Agent Record 17.2 (BLOK 12.6 Deep Scan Report): 6 domain punya data/API nyata tetapi UI belum terhubung — di boot real tampil kosong + honest notice, mock hanya di mode demo. Epic ini menutup celah wiring tersebut agar seluruh layar menampilkan data nyata.
+
+**Goal:** Seluruh view menampilkan data nyata dari API — menghilangkan 6 honest-empty notice dengan menghubungkan UI ke endpoint yang ada (dan menambah read endpoint kecil untuk Git entities yang datanya sudah terkumpul via webhook).
+
+**In scope:** hook React Query baru (src/hooks/api/*), mapping DTO→UI di blok sumber data App.tsx, read endpoint Git entities (server/modules/git), wiring GlobalSearchModal ke /api/v1/search.
+**Out of scope:** persistensi mutasi lokal ke API (create/update work item, ticket, incident, rollback — CC berikutnya), pengayaan field proyek (owner/techLead/currentSprint/latestRelease), perubahan skema DB, fitur baru.
+
+**Stories:**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 18.1 | git-entities-wiring | GET /api/v1/git/commits & /pull-requests (server) + hook client + hydration | ready-for-dev |
+| 18.2 | deployments-wiring | Hook useDeployments + hydration view Deployments | ready-for-dev |
+| 18.3 | kb-wiring | Hook useKbArticles + hydration view Knowledge Base | ready-for-dev |
+| 18.4 | audit-ledger-wiring | Hook useAuditLogs + adapter DTO→event feed view Audit | ready-for-dev |
+| 18.5 | ai-intelligence-wiring | Hook findings/recommendations + hydration view AI | ready-for-dev |
+| 18.6 | global-search-wiring | GlobalSearchModal query debounced ke /api/v1/search | ready-for-dev |
+
+**Dependencies:** semua depend on 17.2 (infra gating, done) · 18.1 → 18.2 → 18.3 → 18.4 → 18.5 → 18.6 (sequential; shared scope blok sumber data `App.tsx`) · 18.6 tidak menyentuh App.tsx data-block (modal self-fetch)
 
 ---
 
@@ -498,11 +522,12 @@
 
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
-- **Total Stories:** 46 (20 MVP + 15 Fase V1 gel.1-2 + 8 Fase V2 gel.12-14 + 3 Epic 17 CC-4)
-- **Done:** 43
-- **Remaining:** 3 (17.1, 17.2, 17.3 — ready-for-dev)
-- **Completion Rate:** 93% (43 / 46)
+- **Total Stories:** 52 (20 MVP + 15 Fase V1 gel.1-2 + 8 Fase V2 gel.12-14 + 3 Epic 17 CC-4 + 6 Epic 18 CC-5)
+- **Done:** 46
+- **Remaining:** 6 (18.1 s.d. 18.6 — ready-for-dev)
+- **Completion Rate:** 88% (46 / 52)
 - **Koreksi 2026-09-19 (CC-4):** angka lama (33/35, remaining 13.2–13.3) tidak mencerminkan penyelesaian Waves 12–14; factual: 43/43 done sebelum Epic 17.
+- **Koreksi 2026-09-19 (CC-5):** Epic 17 tuntas 3/3 (46/46 done, 100%) sebelum Epic 18 dibuka.
 
 ## Sequencing & Wave Plan
 

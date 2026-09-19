@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-19T06:05:00Z" # CC-4 TUNTAS: 17.3 done (Blueprint keluar dari produk, arsip di docs/) — epic-17 selesai 3/3
+last_updated: "2026-09-19T07:00:00Z" # CC-5: +epic-18 (18.1-18.6, ready-for-dev, wave 18) — Client API Wiring 6 domain
 
 epics:
   - id: "epic-1"
@@ -128,6 +128,14 @@ epics:
     title: "UI Clarity & Role-Based Navigation"
     description: "Course Correction 4 (2026-09-19): progressive disclosure — nav difilter per permission, 3 grup seksi, data demo digating, Blueprint keluar dari produk"
     status: done
+    story_ids:
+      - "17.1.role-based-grouped-navigation"
+      - "17.2.demo-data-exit-strategy"
+      - "17.3.blueprint-surface-removal"
+
+  - id: "epic-18"
+    title: "Client API Wiring — Honest Data Everywhere"
+    description: "Course Correction 5 (2026-09-19): hubungkan 6 domain (Git, Deployments, KB, Audit, AI, Global Search) ke API nyata — menutup honest-empty notice warisan CC-4"
     story_ids:
       - "17.1.role-based-grouped-navigation"
       - "17.2.demo-data-exit-strategy"
@@ -851,3 +859,85 @@ stories:
       - "src/blueprintData.ts (pindah konten)"
       - "src/App.tsx (hapus render view)"
       - "docs/BLUEPRINT-ARCHIVE-2026-09.md (BARU)"
+
+  # ===== COURSE-CORRECTION-5 2026-09-19: Client API Wiring (Epic 18) =====
+  # Wave 18 (sequential: shared blok sumber data App.tsx; 18.6 modal self-fetch)
+  - id: "18.1.git-entities-wiring"
+    title: "Git Entities — Read Endpoint Server + Hydration Client"
+    epic_id: "epic-18"
+    status: ready-for-dev
+    file: "bmad-output/stories/18.1.git-entities-wiring.story.md"
+    parallel_set: 18
+    dependencies:
+      - "17.2.demo-data-exit-strategy"
+    owned_scope:
+      - "server/modules/git/git.routes.ts (tambah read handler)"
+      - "server.ts (mount /api/v1/git)"
+      - "src/hooks/api/useGitEntities.ts (BARU)"
+      - "src/App.tsx (blok sumber data + mapper)"
+      - "tests/git-entities-api.test.ts (BARU)"
+
+  - id: "18.2.deployments-wiring"
+    title: "Deployments — Hook + Hydration View"
+    epic_id: "epic-18"
+    status: ready-for-dev
+    file: "bmad-output/stories/18.2.deployments-wiring.story.md"
+    parallel_set: 18
+    dependencies:
+      - "18.1.git-entities-wiring"
+    owned_scope:
+      - "src/hooks/api/useDeployments.ts (BARU)"
+      - "src/App.tsx (blok sumber data + mapper)"
+      - "tests/deployments-client.test.ts (BARU)"
+
+  - id: "18.3.kb-wiring"
+    title: "Knowledge Base — Hook + Hydration View"
+    epic_id: "epic-18"
+    status: ready-for-dev
+    file: "bmad-output/stories/18.3.kb-wiring.story.md"
+    parallel_set: 18
+    dependencies:
+      - "18.2.deployments-wiring"
+    owned_scope:
+      - "src/hooks/api/useKbArticles.ts (BARU)"
+      - "src/App.tsx (blok sumber data + mapper)"
+      - "tests/kb-client.test.ts (BARU)"
+
+  - id: "18.4.audit-ledger-wiring"
+    title: "Audit Ledger — useAuditLogs + Adapter Feed"
+    epic_id: "epic-18"
+    status: ready-for-dev
+    file: "bmad-output/stories/18.4.audit-ledger-wiring.story.md"
+    parallel_set: 18
+    dependencies:
+      - "18.3.kb-wiring"
+    owned_scope:
+      - "src/hooks/api/useAuditLogs.ts (BARU)"
+      - "src/App.tsx (blok sumber data + adapter)"
+      - "tests/audit-client.test.ts (BARU)"
+
+  - id: "18.5.ai-intelligence-wiring"
+    title: "AI Intelligence — Findings & Recommendations dari API"
+    epic_id: "epic-18"
+    status: ready-for-dev
+    file: "bmad-output/stories/18.5.ai-intelligence-wiring.story.md"
+    parallel_set: 18
+    dependencies:
+      - "18.4.audit-ledger-wiring"
+    owned_scope:
+      - "src/hooks/api/useAiIntel.ts (BARU)"
+      - "src/App.tsx (blok sumber data + mapper)"
+      - "tests/ai-client-wiring.test.ts (BARU)"
+
+  - id: "18.6.global-search-wiring"
+    title: "Global Search — Modal Query Debounced ke API"
+    epic_id: "epic-18"
+    status: ready-for-dev
+    file: "bmad-output/stories/18.6.global-search-wiring.story.md"
+    parallel_set: 18
+    dependencies:
+      - "18.5.ai-intelligence-wiring"
+    owned_scope:
+      - "src/hooks/api/useGlobalSearch.ts (BARU)"
+      - "src/components/GlobalSearchModal.tsx (jalur sumber data)"
+      - "tests/global-search-client.test.ts (BARU)"
