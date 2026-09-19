@@ -36,6 +36,7 @@
 | **ke-14** | **19 Sep 2026** | **DEPLOY PRODUKSI — Epic 17 + Epic 18 LIVE di `workstation.zamzami.or.id`** (`b432d23` → `f4c7131`, 30 komit) — backup DB+dist pra-deploy, build sukses, migrasi idempotent, restart systemd, verifikasi publik: endpoint baru 401/200-JSON (bukan HTML), login E2E Super Admin OK, bundle frontend baru terverifikasi · detail: **BLOK 14** | `f4c7131` (deployed) |
 | **ke-15** | **19 Sep 2026** | **HOTFIX PRODUKSI — DTO→UI contract mappers + gate permission** — laporan user: crash `TypeError: reading 'name'` (WorkItemsView `assignee.name` — API kirim baris DB mentah) + 403 berulang `audit-logs` (hook menembak tanpa cek permission) · perbaikan: `contractMappers.ts` (work items & tickets), gate `PERM_AUDIT_LOGS_VIEW`/`PERM_AI_SCAN_TRIGGER` di hook · **234/234 test · redeploy & terverifikasi publik** · detail: **BLOK 15** | `95583fc`, `504c4e3` |
 | **ke-16** | **19 Sep 2026** | **HOTFIX PRODUKSI #3 — Service Worker stale cache + CSP blokir fonts** — user masih menerima bundle lama via precache workbox (crash & 403 “kambuh” padahal server sudah hotfix) + font Google diblok CSP `connect-src` · perbaikan: `connect-src` += domain fonts, workbox `skipWaiting`+`clientsClaim` eksplisit · terverifikasi: header CSP baru, sw.js baru, bundle hotfix tersaji · detail: **BLOK 16** | `86f695c` |
+| **ke-17** | **19 Sep 2026** | **HOTFIX PRODUKSI #4 — guard empty-selection + SW berhenti intercept fonts + no-cache sw.js/index.html** — crash `reading 'author'` di bundle BARU: `KnowledgeBaseView` `useState(articles[0])` = undefined saat boot real (articles=[]) · InfrastructureView punya pola sama (dicegah) · runtimeCaching fonts dihapus dari SW (font dimuat langsung halaman) · `Cache-Control: no-cache` untuk sw.js & index.html (anti-stale Cloudflare/browser) · **234/234 test** · detail: **BLOK 17** | `0f3ca99` |
 
 ---
 
@@ -51,7 +52,7 @@
 8. [Rencana Kerja Penyelesaian & Roadmap Fase V1](#8-rencana-kerja-penyelesaian)
 9. [Koordinasi yang Dibutuhkan](#9-koordinasi-yang-dibutuhkan)
 10. [Lampiran: Keterangan Teknis & Matriks 49 Pengujian Otomatis](#10-lampiran-keterangan-teknis)
-11. 📊 **Log Progres Berkelanjutan** — Blok 7 s.d. **16** (append-only)
+11. 📊 **Log Progres Berkelanjutan** — Blok 7 s.d. **17** (append-only)
 
 ---
 
@@ -688,6 +689,45 @@ gunzip -c /opt/workstation/backups/workstation_db_<TIMESTAMP>.sql.gz | \
 | 1 | Tutup SEMUA tab aplikasi, buka ulang, lalu refresh sekali lagi — SW baru (skipWaiting+clientsClaim) akan mengambil alih dan menyajikan bundle hotfix |
 | 2 | Bila masih terjebak (cache SW membandel): DevTools → Application → Storage → **Clear site data** → muat ulang |
 | 3 | Setelah ini, deploy berikutnya otomatis diterima dalam 1–2 muatan (tidak perlu clear manual lagi) |
+
+---
+
+### 📦 BLOK 17 — HOTFIX PRODUKSI #4: EMPTY-SELECTION GUARDS + SW STOP INTERCEPTING FONTS + NO-CACHE
+**📅 19 September 2026 · Status: 🟢 FIXED, REDEPLOYED & TERVERIFIKASI** · Komit: `0f3ca99`
+
+**1. Gejala lanjutan (user di bundle HblDWw4b — hotfix #3 sudah diterima browser)**
+
+| No. | Gejala | Akar Masalah (terverifikasi di kode) |
+|:---:|---|---|
+| 1 | 🔴 `TypeError: reading 'author'` di bundle BARU | `KnowledgeBaseView:16` — `useState<KnowledgeArticle>(articles[0])`: boot real → `articles = []` → `articles[0] = undefined` → `selectedArticle.author` crash. State tidak pernah ter-set ulang setelah hydration |
+| 2 | 🔵 `connect-src` font masih ditolak | CSP yang berlaku pada SW adalah CSP saat SW ter-install (lama); runtimeCaching font membuat SW tetap mencoba fetch — dihapus dari SW; font kini dimuat langsung halaman (style-src/font-src sudah allow) |
+
+**2. Perbaikan**
+
+| No. | File | Isi |
+|:---:|---|---|
+| 1 | `src/components/KnowledgeBaseView.tsx` | Guard `selectedArticle?.id` di list + detail panel dibungkus kondisi dengan fallback jujur (tidak crash saat kosong) |
+| 2 | `src/components/InfrastructureView.tsx` | Pola sama dicegah: `selectedServer` tanpa guard → detail panel dibungkus + `triggerHeartbeat` early-return |
+| 3 | `vite.config.ts` | RuntimeCaching Google Fonts DIHAPUS dari SW — font dimuat langsung oleh halaman |
+| 4 | `server.ts` | `Cache-Control: no-cache, no-store, must-revalidate` untuk `/sw.js`, `/`, `/index.html` — Cloudflare & browser tidak lagi menyimpan rilis lama |
+
+**3. Deploy & Verifikasi**
+
+| No. | Uji | Hasil |
+|:---:|---|:---:|
+| 1 | Suite test | 🟢 234/234 · lint bersih · build sukses |
+| 2 | `GET /` | 🟢 no-cache + bundle baru `index-wHXVDmt1.js` |
+| 3 | `GET /sw.js` | 🟢 no-cache + 0 referensi fonts |
+| 4 | CSP | 🟢 connect-src memuat domain fonts (untuk masa depan bila runtime cache diaktifkan lagi) |
+| 5 | Health + service | 🟢 active, journal bersih |
+
+**4. Pola Korporat Baru (pelajaran)**
+
+| No. | Aturan |
+|:---:|---|
+| 1 | `useState(x[0])` pada data yang bisa kosong = crash terjadwal — WAJIB guard render atau derivasi aman (`find ?? fallback`) |
+| 2 | SW jangan meng-intercept resource lintas-origin yang dibatasi CSP-nya sendiri |
+| 3 | `sw.js` + `index.html` WAJIB no-cache — kontrak deploy WORKSTATION |
 
 ---
 
