@@ -811,7 +811,7 @@ stories:
   - id: "17.1.role-based-grouped-navigation"
     title: "Navigation Registry with Permission Filter + 3 Grouped Sections"
     epic_id: "epic-17"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/17.1.role-based-grouped-navigation.story.md"
     parallel_set: 15
     dependencies: []
@@ -825,7 +825,7 @@ stories:
   - id: "17.2.demo-data-exit-strategy"
     title: "Demo Data Gating — Default Real API Data, Demo Behind Flag"
     epic_id: "epic-17"
-    status: ready-for-dev
+    status: in-progress
     file: "bmad-output/stories/17.2.demo-data-exit-strategy.story.md"
     parallel_set: 16
     dependencies:
