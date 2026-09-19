@@ -66,7 +66,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({ articles, 
               onClick={() => setSelectedArticle(art)}
               className={cn(
                 "p-4 cursor-pointer transition-colors relative bg-white",
-                selectedArticle.id === art.id
+                selectedArticle?.id === art.id
                   ? "bg-[#e0e7ff] border-l-4 border-l-indigo-600"
                   : "hover:bg-[#FAF7EE]"
               )}
@@ -88,6 +88,11 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({ articles, 
 
         {/* Right: Article Reader */}
         <KokonutCard variant="default" className="lg:col-span-2 p-6 space-y-4" interactive={false}>
+          {/* HOTFIX 2026-09-19: boot real → articles kosong → selectedArticle undefined;
+              detail dibungkus guard + fallback jujur (tidak lagi crash reading 'author'). */}
+          {!selectedArticle ? (
+            <p className="text-sm text-slate-500 font-mono">Pilih artikel di kiri untuk membaca — belum ada artikel dipilih.</p>
+          ) : (<>
           <div className="border-b border-slate-900/20 pb-4">
             <div className="flex items-center justify-between text-xs text-slate-600 mb-1 font-mono font-bold">
               <span>Author: {selectedArticle.author}</span>
@@ -104,6 +109,7 @@ export const KnowledgeBaseView: React.FC<KnowledgeBaseViewProps> = ({ articles, 
           <div className="p-4 bg-[#FAF7EE] rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] text-xs text-slate-950 leading-relaxed font-mono whitespace-pre-wrap">
             {selectedArticle.content}
           </div>
+          </>)}
         </KokonutCard>
       </div>
     </div>

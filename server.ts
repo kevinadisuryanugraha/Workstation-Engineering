@@ -425,8 +425,17 @@ async function startServer() {
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
+    // HOTFIX 2026-09-19: sw.js & index.html TIDAK boleh di-cache (Cloudflare/
+    // browser) — mencegah pengguna terjebak bundle/service worker lama.
+    app.use((req, res, next) => {
+      if (req.path === "/sw.js" || req.path === "/" || req.path === "/index.html") {
+        res.set("Cache-Control", "no-cache, no-store, must-revalidate");
+      }
+      next();
+    });
     app.use(express.static(distPath));
     app.get("*", (_req, res) => {
+      res.set("Cache-Control", "no-cache, no-store, must-revalidate");
       res.sendFile(path.join(distPath, "index.html"));
     });
   }

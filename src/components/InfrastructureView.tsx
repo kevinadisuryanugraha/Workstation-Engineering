@@ -31,6 +31,7 @@ export const InfrastructureView: React.FC<InfrastructureViewProps> = ({
   const [heartbeatToast, setHeartbeatToast] = useState<string | null>(null);
 
   const triggerHeartbeat = () => {
+    if (!selectedServer) return; // HOTFIX: tanpa guard → crash saat belum ada server
     setIsSimulatingHeartbeat(true);
     setTimeout(() => {
       setIsSimulatingHeartbeat(false);
@@ -140,6 +141,7 @@ export const InfrastructureView: React.FC<InfrastructureViewProps> = ({
       </div>
 
       {/* Selected Server Full Telemetry Inspector */}
+      {selectedServer ? (
       <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 sm:p-7 space-y-6">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b border-slate-100">
           <div className="space-y-1.5">
@@ -261,6 +263,11 @@ export const InfrastructureView: React.FC<InfrastructureViewProps> = ({
           </div>
         </div>
       </div>
+      ) : (
+        <div className="bg-white rounded-2xl border border-dashed border-slate-300 shadow-sm p-6 text-sm text-slate-500 font-mono">
+          Belum ada server terpilih — telemetri dari workstation-agent akan tampil di sini.
+        </div>
+      )}
     </div>
   );
 };
