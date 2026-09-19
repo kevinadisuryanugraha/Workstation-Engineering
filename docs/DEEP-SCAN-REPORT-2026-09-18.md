@@ -35,6 +35,7 @@
 | **ke-13** | **19 Sep 2026** | **COURSE CORRECTION 5 TUNTAS — Client API Wiring (Epic 18, 6/6 story done)** — 6 domain terhubung data nyata: Git (+endpoint read baru), Deployments, KB, Audit, AI, Global Search · honest-empty hilang saat data mengalir · **224/224 test · lint bersih · build sukses · repo pulih dari korupsi objek git + 27 komit di-push backup** · detail: **BLOK 13** | `a945413`, `d2c9cdf`, `e9cad6b`, `515fac5`, `5e01ec5`, `4dbfb60`, `9f08466` |
 | **ke-14** | **19 Sep 2026** | **DEPLOY PRODUKSI — Epic 17 + Epic 18 LIVE di `workstation.zamzami.or.id`** (`b432d23` → `f4c7131`, 30 komit) — backup DB+dist pra-deploy, build sukses, migrasi idempotent, restart systemd, verifikasi publik: endpoint baru 401/200-JSON (bukan HTML), login E2E Super Admin OK, bundle frontend baru terverifikasi · detail: **BLOK 14** | `f4c7131` (deployed) |
 | **ke-15** | **19 Sep 2026** | **HOTFIX PRODUKSI — DTO→UI contract mappers + gate permission** — laporan user: crash `TypeError: reading 'name'` (WorkItemsView `assignee.name` — API kirim baris DB mentah) + 403 berulang `audit-logs` (hook menembak tanpa cek permission) · perbaikan: `contractMappers.ts` (work items & tickets), gate `PERM_AUDIT_LOGS_VIEW`/`PERM_AI_SCAN_TRIGGER` di hook · **234/234 test · redeploy & terverifikasi publik** · detail: **BLOK 15** | `95583fc`, `504c4e3` |
+| **ke-16** | **19 Sep 2026** | **HOTFIX PRODUKSI #3 — Service Worker stale cache + CSP blokir fonts** — user masih menerima bundle lama via precache workbox (crash & 403 “kambuh” padahal server sudah hotfix) + font Google diblok CSP `connect-src` · perbaikan: `connect-src` += domain fonts, workbox `skipWaiting`+`clientsClaim` eksplisit · terverifikasi: header CSP baru, sw.js baru, bundle hotfix tersaji · detail: **BLOK 16** | `86f695c` |
 
 ---
 
@@ -50,7 +51,7 @@
 8. [Rencana Kerja Penyelesaian & Roadmap Fase V1](#8-rencana-kerja-penyelesaian)
 9. [Koordinasi yang Dibutuhkan](#9-koordinasi-yang-dibutuhkan)
 10. [Lampiran: Keterangan Teknis & Matriks 49 Pengujian Otomatis](#10-lampiran-keterangan-teknis)
-11. 📊 **Log Progres Berkelanjutan** — Blok 7 s.d. **15** (append-only)
+11. 📊 **Log Progres Berkelanjutan** — Blok 7 s.d. **16** (append-only)
 
 ---
 
@@ -651,6 +652,42 @@ gunzip -c /opt/workstation/backups/workstation_db_<TIMESTAMP>.sql.gz | \
 | 2 | Hook ber-permission harus digate permission di sisi client | Sudah diterapkan untuk audit & AI; pola untuk hook baru |
 | 3 | Nama assignee/reporter masih placeholder (`—`) — butuh join users di endpoint list | CC-6: endpoint list sertakan join nama, hapus placeholder |
 | 4 | Detail per-item (AC checklist, evidence) tidak dimuat jalur list | CC-6: endpoint detail per item saat view membuka item |
+
+---
+
+### 📦 BLOK 16 — HOTFIX PRODUKSI #3: STALE SERVICE WORKER + CSP BLOKIR FONTS
+**📅 19 September 2026 · Status: 🟢 FIXED, REDEPLOYED** · Komit: `86f695c`
+
+**1. Gejala lanjutan dari user (setelah BLOK 15)**
+
+| No. | Gejala | Akar Masalah |
+|:---:|---|---|
+| 1 | 🔴 Crash & 403 “kambuh” — stack trace masih `index-NIFieb8_.js` (bundle pra-hotfix) | **Service worker workbox mem-precache bundle lama** (`globPatterns` menyertakan html/js) dan tetap menyajikannya; hotfix kemarin tidak sampai ke browser user |
+| 2 | 🟡 Font Google gagal dimuat | Workbox me-fetch CSS font via `fetch()` → diblok CSP `connect-src 'self' wss:` (helmet SEC-03 belum mengizinkan domain fonts) |
+
+**2. Perbaikan**
+
+| No. | File | Isi |
+|:---:|---|---|
+| 1 | `server/config/security.ts` | `connect-src` produksi += `https://fonts.googleapis.com` + `https://fonts.gstatic.com` |
+| 2 | `vite.config.ts` | workbox `skipWaiting: true` + `clientsClaim: true` eksplisit — SW baru langsung mengambil alih tanpa menunggu tab ditutup |
+
+**3. Deploy & Verifikasi**
+
+| No. | Uji | Hasil |
+|:---:|---|:---:|
+| 1 | Header CSP produksi | 🟢 `connect-src 'self' wss: https://fonts.googleapis.com https://fonts.gstatic.com` |
+| 2 | `sw.js` yang tersaji | 🟢 memuat `skipWaiting` + `clientsClaim` |
+| 3 | `index.html` publik | 🟢 mereferensikan bundle hotfix `index-HblDWw4b.js` |
+| 4 | Suite test | 🟢 234/234 · lint bersih · build sukses |
+
+**4. Instruksi Pemulihan di Sisi Browser (untuk user)**
+
+| No. | Langkah |
+|:---:|---|
+| 1 | Tutup SEMUA tab aplikasi, buka ulang, lalu refresh sekali lagi — SW baru (skipWaiting+clientsClaim) akan mengambil alih dan menyajikan bundle hotfix |
+| 2 | Bila masih terjebak (cache SW membandel): DevTools → Application → Storage → **Clear site data** → muat ulang |
+| 3 | Setelah ini, deploy berikutnya otomatis diterima dalam 1–2 muatan (tidak perlu clear manual lagi) |
 
 ---
 
