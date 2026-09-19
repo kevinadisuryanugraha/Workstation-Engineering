@@ -21,7 +21,6 @@ import {
   FileText,
   BookOpen,
   History,
-  Code2,
   ShieldAlert,
   ShieldCheck
 } from "lucide-react";
@@ -30,7 +29,7 @@ import type { Permission } from "../types";
 
 export type NavGroupId = "kerjaanku" | "operations" | "governance";
 
-/** Semua id view yang valid. (blueprint dihapus di story 17.3.) */
+/** Semua id view yang valid. */
 export type ActiveTab =
   | "overview"
   | "project360"
@@ -43,7 +42,6 @@ export type ActiveTab =
   | "ai"
   | "reports"
   | "report-id"
-  | "blueprint"
   | "knowledge"
   | "audit"
   | "security";
@@ -198,16 +196,6 @@ export const NAV_ITEMS: NavItem[] = [
     icon: History,
     group: "governance",
     requiredPermission: "PERM_AUDIT_LOGS_VIEW"
-  },
-  {
-    // Catatan: item ini keluar dari produk di story 17.3 (CC-4).
-    id: "blueprint",
-    label: "Blueprint 01–21 (Specs)",
-    icon: Code2,
-    group: "governance",
-    requiredPermission: "PERM_VIEW_MANAGEMENT",
-    badge: "v1.0",
-    badgeType: "default"
   }
 ];
 

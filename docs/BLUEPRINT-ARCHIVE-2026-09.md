@@ -1,3 +1,26 @@
+# BLUEPRINT ARCHIVE — Visi Awal WORKSTATION (Sections 01–21)
+
+> ⚠️ **DISCLAIMER — DOKUMEN ARSIP, BUKAN SPESIFIKASI AKTIF (Story 17.3, CC-4, Sep 2026)**
+>
+> Dokumen ini adalah **arsip verbatim** dari `src/blueprintData.ts` — visi awal
+> produk WORKSTATION yang ditulis tahun 2026 di masa prototipe AI Studio.
+> **Dokumen ini TIDAK diimplementasikan** dan TIDAK menggambarkan sistem saat ini:
+>
+> - Blueprint menargetkan **Laravel + enterprise deployment** — TIDAK PERNAH diimplementasi.
+> - **Arsitektur aktual:** React 19 + TypeScript + Express (modular monolith) +
+>   Drizzle ORM + PostgreSQL 16. Rujukan resmi:
+>   `bmad-output/project-documentation.md` §2 dan `bmad-output/architecture.md`
+>   (ADR-001 s.d. ADR-008).
+>
+> Konten dipertahankan apa adanya sesuai guardrail BMAD ("bukan penghapusan
+> sejarah"): sejarah visi tetap terpelihara, tanpa menyesatkan pembaca masa
+> depan. Jangan menjadikan dokumen ini dasar keputusan teknis.
+
+---
+
+## Sumber Asli (verbatim): `src/blueprintData.ts`
+
+```ts
 // WORKSTATION - Master Technical Architecture & Blueprint Specification (Sections 01 - 21)
 // Production Blueprint & Database / Workflow Schemas for Laravel & Enterprise deployment
 
@@ -659,3 +682,4 @@ A feature is considered **DONE** only when:
 6. Audit log entry is appended and immutable.`
   }
 ];
+```
