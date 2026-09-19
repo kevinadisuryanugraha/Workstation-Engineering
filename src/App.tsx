@@ -33,6 +33,7 @@ import {
   mapCommitDto,
   mapPullRequestDto
 } from "./hooks/api/useGitEntities";
+import { useDeployments, mapDeploymentDto } from "./hooks/api/useDeployments";
 import { hasPermission, ROLE_PERMISSIONS } from "./lib/rbac";
 import { NAV_ITEMS, filterNavigation } from "./config/navigation";
 
@@ -118,6 +119,14 @@ export default function App() {
   const [workItems, setWorkItems] = useState<WorkItem[]>(initialData.workItems);
   const [tickets, setTickets] = useState<Ticket[]>(initialData.tickets);
   const [deployments, setDeployments] = useState<Deployment[]>(initialData.deployments);
+
+  // Story 18.2 (CC-5): deployment nyata dari API releases (6.1) — boot real
+  // MENGANTIKAN seed; mode demo tetap utuh.
+  const { data: apiDeployments } = useDeployments(undefined, { enabled: !DEMO_MODE && Boolean(session?.user) });
+  useEffect(() => {
+    if (DEMO_MODE || !Array.isArray(apiDeployments)) return;
+    setDeployments(apiDeployments.map(mapDeploymentDto));
+  }, [apiDeployments]);
   const [servers, setServers] = useState<ServerTelemetry[]>(initialData.servers);
 
   // Story 9.3 + 17.2: live server health. Boot real → hanya telemetri agent
