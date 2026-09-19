@@ -42,6 +42,7 @@ import {
   mapFindingDto,
   mapRecommendationDto
 } from "./hooks/api/useAiIntel";
+import { mapWorkItemDto, mapTicketDto } from "./lib/contractMappers";
 import { hasPermission, ROLE_PERMISSIONS } from "./lib/rbac";
 import { NAV_ITEMS, filterNavigation } from "./config/navigation";
 
@@ -156,7 +157,9 @@ export default function App() {
   });
   useEffect(() => {
     if (DEMO_MODE || !Array.isArray(apiWorkItems)) return;
-    setWorkItems(apiWorkItems);
+    // HOTFIX 2026-09-19: API mengembalikan baris DB (key/assigneeId) —
+    // wajib dipetakan ke kontrak UI (code/assignee) sebelum masuk state.
+    setWorkItems(apiWorkItems.map(mapWorkItemDto));
   }, [apiWorkItems]);
   const { data: apiTickets } = useQuery({
     queryKey: ["tickets"],
@@ -165,7 +168,7 @@ export default function App() {
   });
   useEffect(() => {
     if (DEMO_MODE || !Array.isArray(apiTickets)) return;
-    setTickets(apiTickets);
+    setTickets(apiTickets.map(mapTicketDto));
   }, [apiTickets]);
 
   // Story 17.2: proyek nyata untuk boot produksi (project picker & filter
@@ -189,12 +192,13 @@ export default function App() {
   // Story 18.5 (CC-5): findings & recommendations nyata dari API (16.x) —
   // boot real MENGANTIKAN seed; mode demo tetap utuh. technicalDebts belum
   // punya endpoint → tetap kosong di boot real (jujur, lihat story 18.5).
-  const { data: apiAiFindings } = useAiFindings({ enabled: !DEMO_MODE && Boolean(session?.user) });
+  const aiPermitted = hasPermission(currentUser.role, "PERM_AI_SCAN_TRIGGER");
+  const { data: apiAiFindings } = useAiFindings({ enabled: !DEMO_MODE && Boolean(session?.user) && aiPermitted });
   useEffect(() => {
     if (DEMO_MODE || !Array.isArray(apiAiFindings)) return;
     setAiFindings(apiAiFindings.map(mapFindingDto));
   }, [apiAiFindings]);
-  const { data: apiAiRecommendations } = useAiRecommendations({ enabled: !DEMO_MODE && Boolean(session?.user) });
+  const { data: apiAiRecommendations } = useAiRecommendations({ enabled: !DEMO_MODE && Boolean(session?.user) && aiPermitted });
   useEffect(() => {
     if (DEMO_MODE || !Array.isArray(apiAiRecommendations)) return;
     setAiRecommendations(apiAiRecommendations.map(mapRecommendationDto));
@@ -225,9 +229,12 @@ export default function App() {
   }, [apiPullRequests]);
   const [events, setEvents] = useState<EngineeringEvent[]>(initialData.events);
 
-  // Story 18.4 (CC-5): audit ledger nyata dari API (7.2, halaman pertama) —
-  // boot real MENGANTIKAN seed; mode demo tetap utuh.
-  const { data: auditPayload } = useAuditLogs({ page: 1, limit: 50 }, { enabled: !DEMO_MODE && Boolean(session?.user) });
+  // Story 18.4 + HOTFIX 2026-09-19: audit ledger — fetch HANYA untuk role
+  // ber-permission (mencegah 403 berulang di console untuk role lain).
+  const auditPermitted = hasPermission(currentUser.role, "PERM_AUDIT_LOGS_VIEW");
+  const { data: auditPayload } = useAuditLogs({ page: 1, limit: 50 }, {
+    enabled: !DEMO_MODE && Boolean(session?.user) && auditPermitted
+  });
   useEffect(() => {
     if (DEMO_MODE || !auditPayload?.items) return;
     setEvents(auditPayload.items.map(mapAuditLogDto));
