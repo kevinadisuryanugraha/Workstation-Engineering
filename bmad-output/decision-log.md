@@ -5,6 +5,16 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-19 — HOTFIX Produksi: DTO→UI Contract Mappers + Gate Permission Hook
+- **Decision:** Hotfix pasca-deploy Blok 14 atas laporan user: (1) crash `TypeError: reading 'name'` di WorkItemsView — API work-items/tickets mengirim baris DB mentah, mapper kontrak UI terlewat; (2) 403 berulang `audit-logs` — hook 18.4 menembak tanpa cek permission. Perbaikan: `src/lib/contractMappers.ts` (mapWorkItemDto/mapTicketDto dengan placeholder jujur), gate `PERM_AUDIT_LOGS_VIEW` & `PERM_AI_SCAN_TRIGGER` pada hook terkait, 10 test baru (234/234 hijau), redeploy & verifikasi publik.
+- **Rationale:** Tiping TypeScript tidak menjamin bentuk runtime — setiap hydrasi API wajib lewat mapper eksplisit; endpoint ber-permission tidak boleh di-fetch untuk role tanpa permission.
+- **Impact:** +1 modul mapper; App.tsx (hydration + gating); test 224→234; deploy ulang produksi di `504c4e3` (bundle `index-HblDWw4b.js`).
+- **In-progress stories affected:** none.
+- **Made by:** bmad-epic-pipeline-worktree (hotfix loop)
+- **Supersedes:** none (perbaikan atas efek samping CC-5)
+
+---
+
 ### 2026-09-19 — Epic 18 (CC-5) Tuntas: Client API Wiring 6/6 selesai
 - **Decision:** Seluruh 6 story Epic 18 dieksekusi, diuji, dan di-merge ke `main` via worktree loop: **18.1** Git entities (endpoint read baru `GET /api/v1/git/commits` & `/pull-requests` — additive, ingest webhook utuh + hydration client), **18.2** Deployments, **18.3** KB, **18.4** Audit ledger (adapter DTO→event feed + tipe `SYSTEM_AUDIT`), **18.5** AI findings/recommendations, **18.6** Global Search modal (debounced, jalur real/demo ganda).
 - **Rationale:** Menuntaskan CC-5 — seluruh view kini menampilkan data nyata di boot produksi; honest-empty notice hilang otomatis saat data mengalir; mock hanya hidup di mode demo (VITE_DEMO_MODE).

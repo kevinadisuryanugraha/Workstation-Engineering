@@ -34,6 +34,7 @@
 | **ke-12** | **19 Sep 2026** | **COURSE CORRECTION 4 TUNTAS — UI Clarity & Role-Based Navigation (Epic 17, 3/3 story done)** — remediasi 14 temuan UI audit Blok 11 · nav ber-role + 3 grup seksi (15→14 menu, Blueprint keluar & diarsip) · demo gating `VITE_DEMO_MODE` (boot default = data API nyata + empty state jujur + banner SEC-05) · **195/195 test · lint strict bersih · build sukses** · detail: **BLOK 12** | `b432d23`, `dde3aa0`, `4ad2050`, `2b72d0e` |
 | **ke-13** | **19 Sep 2026** | **COURSE CORRECTION 5 TUNTAS — Client API Wiring (Epic 18, 6/6 story done)** — 6 domain terhubung data nyata: Git (+endpoint read baru), Deployments, KB, Audit, AI, Global Search · honest-empty hilang saat data mengalir · **224/224 test · lint bersih · build sukses · repo pulih dari korupsi objek git + 27 komit di-push backup** · detail: **BLOK 13** | `a945413`, `d2c9cdf`, `e9cad6b`, `515fac5`, `5e01ec5`, `4dbfb60`, `9f08466` |
 | **ke-14** | **19 Sep 2026** | **DEPLOY PRODUKSI — Epic 17 + Epic 18 LIVE di `workstation.zamzami.or.id`** (`b432d23` → `f4c7131`, 30 komit) — backup DB+dist pra-deploy, build sukses, migrasi idempotent, restart systemd, verifikasi publik: endpoint baru 401/200-JSON (bukan HTML), login E2E Super Admin OK, bundle frontend baru terverifikasi · detail: **BLOK 14** | `f4c7131` (deployed) |
+| **ke-15** | **19 Sep 2026** | **HOTFIX PRODUKSI — DTO→UI contract mappers + gate permission** — laporan user: crash `TypeError: reading 'name'` (WorkItemsView `assignee.name` — API kirim baris DB mentah) + 403 berulang `audit-logs` (hook menembak tanpa cek permission) · perbaikan: `contractMappers.ts` (work items & tickets), gate `PERM_AUDIT_LOGS_VIEW`/`PERM_AI_SCAN_TRIGGER` di hook · **234/234 test · redeploy & terverifikasi publik** · detail: **BLOK 15** | `95583fc`, `504c4e3` |
 
 ---
 
@@ -49,7 +50,7 @@
 8. [Rencana Kerja Penyelesaian & Roadmap Fase V1](#8-rencana-kerja-penyelesaian)
 9. [Koordinasi yang Dibutuhkan](#9-koordinasi-yang-dibutuhkan)
 10. [Lampiran: Keterangan Teknis & Matriks 49 Pengujian Otomatis](#10-lampiran-keterangan-teknis)
-11. 📊 **Log Progres Berkelanjutan** — Blok 7 · 8 · 9 · 10 · 11 · 12 · 13 · **14** (append-only)
+11. 📊 **Log Progres Berkelanjutan** — Blok 7 s.d. **15** (append-only)
 
 ---
 
@@ -612,6 +613,44 @@ gunzip -c /opt/workstation/backups/workstation_db_<TIMESTAMP>.sql.gz | \
 | 2 | Database | `gzip -dc /root/.../workstation_db_20260919_091909.sql.gz | pg_restore` / psql (tidak diperlukan — tanpa migrasi baru) |
 
 > 📌 Catatan: `npm install` di server melaporkan ERESOLVE (peer-deps) — tidak berefek karena `package.json` tidak berubah di rentang deploy dan build penuh sukses; `node_modules` eksisting sudah sesuai. Direkomendasikan evaluasi `npm install --legacy-peer-deps` atau migrasi ke bun di server saat sesi maintenance berikutnya.
+
+---
+
+### 📦 BLOK 15 — HOTFIX PRODUKSI: DTO→UI CONTRACT MAPPERS + GATE PERMISSION
+**📅 19 September 2026 · Status: 🟢 FIXED, REDEPLOYED & TERVERIFIKASI** · Komit: `95583fc` (merge `504c4e3`)
+
+**1. Laporan User (post-deploy Blok 14)**
+
+| No. | Gejala | Akar Masalah (terverifikasi) |
+|:---:|---|---|
+| 1 | 🔴 `TypeError: Cannot read properties of undefined (reading 'name')` — app crash saat render | `WorkItemsView:250` membaca `item.assignee.name`, sedangkan `/api/v1/work-items` mengirim baris DB mentah (`assigneeId`, TANPA objek assignee; `key` bukan `code`; tanpa `acceptanceCriteria`/`evidence`). Tiping `apiRequest<WorkItem[]>` tidak menjamin bentuk runtime — mapper untuk work items & tickets terlewat saat hydration 17.2 |
+| 2 | 🟡 `GET /api/v1/audit-logs 403` berulang | Hook `useAuditLogs` (18.4) menembak untuk SEMUA user ter-autentikasi, padahal endpoint butuh `PERM_AUDIT_LOGS_VIEW` — role tanpa permission mendapat 403 di console |
+
+**2. Perbaikan**
+
+| No. | File | Isi |
+|:---:|---|---|
+| 1 | `src/lib/contractMappers.ts` (BARU) | `mapWorkItemDto`/`mapTicketDto`: `code`←`key`, `assignee` placeholder jujur (`—`/`Unassigned` — nama user belum di-join API), `acceptanceCriteria/evidence/dependencies` = `[]`, normalisasi priority (P0..P3→Critical..Low; ticket P1..P4) & severity (High→Major, Medium→Minor) |
+| 2 | `src/App.tsx` | Hydration work items & tickets memakai mapper; `useAuditLogs` digate `PERM_AUDIT_LOGS_VIEW`; `useAiFindings/Recommendations` digate `PERM_AI_SCAN_TRIGGER` (403 AI juga dicegah proaktif) |
+| 3 | Test | `tests/contract-mappers.test.ts` — 10 test (assignee tak pernah undefined, relasi kosong jujur, peta priority/severity, fallback union) → **234/234 hijau** |
+
+**3. Deploy & Verifikasi Hotfix**
+
+| No. | Tahap | Hasil |
+|:---:|---|:---:|
+| 1 | Insiden proses (tertangkap) | Pull pertama di server "Already up to date" — merge hotfix belum di-push; **dihentikan, push dulu, baru pull ulang** |
+| 2 | Deploy | Server `504c4e3` · kode `contractMappers` terverifikasi di server · build OK · restart active |
+| 3 | Verifikasi publik | Bundle baru `index-HblDWw4b.js` berisi penanda mapper · `/api/v1/work-items` 200 (8 item, field `key` ada — dinormalisasi client) · `/api/v1/audit-logs` 200 untuk Super Admin |
+| 4 | Rollback siap | `dist.bak-hotfix-1012` + prosedur Blok 14.3 |
+
+**4. Pelajaran & Tindak Lanjut**
+
+| No. | Pelajaran | Tindak Lanjut |
+|:---:|---|---|
+| 1 | Tiping TypeScript ≠ kontrak runtime — hydrasi API WAJIB lewat mapper eksplisit (pola 18.x), bukan tiping generik | Audit semua hydrasi lain (sudah: projects/incidents/servers/commits/PRs/deployments/KB/AI — semua ber-mapper ✓) |
+| 2 | Hook ber-permission harus digate permission di sisi client | Sudah diterapkan untuk audit & AI; pola untuk hook baru |
+| 3 | Nama assignee/reporter masih placeholder (`—`) — butuh join users di endpoint list | CC-6: endpoint list sertakan join nama, hapus placeholder |
+| 4 | Detail per-item (AC checklist, evidence) tidak dimuat jalur list | CC-6: endpoint detail per item saat view membuka item |
 
 ---
 
