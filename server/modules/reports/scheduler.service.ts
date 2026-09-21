@@ -5,6 +5,7 @@ import { generatedReports } from '../../db/schema/generated_reports.ts';
 import type { GeneratedReport } from '../../db/schema/generated_reports.ts';
 import { generatedReportsService, ReportType } from './generated-reports.service.ts';
 import { deliverReportEmail } from './delivery.service.ts';
+import { deliverReportWhatsapp } from './whatsapp.channel.ts';
 import { auditService } from '../audit/audit.service.ts';
 
 /**
@@ -148,7 +149,13 @@ export const defaultDeps: SchedulerDeps = {
     });
   },
   scheduleFn: (expr, fn, opts) => cron.schedule(expr, fn, { timezone: opts.timezone }),
-  deliver: (report) => deliverReportEmail(report, process.env.REPORT_DELIVERY_EMAILS),
+  deliver: async (report) => {
+    // Story 20.2 + 20.3 — kedua channel berjalan paralel, saling independen (AC #4 20.3).
+    await Promise.all([
+      deliverReportEmail(report, process.env.REPORT_DELIVERY_EMAILS),
+      deliverReportWhatsapp(report, process.env.REPORT_DELIVERY_WA_NUMBERS),
+    ]);
+  },
   log: (msg) => console.log(`[ReportScheduler] ${msg}`),
   errorLog: (msg, err) => console.error(`[ReportScheduler] ${msg}`, err ?? ''),
 };
