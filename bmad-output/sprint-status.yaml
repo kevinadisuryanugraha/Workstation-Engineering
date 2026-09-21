@@ -976,7 +976,7 @@ stories:
   - id: "19.1.report-export-api"
     title: "Report Export API — PDF (pdfkit) & Excel (exceljs) dari Arsip"
     epic_id: "epic-19"
-    status: in-progress
+    status: done
     file: "bmad-output/stories/19.1.report-export-api.story.md"
     parallel_set: 19
     dependencies:
@@ -1005,7 +1005,7 @@ stories:
   - id: "20.1.report-scheduler-cron"
     title: "Report Scheduler Cron — Generate Otomatis Idempoten"
     epic_id: "epic-20"
-    status: in-progress
+    status: ready-for-dev
     file: "bmad-output/stories/20.1.report-scheduler-cron.story.md"
     parallel_set: 21
     dependencies:
@@ -1021,7 +1021,7 @@ stories:
   - id: "20.2.email-delivery"
     title: "Email Delivery SMTP + Log report_deliveries"
     epic_id: "epic-20"
-    status: in-progress
+    status: ready-for-dev
     file: "bmad-output/stories/20.2.email-delivery.story.md"
     parallel_set: 22
     dependencies:
@@ -1038,7 +1038,7 @@ stories:
   - id: "20.3.whatsapp-delivery"
     title: "WhatsApp Gateway Delivery (HTTP Generik)"
     epic_id: "epic-20"
-    status: in-progress
+    status: ready-for-dev
     file: "bmad-output/stories/20.3.whatsapp-delivery.story.md"
     parallel_set: 23
     dependencies:
@@ -1053,7 +1053,7 @@ stories:
   - id: "21.1.gemini-real-scan"
     title: "Gemini Real Scan Path + Mode REAL_GEMINI"
     epic_id: "epic-21"
-    status: in-progress
+    status: ready-for-dev
     file: "bmad-output/stories/21.1.gemini-real-scan.story.md"
     parallel_set: 24
     dependencies:
@@ -1067,7 +1067,7 @@ stories:
   - id: "21.2.ai-real-ui"
     title: "AI Mode Badge & Filter Riwayat Scan"
     epic_id: "epic-21"
-    status: in-progress
+    status: ready-for-dev
     file: "bmad-output/stories/21.2.ai-real-ui.story.md"
     parallel_set: 25
     dependencies:
