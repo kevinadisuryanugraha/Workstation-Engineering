@@ -33,6 +33,31 @@ aiIntelRouter.get(
   })
 );
 
+aiIntelRouter.post(
+  '/scans',
+  requirePermission('PERM_AI_SCAN_TRIGGER'),
+  safeAsync(async (req: AuthenticatedRequest, res: Response) => {
+    const { projectName, focusArea } = req.body as { projectName?: string; focusArea?: string };
+    // Story 21.1: real scan REAL_GEMINI bila kunci valid, fallback demo jujur bila tidak.
+    const snapshot = await aiService.scanProject({
+      scannedBy: actor(req).name,
+      projectName: projectName ?? null,
+      focusArea: focusArea ?? null,
+    });
+    return res.json({
+      success: true,
+      data: {
+        scanRef: snapshot.scanRef,
+        mode: snapshot.mode,
+        model: snapshot.model,
+        findingsCount: Array.isArray(snapshot.findings) ? snapshot.findings.length : 0,
+        recommendationsCount: Array.isArray(snapshot.recommendations) ? snapshot.recommendations.length : 0,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  })
+);
+
 aiIntelRouter.get(
   '/scans/:scanRef',
   requirePermission('PERM_AI_SCAN_TRIGGER'),

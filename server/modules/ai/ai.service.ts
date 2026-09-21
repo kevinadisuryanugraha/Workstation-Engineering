@@ -3,14 +3,25 @@ import { db } from '../../db/client.ts';
 import { aiScans, aiFindings, AiScan } from '../../db/schema/ai_scans.ts';
 import { aiRecommendations, AiRecommendation } from '../../db/schema/ai_recommendations.ts';
 import { buildStaticDemoPreview } from './ai.fallback.ts';
+import {
+  createGeminiScanClient,
+  collectRepoContext,
+  buildScanPrompt,
+  parseScanOutput,
+  type GeminiScanClient,
+} from './gemini.client.ts';
 import { auditService } from '../audit/audit.service.ts';
 import crypto from 'crypto';
 
 /**
- * AI intelligence service (Epic 16 — FR-019/FR-020).
+ * AI intelligence service (Epic 16 — FR-019/FR-020; Epic 21 — real scan).
  * Scan persistence (live & demo), finding lifecycle, recommendation conversion.
  * Principle: AI as analyst, not authority — humans validate every state change.
  */
+
+/** Mode integritas scan — REAL_GEMINI = analisis LLM nyata (Story 21.1). Kolom varchar: tanpa migrasi. */
+export const AI_SCAN_MODES = ['LIVE_ANALYSIS', 'STATIC_DEMO_PREVIEW', 'REAL_GEMINI'] as const;
+export type AiScanMode = (typeof AI_SCAN_MODES)[number];
 
 export interface ScanFindingRow {
   id: string;
@@ -48,7 +59,7 @@ export function canTransitionFinding(from: string, to: string): boolean {
 export class AiService {
   /** Persists a scan snapshot + individual findings + recommendations (AC 16.1.2). */
   async persistScan(input: {
-    mode: 'LIVE_ANALYSIS' | 'STATIC_DEMO_PREVIEW';
+    mode: AiScanMode;
     model: string;
     projectId?: string | null;
     projectName?: string | null;
@@ -128,6 +139,88 @@ export class AiService {
       recommendations: payload.recommendations,
       scannedBy,
     };
+  }
+
+  /**
+   * Orchestrasi scan (Story 21.1): path real REAL_GEMINI bila kunci valid,
+   * fallback STATIC_DEMO_PREVIEW tanpa kunci/error/parse-gagal — tanpa crash (AC #1,#4).
+   * Kedua path tersimpan + audit-logged (AC #5). Client & konteks injectable untuk test.
+   */
+  async scanProject(opts: {
+    scannedBy: string;
+    projectName?: string | null;
+    focusArea?: string | null;
+    /** Test injection — bila tidak ada, dibuat dari env proses. */
+    client?: GeminiScanClient | null;
+    /** Test injection — root repo (default cwd proses). */
+    repoRoot?: string;
+  }): Promise<AiScan & { viaMode: AiScanMode }> {
+    const client = opts.client !== undefined ? opts.client : await createGeminiScanClient();
+
+    // Fallback tanpa kunci — perilaku lama utuh, label jujur (AC #4).
+    if (!client) {
+      const demo = this.demoScan(opts.scannedBy, opts.projectName ?? undefined, opts.focusArea ?? undefined);
+      const snapshot = await this.persistScan({ ...demo, scannedBy: opts.scannedBy });
+      await this.auditScan('AI_SCAN_DEMO_COMPLETED', snapshot.scanRef, { mode: 'STATIC_DEMO_PREVIEW', reason: 'NO_API_KEY' });
+      return { ...snapshot, viaMode: 'STATIC_DEMO_PREVIEW' };
+    }
+
+    // Path real (AC #1): konteks repo terpangkas → prompt terstruktur → JSON.
+    try {
+      const snippets = await collectRepoContext(opts.repoRoot);
+      const prompt = buildScanPrompt(snippets, opts.focusArea ?? null);
+      const raw = await client.generate(prompt);
+      const parsed = parseScanOutput(raw);
+      if (parsed.findings.length + parsed.recommendations.length === 0) {
+        // Parse gagal total (AC #4) → fallback demo, bukan crash.
+        console.warn('[GeminiScan] tidak ada entri valid — fallback ke demo preview.');
+        const demo = this.demoScan(opts.scannedBy, opts.projectName ?? undefined, opts.focusArea ?? undefined);
+        const snapshot = await this.persistScan({ ...demo, scannedBy: opts.scannedBy });
+        await this.auditScan('AI_SCAN_DEMO_COMPLETED', snapshot.scanRef, { mode: 'STATIC_DEMO_PREVIEW', reason: 'PARSE_EMPTY' });
+        return { ...snapshot, viaMode: 'STATIC_DEMO_PREVIEW' };
+      }
+      const snapshot = await this.persistScan({
+        mode: 'REAL_GEMINI',
+        model: client.model,
+        projectName: opts.projectName ?? null,
+        focusArea: opts.focusArea ?? null,
+        findings: parsed.findings,
+        recommendations: parsed.recommendations,
+        scannedBy: opts.scannedBy,
+      });
+      await this.auditScan('AI_SCAN_REAL_COMPLETED', snapshot.scanRef, {
+        mode: 'REAL_GEMINI',
+        model: client.model,
+        findings: parsed.findings.length,
+        recommendations: parsed.recommendations.length,
+        droppedFindings: parsed.droppedFindings,
+        droppedRecommendations: parsed.droppedRecommendations,
+      });
+      return { ...snapshot, viaMode: 'REAL_GEMINI' };
+    } catch (err: any) {
+      // Error API/timeout (AC #4) → fallback demo dengan log jelas penyebabnya.
+      console.warn(`[GeminiScan] real scan gagal (${err?.message ?? err}) — fallback ke demo preview.`);
+      const demo = this.demoScan(opts.scannedBy, opts.projectName ?? undefined, opts.focusArea ?? undefined);
+      const snapshot = await this.persistScan({ ...demo, scannedBy: opts.scannedBy });
+      await this.auditScan('AI_SCAN_DEMO_COMPLETED', snapshot.scanRef, { mode: 'STATIC_DEMO_PREVIEW', reason: 'API_ERROR', error: String(err?.message ?? err).slice(0, 300) });
+      return { ...snapshot, viaMode: 'STATIC_DEMO_PREVIEW' };
+    }
+  }
+
+  private async auditScan(action: string, scanRef: string, detail: Record<string, unknown>): Promise<void> {
+    try {
+      await auditService.logEvent({
+        actorId: 'system',
+        actorName: 'AI Scan Engine',
+        action,
+        targetEntity: 'ai_scans',
+        targetId: scanRef,
+        correlationId: crypto.randomUUID(),
+        details: detail,
+      });
+    } catch {
+      /* audit gagal tidak boleh menggagalkan scan (pola 16.1) */
+    }
   }
 
   async listScans(filters: { projectId?: string; mode?: string; limit?: number }): Promise<AiScan[]> {
