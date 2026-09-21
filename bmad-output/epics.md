@@ -518,14 +518,75 @@
 
 ---
 
+## Epic 19: Report Export — PDF & Excel
+
+> # COURSE-CORRECTION-6 (2026-09-19) — Keputusan owner: 3 fitur yang sebelumnya eksplisit *out of scope* (Epic 10/12) kini masuk backlog. Item 1 dari 3: export laporan.
+
+**Goal:** Laporan manajemen (arsip DAILY/WEEKLY/MONTHLY + ringkasan periode) dapat diekspor ke PDF dan Excel untuk didistribusikan di luar sistem.
+
+**In scope:** endpoint export server-side (PDF via `pdfkit`, Excel via `exceljs`) dari arsip laporan tersimpan, tombol export di UI laporan (unduh blob).
+**Out of scope:** editor template ekspor; chart/gambar di dalam PDF (teks & tabel terformat cukup); export massal multi-arsip (zip).
+
+**Stories:**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 19.1 | report-export-api | Endpoint `GET /api/v1/reports/history/:id/export.pdf` & `.xlsx` (stream file + audit) | done |
+| 19.2 | export-ui | Tombol Export PDF/Excel di panel laporan + unduh blob + state jujur | done |
+
+**Dependencies:** 19.2 depends on 19.1 · 19.1 depends on 12.1 (done) — sequential wave (shared `ReportView`/`App.tsx`)
+
+---
+
+## Epic 20: Scheduled Delivery — Cron, Email & WhatsApp
+
+> # COURSE-CORRECTION-6 (2026-09-19) — Item 2 dari 3: pengiriman laporan berkala otomatis.
+
+**Goal:** Laporan DAILY/WEEKLY/MONTHLY dibuat otomatis oleh scheduler produksi dan terkirim ke email (SMTP) dan WhatsApp (gateway HTTP) — dengan log delivery append-only dan graceful skip saat provider tidak dikonfigurasi.
+
+**In scope:** scheduler cron in-process (`node-cron`, jadwal via env, idempoten per tipe), delivery service email (nodemailer) + WhatsApp (provider gateway generik kompatibel Fonnte/Wablas), tabel `report_deliveries` (append-only log status kirim).
+**Out of scope:** UI admin penyuntingan penerima (penerima via env `REPORT_DELIVERY_EMAILS` / `REPORT_DELIVERY_WA_NUMBERS`); retry bertingkat; lampiran PDF di WA (kirim ringkasan teks + tautan).
+
+**Stories:**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 20.1 | report-scheduler-cron | Cron scheduler produksi (generate otomatis, idempoten, audit, env-gated) | done |
+| 20.2 | email-delivery | SMTP delivery + tabel report_deliveries + graceful skip | done |
+| 20.3 | whatsapp-delivery | WhatsApp gateway delivery (HTTP provider generik) + graceful skip | done |
+
+**Dependencies:** 20.2 & 20.3 depend on 20.1 · 20.1 depends on 12.1/12.2 (done) — sequential wave (shared scheduler module + `server.ts`)
+
+---
+
+## Epic 21: Gemini Real AI Scan — Aktivasi Fase V2
+
+> # COURSE-CORRECTION-6 (2026-09-19) — Item 3 dari 3: keputusan PENDING (A-01, 2026-09-18) mengenai fitur AI real kini diputuskan AKTIF dengan kunci Gemini produksi.
+
+**Goal:** AI scan menganalisis kode nyata via Gemini API (`@google/genai`) saat kunci tersedia — hasil tersimpan dengan mode `REAL_GEMINI` yang jujur; tanpa kunci/gagal → fallback `STATIC_DEMO_PREVIEW` eksisting tetap berjalan dengan label integritas yang tidak ambigu.
+
+**In scope:** real scan path di `ai.service.ts` (prompt terstruktur → findings/rekomendasi JSON tervalidasi), mode `REAL_GEMINI` di enum, badge mode di UI scan + riwayat, dokumentasi env.
+**Out of scope:** perubahan finding lifecycle (16.2 tetap berlaku — AI tidak pernah menutup tiket); scan otomatis terjadwal; multi-model.
+
+**Stories:**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 21.1 | gemini-real-scan | Real scan path via Gemini + persist mode REAL_GEMINI + fallback aman | done |
+| 21.2 | ai-real-ui | Badge mode REAL/DEMO di hasil & riwayat scan + filter + docs env | done |
+
+**Dependencies:** 21.2 depends on 21.1 · 21.1 depends on 16.1 (done) — sequential wave (shared `ai.service.ts` + `App.tsx`)
+
+---
+
 ## Delivery Tracking (Count-Based)
 
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
-- **Total Stories:** 52 (20 MVP + 15 Fase V1 gel.1-2 + 8 Fase V2 gel.12-14 + 3 Epic 17 CC-4 + 6 Epic 18 CC-5)
-- **Done:** 52
+- **Total Stories:** 59 (52 laporan sebelumnya + 7 Epic 19-21 CC-6)
+- **Done:** 59 (52 + 7 CC-6)
 - **Remaining:** 0
-- **Completion Rate:** 100% (52 / 52)
+- **Completion Rate:** 100% (59 / 59)
 - **Koreksi 2026-09-19 (CC-4):** angka lama (33/35, remaining 13.2–13.3) tidak mencerminkan penyelesaian Waves 12–14; factual: 43/43 done sebelum Epic 17.
 - **Koreksi 2026-09-19 (CC-5):** Epic 17 tuntas 3/3 (46/46 done, 100%) sebelum Epic 18 dibuka; Epic 18 tuntas 6/6 di hari yang sama.
 
@@ -602,6 +663,27 @@ Wave 14 (AI Intelligence Real) [COURSE-CORRECTION-3]:
   ├── Story 16.2 (Finding Lifecycle)
   ├── Story 16.3 (Recommendation → Work Item)
   └── Story 16.4 (AI Report Translate)
+
+Wave 19 (Report Export API) [COURSE-CORRECTION-6]:
+  └── Story 19.1 (Report Export API — PDF & Excel)
+
+Wave 20 (Export UI) [COURSE-CORRECTION-6]:
+  └── Story 19.2 (Export Buttons UI)
+
+Wave 21 (Scheduler Cron) [COURSE-CORRECTION-6]:
+  └── Story 20.1 (Report Scheduler Cron)
+
+Wave 22 (Email Delivery) [COURSE-CORRECTION-6]:
+  └── Story 20.2 (SMTP Email Delivery)
+
+Wave 23 (WhatsApp Delivery) [COURSE-CORRECTION-6]:
+  └── Story 20.3 (WhatsApp Gateway Delivery)
+
+Wave 24 (Gemini Real Scan) [COURSE-CORRECTION-6]:
+  └── Story 21.1 (Gemini Real Scan Path)
+
+Wave 25 (AI Real UI) [COURSE-CORRECTION-6]:
+  └── Story 21.2 (AI Mode Badge & Filter UI)
 ```
 
 ---

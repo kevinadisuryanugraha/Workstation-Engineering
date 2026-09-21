@@ -5,6 +5,16 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-19 — Course Correction 6: Ekspansi Distribusi Laporan & AI Real (Epic 19-21)
+- **Decision:** Owner menyetujui 3 fitur yang sebelumnya eksplisit *out of scope* untuk masuk backlog: **(1) Epic 19** Report Export PDF & Excel (endpoint server `pdfkit`/`exceljs` + tombol UI), **(2) Epic 20** Scheduled Delivery — cron produksi idempoten (`node-cron`, default OFF via env), pengiriman email SMTP (`nodemailer`) & WhatsApp gateway HTTP generik dengan tabel append-only `report_deliveries`, **(3) Epic 21** Aktivasi Gemini Real AI Scan — path analisis kode nyata via `@google/genai` dengan mode `REAL_GEMINI` + fallback demo statis yang tetap terlabel jujur. Total **7 story baru** (19.1, 19.2, 20.1, 20.2, 20.3, 21.1, 21.2), waves 19-25 sequential (shared `server.ts`/`App.tsx`).
+- **Rationale:** Laporan terarsip (Epic 12) belum menjangkau distribusi di luar aplikasi; generate masih manual; keputusan PENDING (A-01, 2026-09-18) mengenai AI real kini diputuskan AKTIF dengan kunci Gemini. Prinsip tetap: AI adalah analis bukan otoritas (lifecycle findings 16.2 tidak berubah).
+- **Impact:** epics.md (+3 epic, total 59 story); stories/ (+7 file ready-for-dev); sprint-status.yaml (epic 19-21 in-progress, parallel_set 19-25); project-context.md (catatan CC-6); deps baru: pdfkit, exceljs, node-cron, nodemailer.
+- **In-progress stories affected:** none (seluruh 52 story lama tetap done).
+- **Made by:** bmad-correct-course → bmad-epics-and-stories → bmad-sprint-planning
+- **Supersedes:** menutup keputusan PENDING A-01 (2026-09-18) untuk aspek AI scan real
+
+---
+
 ### 2026-09-19 — HOTFIX Produksi #2–#4: Stale SW, CSP Fonts, Empty-Selection Guards, No-Cache
 - **Decision:** Rangkaian tiga hotfix lanjutan pasca-deploy Epic 17/18 atas laporan user: **#2** service worker workbox mem-precache bundle lama → `skipWaiting`+`clientsClaim` eksplisit; **#3** CSP `connect-src` memblokir fetch font oleh SW → domain fonts diizinkan + runtimeCaching fonts dihapus dari SW (font dimuat langsung halaman); **#4** crash `reading 'author'` di KnowledgeBaseView — `useState(articles[0])` menghasilkan undefined saat boot real → guard render + fallback jujur (pola sama dicegah di InfrastructureView), plus `Cache-Control: no-cache` untuk `/sw.js` & `index.html`.
 - **Rationale:** Kontrak deploy WORKSTATION baru: (1) setiap array yang mungkin kosong TIDAK boleh jadi initial state yang di-dereference tanpa guard; (2) `sw.js`+`index.html` wajib no-cache; (3) SW tidak meng-intercept resource lintas-origin yang dibatasi CSP-nya sendiri.
