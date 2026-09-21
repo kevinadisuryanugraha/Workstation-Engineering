@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '../../lib/apiClient.ts';
 import { AIFinding, AIRecommendation } from '../../types.ts';
+import { aiScansEndpoint } from '../../lib/aiMode.ts';
 
 /**
  * Story 18.5 (CC-5) — AI intelligence client hooks + DTO→UI mappers.
@@ -117,5 +118,65 @@ export function useAiRecommendations(options: { enabled?: boolean } = {}) {
     },
     enabled: options.enabled ?? true,
     staleTime: 30_000,
+  });
+}
+
+/**
+ * Story 21.2 (CC-6) — Riwayat scan snapshot dari GET /api/v1/ai/scans (16.1/21.1).
+ * Filter mode diteruskan sebagai query param (server memfilter di DB — bukan
+ * client-side, sesuai kode aktual server). Guard unknown/empty di mapper.
+ */
+export interface AiScanSummaryDto {
+  id: string;
+  scanRef: string;
+  mode: string;
+  model: string;
+  projectName: string | null;
+  focusArea: string | null;
+  scannedBy: string;
+  createdAt: string;
+  findings: unknown[];
+  recommendations: unknown[];
+}
+
+export interface AiScanSummary {
+  id: string;
+  scanRef: string;
+  mode: string;
+  model: string;
+  projectName: string;
+  focusArea: string;
+  scannedBy: string;
+  createdAt: string;
+  findingsCount: number;
+}
+
+export function mapScanSummaryDto(dto: AiScanSummaryDto): AiScanSummary {
+  return {
+    id: dto.id,
+    scanRef: dto.scanRef,
+    mode: typeof dto.mode === 'string' ? dto.mode : 'UNKNOWN',
+    model: dto.model ?? '—',
+    projectName: dto.projectName ?? '—',
+    focusArea: dto.focusArea ?? '—',
+    scannedBy: dto.scannedBy ?? 'unknown',
+    createdAt: dto.createdAt ?? '',
+    findingsCount: Array.isArray(dto.findings) ? dto.findings.length : 0,
+  };
+}
+
+export function useAiScans(options: { mode?: string; enabled?: boolean; limit?: number } = {}) {
+  const modeParam = options.mode;
+  return useQuery({
+    queryKey: ['aiScans', modeParam ?? 'ALL'],
+    queryFn: async () => {
+      const endpoint = aiScansEndpoint(modeParam);
+      const payload = await apiRequest<AiScanSummaryDto[]>(
+        `${endpoint}${endpoint.includes('?') ? '&' : '?'}limit=${options.limit ?? 20}`
+      );
+      return Array.isArray(payload) ? payload : [];
+    },
+    enabled: options.enabled ?? true,
+    staleTime: 15_000,
   });
 }
