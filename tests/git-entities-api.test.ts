@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
+import dotenv from 'dotenv';
 
 /**
  * Story 18.1 — Git entities read API (CC-5).
@@ -12,6 +13,11 @@ import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
  */
 
 process.env.JWT_SECRET = process.env.JWT_SECRET || 'workstation-test-secret-min-32-chars-long-security-token';
+
+// CI tanpa Postgres → suite integrasi DB di-skip jujur; pure unit tetap jalan.
+dotenv.config();
+const HAS_DB = Boolean(process.env.DATABASE_URL);
+const describeDb = HAS_DB ? describe : describe.skip;
 
 vi.mock('../src/lib/apiClient.ts', () => ({
   apiRequest: vi.fn(),
@@ -88,7 +94,7 @@ describe('Story 18.1 — mapper DTO→UI (placeholder jujur)', () => {
   });
 });
 
-describe('Story 18.1 — gitEntityService (integrasi DB dev)', () => {
+describeDb('Story 18.1 — gitEntityService (integrasi DB dev)', () => {
   let projectId: string;
   let repoId: string;
 
