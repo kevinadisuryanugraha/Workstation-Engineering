@@ -31,6 +31,7 @@ import { serverMetricsRouter } from "./server/modules/server-metrics/server-metr
 import { agentIngestRouter } from "./server/modules/server-metrics/server-metrics.routes.ts";
 import { reportsRouter } from "./server/modules/reports/reports.routes.ts";
 import { startSchedulerFromEnv } from "./server/modules/reports/scheduler.service.ts";
+import { checkDatabaseConnection } from "./server/db/client.ts";
 import { sprintRouter, milestoneRouter } from "./server/modules/sprints/sprint.routes.ts";
 import { kbRouter } from "./server/modules/kb/kb.routes.ts";
 import { searchRouter } from "./server/modules/search/search.routes.ts";
@@ -446,10 +447,20 @@ async function startServer() {
     console.log(`RBAC Middleware: ACTIVE with HMAC-SHA256 Cryptographic Verification`);
   });
 
-  // Story 20.1 (CC-6): laporan terjadwal — default OFF, aktif via REPORT_SCHEDULER=on
-  const scheduler = startSchedulerFromEnv();
-  if (scheduler && scheduler.scheduledTypes.length > 0) {
-    console.log(`Report Scheduler: ACTIVE for ${scheduler.scheduledTypes.join(", ")}`);
+  // Story 20.1 (CC-6): laporan terjadwal — default OFF, aktif via REPORT_SCHEDULER=on.
+  // AC #5: scheduler hanya mulai SETELAH DB siap; kegagalan koneksi tidak menunda boot server.
+  try {
+    const health = await checkDatabaseConnection();
+    if (health.connected) {
+      const scheduler = startSchedulerFromEnv();
+      if (scheduler && scheduler.scheduledTypes.length > 0) {
+        console.log(`Report Scheduler: ACTIVE for ${scheduler.scheduledTypes.join(", ")}`);
+      }
+    } else {
+      console.error(`Report Scheduler: DB tidak siap (${health.error ?? "alasan tidak diketahui"}) — scheduler tidak dijalankan.`);
+    }
+  } catch (err) {
+    console.error("Report Scheduler: pemeriksaan DB gagal — scheduler tidak dijalankan.", err);
   }
 }
 
