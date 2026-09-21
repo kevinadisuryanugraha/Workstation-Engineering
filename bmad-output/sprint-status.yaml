@@ -1053,7 +1053,7 @@ stories:
   - id: "21.1.gemini-real-scan"
     title: "Gemini Real Scan Path + Mode REAL_GEMINI"
     epic_id: "epic-21"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/21.1.gemini-real-scan.story.md"
     parallel_set: 24
     dependencies:
