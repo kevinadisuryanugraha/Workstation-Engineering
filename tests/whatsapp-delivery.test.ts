@@ -51,6 +51,26 @@ describe('parseWaConfig', () => {
     expect(parseWaConfig({}).complete).toBe(false);
     expect(parseWaConfig({ WA_GATEWAY_URL: 'https://x' }).complete).toBe(false);
   });
+
+  it('HOTFIX WA-1: scheme default raw (Fonnte menolak Bearer)', () => {
+    const cfg = parseWaConfig({ WA_GATEWAY_URL: 'https://api.fonnte.com/send', WA_GATEWAY_TOKEN: 'tok' });
+    expect(cfg.authScheme).toBe('raw');
+  });
+
+  it('HOTFIX WA-1: scheme bearer eksplisit utk gateway Wablas-style', () => {
+    const cfg = parseWaConfig({
+      WA_GATEWAY_URL: 'https://wa.kantor.id/send',
+      WA_GATEWAY_TOKEN: 'tok',
+      WA_GATEWAY_AUTH_SCHEME: 'bearer',
+    });
+    expect(cfg.authScheme).toBe('bearer');
+  });
+
+  it('HOTFIX WA-1: guard — scheme tak dikenal / huruf besar → raw, tanpa crash', () => {
+    expect(parseWaConfig({ WA_GATEWAY_AUTH_SCHEME: 'weird' }).authScheme).toBe('raw');
+    expect(parseWaConfig({ WA_GATEWAY_AUTH_SCHEME: 'BEARER' }).authScheme).toBe('bearer');
+    expect(parseWaConfig({ WA_GATEWAY_AUTH_SCHEME: undefined }).authScheme).toBe('raw');
+  });
 });
 
 describe('parseWaNumbers', () => {
@@ -119,8 +139,8 @@ describe('deliverReportWhatsapp', () => {
     };
     h.deps = {
       config: complete
-        ? { url: 'https://wa.kantor.id/send', token: 'TOPSECRET-TOKEN', complete: true }
-        : { url: '', token: '', complete: false },
+        ? { url: 'https://wa.kantor.id/send', token: 'TOPSECRET-TOKEN', complete: true, authScheme: 'raw' }
+        : { url: '', token: '', complete: false, authScheme: 'raw' },
       fetchFn,
       insertDelivery: async (row) => {
         h.rows.push(row);
@@ -151,19 +171,26 @@ describe('deliverReportWhatsapp', () => {
     expect(h.rows[0].destination).toContain('tanpa nomor');
   });
 
-  it('SENT dengan fetch mock: Bearer token, body {target,message}, baris + audit (AC #1,#5)', async () => {
+  it('SENT dengan fetch mock: token RAW default (Fonnte), body {target,message}, baris + audit (AC #1,#5)', async () => {
     const h = makeHarness(true);
     const summary = await deliverReportWhatsapp(report, '6281234567890', h.deps);
     expect(summary).toEqual({ sent: 1, failed: 0, skipped: 0 });
     expect(h.calls).toHaveLength(1);
     const { url, init } = h.calls[0];
     expect(url).toBe('https://wa.kantor.id/send');
-    expect((init.headers as Record<string, string>).Authorization).toBe('Bearer TOPSECRET-TOKEN');
+    expect((init.headers as Record<string, string>).Authorization).toBe('TOPSECRET-TOKEN');
     const body = JSON.parse(String(init.body));
     expect(body.target).toBe('6281234567890');
     expect(body.message).toContain('Laporan WORKSTATION — DAILY');
     expect(h.rows[0].status).toBe('SENT');
     expect(h.auditEvents.map((e) => e.action)).toEqual(['REPORT_DELIVERY_SENT']);
+  });
+
+  it('HOTFIX WA-1: scheme bearer → header Authorization pakai prefix Bearer', async () => {
+    const h = makeHarness(true);
+    h.deps.config.authScheme = 'bearer';
+    await deliverReportWhatsapp(report, '6281234567890', h.deps);
+    expect((h.calls[0].init.headers as Record<string, string>).Authorization).toBe('Bearer TOPSECRET-TOKEN');
   });
 
   it('non-2xx → FAILED + nomor berikutnya tetap dicoba (AC #4)', async () => {

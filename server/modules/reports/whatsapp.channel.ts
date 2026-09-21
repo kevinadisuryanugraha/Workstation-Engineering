@@ -25,12 +25,19 @@ export interface WaConfig {
   url: string;
   token: string;
   complete: boolean;
+  /** 'raw' = token mentah (Fonnte native); 'bearer' = prefix Bearer (Wablas-style). Default raw. */
+  authScheme: 'raw' | 'bearer';
 }
 
 export function parseWaConfig(env: Record<string, string | undefined>): WaConfig {
   const url = (env.WA_GATEWAY_URL ?? '').trim();
   const token = (env.WA_GATEWAY_TOKEN ?? '').trim();
-  return { url, token, complete: Boolean(url && token) };
+  // HOTFIX WA-1 (2026-09-21): Fonnte menolak prefix Bearer ("token invalid") —
+  // scheme 'raw' jadi default; 'bearer' tetap tersedia utk gateway Wablas-style.
+  // Guard: nilai tak dikenal → raw (jangan crash, HOTFIX #4).
+  const schemeRaw = String(env.WA_GATEWAY_AUTH_SCHEME ?? '').trim().toLowerCase();
+  const authScheme: WaConfig['authScheme'] = schemeRaw === 'bearer' ? 'bearer' : 'raw';
+  return { url, token, complete: Boolean(url && token), authScheme };
 }
 
 /** Nomor format internasional tanpa `+` — hanya digit, 8–16 karakter. */
@@ -176,7 +183,8 @@ export async function deliverReportWhatsapp(
       const res = await deps.fetchFn(deps.config.url, {
         method: 'POST',
         headers: {
-          Authorization: `Bearer ${deps.config.token}`,
+          Authorization:
+            deps.config.authScheme === 'bearer' ? `Bearer ${deps.config.token}` : deps.config.token,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ target, message }),
