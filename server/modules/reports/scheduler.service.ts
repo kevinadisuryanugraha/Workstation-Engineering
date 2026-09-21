@@ -2,7 +2,9 @@ import cron, { ScheduledTask } from 'node-cron';
 import { desc, eq } from 'drizzle-orm';
 import { db } from '../../db/client.ts';
 import { generatedReports } from '../../db/schema/generated_reports.ts';
+import type { GeneratedReport } from '../../db/schema/generated_reports.ts';
 import { generatedReportsService, ReportType } from './generated-reports.service.ts';
+import { deliverReportEmail } from './delivery.service.ts';
 import { auditService } from '../audit/audit.service.ts';
 
 /**
@@ -115,6 +117,8 @@ export interface SchedulerDeps {
   findLatestGeneratedAt: (type: ReportType) => Promise<Date | null>;
   auditLog: (entry: { action: string; detail: Record<string, unknown> }) => Promise<void>;
   scheduleFn: (expr: string, fn: () => void, opts: { timezone: string }) => ScheduledTask;
+  /** Hook pasca-generate (Story 20.2): delivery email — never-throw di dalam service. */
+  deliver?: (report: GeneratedReport) => Promise<unknown>;
   /** Jam ter-inject (default jam nyata) — untuk determinisme test window. */
   now?: () => Date;
   log?: (msg: string) => void;
@@ -144,6 +148,7 @@ export const defaultDeps: SchedulerDeps = {
     });
   },
   scheduleFn: (expr, fn, opts) => cron.schedule(expr, fn, { timezone: opts.timezone }),
+  deliver: (report) => deliverReportEmail(report, process.env.REPORT_DELIVERY_EMAILS),
   log: (msg) => console.log(`[ReportScheduler] ${msg}`),
   errorLog: (msg, err) => console.error(`[ReportScheduler] ${msg}`, err ?? ''),
 };
@@ -172,9 +177,17 @@ export function createScheduler(config: SchedulerConfig, deps: SchedulerDeps = d
           await deps.auditLog({ action: 'REPORT_SCHEDULE_SKIP', detail: { reportType: type, reason: 'ALREADY_GENERATED' } });
           return;
         }
-        await deps.generate(type, 'SCHEDULER');
+        const report = await deps.generate(type, 'SCHEDULER') as GeneratedReport;
         log(`${type}: laporan terjadwal dibuat & diarsipkan.`);
         await deps.auditLog({ action: 'REPORT_SCHEDULE_GENERATED', detail: { reportType: type } });
+        // Story 20.2 — delivery pasca-generate; gagal delivery TIDAK menandai job gagal.
+        if (deps.deliver) {
+          try {
+            await deps.deliver(report);
+          } catch (deliverErr) {
+            errorLog(`${type}: delivery pasca-generate gagal (laporan tetap terarsip).`, deliverErr);
+          }
+        }
       } catch (err) {
         errorLog(`${type}: gagal membuat laporan terjadwal — job lanjut di periode berikutnya.`, err);
         try {
