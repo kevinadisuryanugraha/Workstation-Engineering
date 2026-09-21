@@ -39,9 +39,13 @@ import { useAuditLogs, mapAuditLogDto } from "./hooks/api/useAuditLogs";
 import {
   useAiFindings,
   useAiRecommendations,
+  useAiScans,
   mapFindingDto,
-  mapRecommendationDto
+  mapRecommendationDto,
+  mapScanSummaryDto,
+  AiScanSummary
 } from "./hooks/api/useAiIntel";
+import { scanModeFilterParam, AiModeFilterKey } from "./lib/aiMode";
 import { mapWorkItemDto, mapTicketDto } from "./lib/contractMappers";
 import { hasPermission, ROLE_PERMISSIONS } from "./lib/rbac";
 import { NAV_ITEMS, filterNavigation } from "./config/navigation";
@@ -186,6 +190,8 @@ export default function App() {
 
   const [aiFindings, setAiFindings] = useState<AIFinding[]>(initialData.aiFindings);
   const [aiScanMode, setAiScanMode] = useState<string | null>(null); // SEC-05: integrity flag from /api/ai/scan
+  const [aiScanModel, setAiScanModel] = useState<string | null>(null); // Story 21.2: model aktual (mis. gemini-2.5-flash)
+  const [aiScanFilter, setAiScanFilter] = useState<AiModeFilterKey>("ALL"); // Story 21.2: filter riwayat (default = Semua)
   const [aiRecommendations, setAiRecommendations] = useState<AIRecommendation[]>(initialData.aiRecommendations);
   const [technicalDebts, setTechnicalDebts] = useState(initialData.technicalDebts);
 
@@ -203,6 +209,17 @@ export default function App() {
     if (DEMO_MODE || !Array.isArray(apiAiRecommendations)) return;
     setAiRecommendations(apiAiRecommendations.map(mapRecommendationDto));
   }, [apiAiRecommendations]);
+  // Story 21.2 (CC-6): riwayat scan nyata dari GET /api/v1/ai/scans — filter mode
+  // diteruskan sebagai query param (server memfilter di DB). Mode demo (VITE_DEMO_MODE)
+  // tidak memfetch — perilaku mock eksisting tetap utuh (AC #4).
+  const { data: apiAiScans, isLoading: aiScansLoading, refetch: refetchAiScans } = useAiScans({
+    mode: scanModeFilterParam(aiScanFilter),
+    enabled: !DEMO_MODE && Boolean(session?.user) && aiPermitted
+  });
+  const aiScanHistory: AiScanSummary[] = useMemo(
+    () => (DEMO_MODE || !Array.isArray(apiAiScans) ? [] : apiAiScans.map(mapScanSummaryDto)),
+    [apiAiScans]
+  );
   const [incidents, setIncidents] = useState(initialData.incidents);
 
   // Story 13.3 + 17.2: live incident feed — boot real MENGANTIKAN (bukan
@@ -725,6 +742,11 @@ export default function App() {
       const data = await response.json();
       // SEC-05 (Story 8.3): preserve integrity mode so UI can label demo data honestly
       setAiScanMode(typeof data.mode === "string" ? data.mode : "LIVE_ANALYSIS");
+      // Story 21.2: simpan model aktual untuk label detail hasil (guard non-string → null)
+      setAiScanModel(typeof data.model === "string" && data.model.length > 0 ? data.model : null);
+      // Riwayat scan sudah persist di server (16.1) — segarkan agar scan baru tampak
+      // (hanya mode real; demo tidak memfetch — AC #4 perilaku mock dipertahankan)
+      if (!DEMO_MODE) void refetchAiScans();
       if (data.findings && Array.isArray(data.findings)) {
         const newFindings: AIFinding[] = data.findings.map((f: any, idx: number) => ({
           id: `FND-${Date.now()}-${idx}`,
@@ -1033,6 +1055,11 @@ export default function App() {
             <AIIntelligenceView
               findings={aiFindings}
               scanMode={aiScanMode}
+              scanModel={aiScanModel}
+              scanHistory={aiScanHistory}
+              scanHistoryLoading={!DEMO_MODE && aiScansLoading}
+              scanModeFilter={aiScanFilter}
+              onScanModeFilterChange={setAiScanFilter}
               recommendations={aiRecommendations}
               technicalDebts={technicalDebts}
               project={activeProject}

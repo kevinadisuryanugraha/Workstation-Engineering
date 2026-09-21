@@ -16,6 +16,8 @@ import {
   X
 } from "lucide-react";
 import { AIFinding, AIRecommendation, TechnicalDebt, Project } from "../types";
+import { AiScanSummary } from "../hooks/api/useAiIntel";
+import { aiModeBadge, isDemoScanMode, SCAN_MODE_FILTERS, AiModeFilterKey } from "../lib/aiMode";
 import { KokonutCard } from "./ui/KokonutCard";
 import { Badge } from "./ui/Badge";
 import { cn } from "../lib/utils";
@@ -23,6 +25,11 @@ import { cn } from "../lib/utils";
 interface AIIntelligenceViewProps {
   findings: AIFinding[];
   scanMode?: string | null;
+  scanModel?: string | null;
+  scanHistory?: AiScanSummary[];
+  scanHistoryLoading?: boolean;
+  scanModeFilter?: AiModeFilterKey;
+  onScanModeFilterChange?: (key: AiModeFilterKey) => void;
   recommendations: AIRecommendation[];
   technicalDebts: TechnicalDebt[];
   project: Project;
@@ -35,6 +42,11 @@ interface AIIntelligenceViewProps {
 export const AIIntelligenceView: React.FC<AIIntelligenceViewProps> = ({
   findings,
   scanMode,
+  scanModel,
+  scanHistory = [],
+  scanHistoryLoading = false,
+  scanModeFilter = "ALL",
+  onScanModeFilterChange,
   recommendations,
   technicalDebts,
   project,
@@ -44,7 +56,7 @@ export const AIIntelligenceView: React.FC<AIIntelligenceViewProps> = ({
   isManagementView
 }) => {
   const [activeTab, setActiveTab] = useState<"findings" | "recommendations" | "techdebt">("findings");
-  const isStaticDemoPreview = scanMode === "STATIC_DEMO_PREVIEW";
+  const isStaticDemoPreview = isDemoScanMode(scanMode); // Story 21.2: guard via util (mode legacy/unknown tak membuat crash)
   const [isScanning, setIsScanning] = useState(false);
   const [scanSnippet, setScanSnippet] = useState(
     `// OrderController.php
@@ -68,6 +80,14 @@ public function exportDailyReceipts(Request $request) {
     }
   };
 
+  // Story 21.2: tanggal riwayat — guard nilai invalid/empty tanpa crash (HOTFIX #4).
+  const formatScanDate = (iso: string): string => {
+    if (!iso) return "—";
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return iso;
+    return d.toLocaleString("id-ID", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
+  };
+
   return (
     <div className="space-y-6 pb-12">
       {/* Top Banner */}
@@ -78,6 +98,21 @@ public function exportDailyReceipts(Request $request) {
               <Badge variant="purple" size="sm" dot>
                 AI Codebase Intelligence & AST Scanner
               </Badge>
+              {/* Story 21.2 (AC #1): badge mode hasil scan terakhir — jujur per mode, guard unknown */}
+              {scanMode && (() => {
+                const b = aiModeBadge(scanMode);
+                return (
+                  <Badge variant={b.variant} size="sm" dot data-testid={b.testId}>
+                    {b.label}
+                  </Badge>
+                );
+              })()}
+              {/* Story 21.2 (AC #3): model aktual hasil scan terakhir */}
+              {scanModel && (
+                <span className="text-xs text-slate-500 font-mono font-semibold" data-testid="scan-model">
+                  Model: {scanModel}
+                </span>
+              )}
               <span className="text-xs text-slate-500 font-mono font-semibold">Project: {project.name}</span>
             </div>
             <h1 className="text-lg sm:text-xl font-mono font-black text-slate-900 tracking-tight">
@@ -143,6 +178,75 @@ public function exportDailyReceipts(Request $request) {
               </div>
             </div>
           )}
+
+          {/* Story 21.2 (AC #1/#2/#5): riwayat scan — badge mode per baris, filter
+              Semua/Real/Demo (query param ke server), loading & empty state jujur. */}
+          <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm p-4 sm:p-5 space-y-3" data-testid="scan-history">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <span className="text-xs font-mono font-black text-slate-900 uppercase tracking-wider">
+                Riwayat Scan
+              </span>
+              <div
+                className="flex items-center gap-1 bg-slate-100/80 p-1 rounded-lg border border-slate-200/80 w-fit"
+                role="group"
+                aria-label="Filter riwayat scan berdasarkan mode"
+              >
+                {SCAN_MODE_FILTERS.map((f) => {
+                  const active = scanModeFilter === f.key;
+                  return (
+                    <button
+                      key={f.key}
+                      type="button"
+                      onClick={() => onScanModeFilterChange?.(f.key)}
+                      aria-pressed={active}
+                      data-testid={`scan-filter-${f.key.toLowerCase()}`}
+                      className={cn(
+                        "px-3 py-1 rounded-md text-xs font-mono font-bold transition-all outline-none cursor-pointer",
+                        active
+                          ? "bg-white text-slate-900 shadow-xs border border-slate-200/60"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                      )}
+                    >
+                      {f.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {scanHistoryLoading ? (
+              <p className="text-xs text-slate-500 font-mono animate-pulse" data-testid="scan-history-loading">
+                Memuat riwayat scan…
+              </p>
+            ) : scanHistory.length === 0 ? (
+              <p className="text-xs text-slate-500 font-mono" data-testid="scan-history-empty">
+                Belum ada riwayat scan{scanModeFilter === "ALL" ? "" : " untuk mode ini"} — jalankan scan untuk mengisi arsip.
+              </p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {scanHistory.map((s) => {
+                  const b = aiModeBadge(s.mode);
+                  return (
+                    <li key={s.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2.5">
+                      <div className="flex flex-wrap items-center gap-2 min-w-0">
+                        <Badge variant={b.variant} size="sm" data-testid={b.testId}>
+                          {b.label}
+                        </Badge>
+                        <span className="text-xs font-mono font-bold text-slate-800">{s.scanRef}</span>
+                        <span className="text-xs font-mono text-slate-500 truncate">Model: {s.model}</span>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 shrink-0 text-xs font-mono text-slate-500">
+                        <span>{s.findingsCount} findings</span>
+                        <span>{s.scannedBy}</span>
+                        <span>{formatScanDate(s.createdAt)}</span>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
           {findings.map((fnd) => (
             <div key={fnd.id} className="bg-white rounded-xl border border-slate-200/90 shadow-sm p-6 space-y-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-100">
