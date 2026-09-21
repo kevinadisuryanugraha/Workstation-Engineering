@@ -149,7 +149,7 @@ epics:
   - id: "epic-19"
     title: "Report Export — PDF & Excel"
     description: "Course Correction 6 (2026-09-19): laporan arsip dapat diekspor PDF (pdfkit) & Excel (exceljs) via API + tombol unduh UI"
-    status: in-progress
+    status: done
     story_ids:
       - "19.1.report-export-api"
       - "19.2.export-ui"
@@ -990,7 +990,7 @@ stories:
   - id: "19.2.export-ui"
     title: "Export UI — Tombol Unduh PDF/Excel Panel Laporan"
     epic_id: "epic-19"
-    status: in-progress
+    status: done
     file: "bmad-output/stories/19.2.export-ui.story.md"
     parallel_set: 20
     dependencies:
@@ -1005,7 +1005,7 @@ stories:
   - id: "20.1.report-scheduler-cron"
     title: "Report Scheduler Cron — Generate Otomatis Idempoten"
     epic_id: "epic-20"
-    status: ready-for-dev
+    status: in-progress
     file: "bmad-output/stories/20.1.report-scheduler-cron.story.md"
     parallel_set: 21
     dependencies:
