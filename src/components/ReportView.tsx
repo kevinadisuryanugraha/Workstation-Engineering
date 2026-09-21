@@ -1,6 +1,10 @@
 import React, { useState } from "react";
-import { FileText, CalendarDays, RefreshCw, ShieldAlert } from "lucide-react";
+import { FileText, CalendarDays, RefreshCw, ShieldAlert, Download, FileSpreadsheet, Archive } from "lucide-react";
 import { useIdReport } from "../hooks/api/useReport";
+import { useReportArchive, useReportExport } from "../hooks/api/useReportExport";
+import { hasPermission } from "../lib/rbac";
+import { authManager } from "../lib/auth";
+import { DEMO_MODE } from "../mockData";
 import { KokonutCard } from "./ui/KokonutCard";
 import { Badge } from "./ui/Badge";
 import { cn } from "../lib/utils";
@@ -23,6 +27,26 @@ const PERIOD_OPTIONS = [
 export const ReportView: React.FC<ReportViewProps> = ({ isManagementView }) => {
   const [days, setDays] = useState<number>(7);
   const { data, isLoading, isError, error, refetch, isFetching } = useIdReport(days);
+
+  // ===== Story 19.2 (CC-6): Arsip & Ekspor =====
+  const canViewReports = hasPermission(authManager.getUser()?.role, "PERM_AUDIT_LOGS_VIEW");
+  const archive = useReportArchive({ enabled: !DEMO_MODE && canViewReports });
+  const exportMut = useReportExport();
+  const [archiveNotice, setArchiveNotice] = useState<string | null>(null);
+
+  const handleExport = async (reportId: string, type: string, format: "pdf" | "xlsx") => {
+    setArchiveNotice(null);
+    if (DEMO_MODE) {
+      setArchiveNotice("Ekspor hanya tersedia dengan data server nyata — saat ini mode demo aktif.");
+      return;
+    }
+    try {
+      const result = await exportMut.exportReport(reportId, format);
+      setArchiveNotice(`Berhasil diunduh: ${result.filename}`);
+    } catch {
+      // error dibaca dari exportMut.error (state jujur)
+    }
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -111,6 +135,101 @@ export const ReportView: React.FC<ReportViewProps> = ({ isManagementView }) => {
           )}
         </div>
       </KokonutCard>
+
+      {/* ===== Story 19.2 (CC-6): Arsip & Ekspor PDF/Excel ===== */}
+      {canViewReports && (
+        <KokonutCard variant="default" className="p-0 overflow-hidden" interactive={false} data-testid="report-archive-panel">
+          <div className="p-4 border-b border-slate-900/20 flex items-center justify-between">
+            <span className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider flex items-center gap-2">
+              <Archive className="w-4 h-4 text-cyan-600" />
+              Arsip Laporan &amp; Ekspor
+            </span>
+            <span className="text-xs font-mono text-slate-600 font-bold">PDF · Excel</span>
+          </div>
+
+          <div className="p-5 space-y-3">
+            {DEMO_MODE && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm font-semibold text-amber-900" data-testid="export-demo-notice">
+                Mode demo aktif — ekspor hanya tersedia dengan data server nyata.
+              </div>
+            )}
+
+            {archive.isLoading && (
+              <div className="flex items-center gap-3 text-slate-500 font-mono text-sm py-6 justify-center">
+                <RefreshCw className="w-4 h-4 animate-spin" />
+                Memuat arsip laporan…
+              </div>
+            )}
+
+            {archive.isError && (
+              <div className="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4">
+                <ShieldAlert className="w-5 h-5 text-red-600 mt-0.5" />
+                <div>
+                  <p className="text-sm font-bold text-red-900">Arsip laporan gagal dimuat</p>
+                  <p className="text-xs text-red-700 font-mono mt-0.5">{(archive.error as Error)?.message || "Coba lagi nanti."}</p>
+                </div>
+              </div>
+            )}
+
+            {archive.data && archive.data.reports.length === 0 && (
+              <div className="text-center py-6 text-sm text-slate-500 font-mono font-semibold" data-testid="export-empty-state">
+                Belum ada laporan terarsip. Laporan berkala (harian/mingguan/bulanan) akan muncul di sini setelah dibuat.
+              </div>
+            )}
+
+            {archive.data?.reports.map((rep) => (
+              <div
+                key={rep.id}
+                data-testid={`archive-row-${rep.id}`}
+                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white p-3"
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <Badge variant={rep.type === "DAILY" ? "secondary" : rep.type === "WEEKLY" ? "cyan" : "purple"} size="sm">
+                      {rep.type}
+                    </Badge>
+                    <span className="text-xs font-mono text-slate-700 font-bold truncate">
+                      {new Date(rep.periodFrom).toLocaleDateString("id-ID")} — {new Date(rep.periodTo).toLocaleDateString("id-ID")}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 font-mono mt-1 truncate">{rep.contentPreview || "Pratinjau tidak tersedia"}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    data-testid={`export-pdf-${rep.id}`}
+                    onClick={() => handleExport(rep.id, rep.type, "pdf")}
+                    disabled={exportMut.isExporting}
+                    className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-slate-200 bg-white text-slate-700 hover:border-slate-400 disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    {exportMut.isExporting ? "Menyiapkan…" : "PDF"}
+                  </button>
+                  <button
+                    data-testid={`export-xlsx-${rep.id}`}
+                    onClick={() => handleExport(rep.id, rep.type, "xlsx")}
+                    disabled={exportMut.isExporting}
+                    className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-slate-200 bg-white text-slate-700 hover:border-slate-400 disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5" />
+                    {exportMut.isExporting ? "Menyiapkan…" : "Excel"}
+                  </button>
+                </div>
+              </div>
+            ))}
+
+            {archiveNotice && (
+              <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-xs font-mono font-semibold text-emerald-900" data-testid="export-success-notice">
+                {archiveNotice}
+              </div>
+            )}
+            {exportMut.error && (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-xs font-mono font-semibold text-red-900" data-testid="export-error-notice">
+                {exportMut.error}
+              </div>
+            )}
+          </div>
+        </KokonutCard>
+      )}
     </div>
   );
 };
