@@ -157,7 +157,7 @@ epics:
   - id: "epic-20"
     title: "Scheduled Delivery — Cron, Email & WhatsApp"
     description: "Course Correction 6 (2026-09-19): scheduler cron produksi idempoten + pengiriman SMTP & WhatsApp gateway dengan log append-only"
-    status: in-progress
+    status: done
     story_ids:
       - "20.1.report-scheduler-cron"
       - "20.2.email-delivery"
@@ -1038,7 +1038,7 @@ stories:
   - id: "20.3.whatsapp-delivery"
     title: "WhatsApp Gateway Delivery (HTTP Generik)"
     epic_id: "epic-20"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/20.3.whatsapp-delivery.story.md"
     parallel_set: 23
     dependencies:
