@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-19T17:30:00Z" # COURSE-CORRECTION-6: +Epic 19/20/21 (7 story) — Export PDF/Excel, Delivery Email/WA+Cron, Gemini Real AI
+last_updated: "2026-09-21T19:40:00+07:00" # 21.2 done — Epic 21 & CC-6 tuntas; seluruh 21 epic / 59 story DONE
 
 epics:
   - id: "epic-1"
@@ -166,7 +166,7 @@ epics:
   - id: "epic-21"
     title: "Gemini Real AI Scan — Aktivasi Fase V2"
     description: "Course Correction 6 (2026-09-19): scan kode nyata via Gemini dengan mode REAL_GEMINI + badge integritas UI"
-    status: in-progress
+    status: done
     story_ids:
       - "21.1.gemini-real-scan"
       - "21.2.ai-real-ui"
@@ -1067,7 +1067,7 @@ stories:
   - id: "21.2.ai-real-ui"
     title: "AI Mode Badge & Filter Riwayat Scan"
     epic_id: "epic-21"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/21.2.ai-real-ui.story.md"
     parallel_set: 25
     dependencies:
