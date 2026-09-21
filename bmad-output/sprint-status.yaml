@@ -1005,7 +1005,7 @@ stories:
   - id: "20.1.report-scheduler-cron"
     title: "Report Scheduler Cron — Generate Otomatis Idempoten"
     epic_id: "epic-20"
-    status: in-progress
+    status: done
     file: "bmad-output/stories/20.1.report-scheduler-cron.story.md"
     parallel_set: 21
     dependencies:
