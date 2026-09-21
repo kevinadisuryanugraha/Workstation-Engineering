@@ -1,9 +1,12 @@
+import crypto from 'crypto';
 import { Router, Request, Response } from 'express';
 import { AuthenticatedRequest } from '../../middlewares/authenticate.ts';
 import { requirePermission } from '../../middlewares/rbac.ts';
 import { buildPeriodSummary } from './reports.repository.ts';
 import { generateIdReport } from './idGenerator.ts';
 import { generatedReportsService, REPORT_TYPES, ReportType } from './generated-reports.service.ts';
+import { renderReportPdf, renderReportXlsx, reportFileName } from './export.service.ts';
+import { auditService } from '../audit/audit.service.ts';
 import { reportTranslationService, SUPPORTED_TARGET_LANGUAGES, AiNotConfiguredError, TranslationFailedError, TargetLanguage } from './translate.service.ts';
 import { safeAsync } from '../../middlewares/safeAsync.ts';
 
@@ -208,3 +211,57 @@ reportsRouter.get(
     return res.json({ success: true, data: report, timestamp: new Date().toISOString() });
   }
 ));
+
+// ===== File exports (Story 19.1 — CC-6): on-the-fly render, archive stays append-only =====
+
+async function auditExport(req: AuthenticatedRequest, reportId: string, format: 'pdf' | 'xlsx', type: string): Promise<void> {
+  await auditService.logEvent({
+    actorId: req.user?.userId ?? 'unknown',
+    actorName: req.user?.name ?? 'unknown',
+    action: format === 'pdf' ? 'REPORT_EXPORT_PDF' : 'REPORT_EXPORT_XLSX',
+    targetEntity: 'generated_report',
+    targetId: reportId,
+    correlationId: (req as unknown as { correlationId?: string }).correlationId ?? crypto.randomUUID(),
+    details: { format, reportType: type },
+  });
+}
+
+async function handleReportExport(req: AuthenticatedRequest, res: Response, format: 'pdf' | 'xlsx'): Promise<Response> {
+  const report = await generatedReportsService.byId(req.params.id);
+  if (!report) {
+    return res.status(404).json({
+      success: false,
+      error: { code: 'NOT_FOUND', message: 'Report archive not found' },
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  const fileName = reportFileName(report, format);
+  if (format === 'pdf') {
+    const pdf = await renderReportPdf(report);
+    await auditExport(req, report.id, 'pdf', report.type);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    return res.send(pdf);
+  }
+
+  const xlsx = await renderReportXlsx(report);
+  await auditExport(req, report.id, 'xlsx', report.type);
+  res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+  res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+  return res.send(xlsx);
+}
+
+// GET /api/v1/reports/history/:id/export.pdf — unduh arsip sebagai PDF
+reportsRouter.get(
+  '/history/:id/export.pdf',
+  requirePermission('PERM_AUDIT_LOGS_VIEW'),
+  safeAsync(async (req: AuthenticatedRequest, res: Response) => handleReportExport(req, res, 'pdf'))
+);
+
+// GET /api/v1/reports/history/:id/export.xlsx — unduh arsip sebagai Excel
+reportsRouter.get(
+  '/history/:id/export.xlsx',
+  requirePermission('PERM_AUDIT_LOGS_VIEW'),
+  safeAsync(async (req: AuthenticatedRequest, res: Response) => handleReportExport(req, res, 'xlsx'))
+);
