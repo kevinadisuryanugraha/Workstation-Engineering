@@ -30,6 +30,7 @@ import { userRouter } from "./server/modules/users/users.routes.ts";
 import { serverMetricsRouter } from "./server/modules/server-metrics/server-metrics.routes.ts";
 import { agentIngestRouter } from "./server/modules/server-metrics/server-metrics.routes.ts";
 import { reportsRouter } from "./server/modules/reports/reports.routes.ts";
+import { startSchedulerFromEnv } from "./server/modules/reports/scheduler.service.ts";
 import { sprintRouter, milestoneRouter } from "./server/modules/sprints/sprint.routes.ts";
 import { kbRouter } from "./server/modules/kb/kb.routes.ts";
 import { searchRouter } from "./server/modules/search/search.routes.ts";
@@ -444,6 +445,12 @@ async function startServer() {
     console.log(`WORKSTATION server running on http://localhost:${PORT}`);
     console.log(`RBAC Middleware: ACTIVE with HMAC-SHA256 Cryptographic Verification`);
   });
+
+  // Story 20.1 (CC-6): laporan terjadwal — default OFF, aktif via REPORT_SCHEDULER=on
+  const scheduler = startSchedulerFromEnv();
+  if (scheduler && scheduler.scheduledTypes.length > 0) {
+    console.log(`Report Scheduler: ACTIVE for ${scheduler.scheduledTypes.join(", ")}`);
+  }
 }
 
 startServer();
