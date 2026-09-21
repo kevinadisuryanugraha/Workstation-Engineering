@@ -1021,7 +1021,7 @@ stories:
   - id: "20.2.email-delivery"
     title: "Email Delivery SMTP + Log report_deliveries"
     epic_id: "epic-20"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/20.2.email-delivery.story.md"
     parallel_set: 22
     dependencies:
