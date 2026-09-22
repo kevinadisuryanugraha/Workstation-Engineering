@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-21T23:00:00+07:00" # Epic 22 (CC-7 / DEF-006) TUNTAS — seluruh 22 epic / 61 story DONE
+last_updated: "2026-09-22T10:50:00+07:00" # CC-8: Epic 23 Multi-Provider Git dibuka (4 story ready-for-dev, waves 28-31)
 
 epics:
   - id: "epic-1"
@@ -178,6 +178,17 @@ epics:
     story_ids:
       - "22.1.debt-registry-api"
       - "22.2.debt-registry-ui"
+
+  # ===== COURSE-CORRECTION-8 2026-09-22: Sisa Fase V2 — Multi-Provider Git (Epic 23) =====
+  - id: "epic-23"
+    title: "Multi-Provider Git — GitLab & Bitbucket"
+    description: "Course Correction 8 (2026-09-22): webhook adapter GitLab/Bitbucket terverifikasi, payload kanonik, registry API multi-provider, UI badge + form — Master PRD §30 Fase V2"
+    status: in-progress
+    story_ids:
+      - "23.1.multi-provider-schema-registry"
+      - "23.2.webhook-provider-adapters"
+      - "23.3.git-linker-canonical-processing"
+      - "23.4.provider-ui-wiring"
 
 stories:
   # Wave 1 (Immediate Foundation)
@@ -1121,3 +1132,70 @@ stories:
       - "src/App.tsx (blok hydration debt)"
       - "src/lib/contractMappers.ts (mapper debt)"
       - "tests/debt-registry-ui.test.ts (BARU)"
+
+  # ===== COURSE-CORRECTION-8 2026-09-22: Waves 28-31 (sequential; shared git module + webhook.service + App.tsx) =====
+  - id: "23.1.multi-provider-schema-registry"
+    title: "Multi-Provider Git — Skema Provider & Repository Registry API"
+    epic_id: "epic-23"
+    status: ready-for-dev
+    file: "bmad-output/stories/23.1.multi-provider-schema-registry.story.md"
+    parallel_set: 28
+    dependencies: []
+    owned_scope:
+      - "server/db/schema/repositories.ts"
+      - "server/db/schema/webhook_deliveries.ts (kolom provider)"
+      - "server/db/migrations/0017_add_provider_fields.sql (BARU)"
+      - "server/db/migrations/meta/**"
+      - "server/modules/git/repository.registry.ts (BARU)"
+      - "server/modules/git/git-entity.routes.ts (mount sub-router)"
+      - "server.ts (mount bila router baru)"
+      - "tests/repository-registry.test.ts (BARU)"
+
+  - id: "23.2.webhook-provider-adapters"
+    title: "Webhook Adapter GitLab & Bitbucket — Verifikasi & Normalisasi Kanonik"
+    epic_id: "epic-23"
+    status: ready-for-dev
+    file: "bmad-output/stories/23.2.webhook-provider-adapters.story.md"
+    parallel_set: 29
+    dependencies:
+      - "23.1.multi-provider-schema-registry"
+    owned_scope:
+      - "server/modules/git/webhook.crypto.ts"
+      - "server/modules/git/webhook.providers.ts (BARU)"
+      - "server/modules/git/webhook.controller.ts"
+      - "server/modules/git/webhook.service.ts (fungsi ingest saja)"
+      - "server/modules/git/git.routes.ts (2 route baru)"
+      - "tests/webhook-providers.test.ts (BARU)"
+
+  - id: "23.3.git-linker-canonical-processing"
+    title: "Pemrosesan Kanonik Multi-Provider — Commits, MR/PR & Evidence Links"
+    epic_id: "epic-23"
+    status: ready-for-dev
+    file: "bmad-output/stories/23.3.git-linker-canonical-processing.story.md"
+    parallel_set: 30
+    dependencies:
+      - "23.2.webhook-provider-adapters"
+    owned_scope:
+      - "server/modules/git/webhook.service.ts (pipeline pemrosesan)"
+      - "server/modules/git/git-linker.service.ts"
+      - "server/modules/git/entity-parser.ts"
+      - "server/modules/git/git-entity.service.ts"
+      - "server/modules/git/git-entity.routes.ts (field provider pada respons)"
+      - "tests/git-linker-providers.test.ts (BARU)"
+
+  - id: "23.4.provider-ui-wiring"
+    title: "Multi-Provider Git — UI Badge Provider, Registry Form & Hydration"
+    epic_id: "epic-23"
+    status: ready-for-dev
+    file: "bmad-output/stories/23.4.provider-ui-wiring.story.md"
+    parallel_set: 31
+    dependencies:
+      - "23.1.multi-provider-schema-registry"
+      - "23.3.git-linker-canonical-processing"
+    owned_scope:
+      - "src/types.ts (tipe DTO git)"
+      - "src/lib/contractMappers.ts (penambahan mapper)"
+      - "src/hooks/api/useGitRepositories.ts (BARU)"
+      - "src/hooks/api/useGitEntities.ts (pemetaan provider bila perlu)"
+      - "src/App.tsx (blok panel Git saja)"
+      - "tests/git-provider-ui.test.ts (BARU)"

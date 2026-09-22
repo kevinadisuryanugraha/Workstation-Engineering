@@ -599,14 +599,36 @@
 
 ---
 
+## Epic 23: Multi-Provider Git — GitLab & Bitbucket
+
+> # COURSE-CORRECTION-8 (2026-09-22) — Sisa Fase V2: "multi-provider Git" (Master PRD §30) — item V2 yang sejak Epic-5 ditunda eksplisit ("Multi-provider Git selain GitHub ditunda ke V2") dan belum pernah dibuka di decision-log. Owner memilih opsi ini dari 4 kandidat sisa Fase V2 pada 2026-09-22.
+
+**Goal:** Evidence commit/MR/PR dari GitLab dan Bitbucket mengalir ke WORKSTATION dengan pipeline yang sama kuatnya dengan GitHub — webhook terverifikasi kriptografis per provider, payload dinormalisasi ke satu model kanonik, evidence links tetap ditegakkan regex kode item, dan registrasi repo multi-provider bisa dilakukan dari UI tanpa akses DB.
+
+**In scope:** kolom `provider` pada `repositories` & `webhook_deliveries` (migration 0017), Repository Registry API (register/list, RBAC-gated, idempoten), webhook adapter GitLab (token timing-safe) & Bitbucket (HMAC-SHA256) dengan normalisasi payload kanonik, pemrosesan commits/MR-PR + evidence links dari model kanonik, read API menyertakan `provider`, UI badge provider + form registrasi repo.
+**Out of scope:** adapter CI/CD eksternal dan advanced deployment gates (sisa Fase V2 lainnya — kandidat CC berikutnya); mengubah perilaku webhook GitHub eksisting (ADR-005 regression wajib hijau); menambah nav baru (menjaga kemenangan CC-4 — semua di panel Git eksisting); mengubah regex kode item; SSO/SCIM (Enterprise Phase).
+
+**Stories:**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 23.1 | multi-provider-schema-registry | Migration 0017 (kolom provider) + Repository Registry API idempoten | ready-for-dev |
+| 23.2 | webhook-provider-adapters | Route & verifikasi GitLab/Bitbucket + normalisasi payload kanonik | ready-for-dev |
+| 23.3 | git-linker-canonical-processing | Pemrosesan commits/MR-PR + evidence links dari model kanonik | ready-for-dev |
+| 23.4 | provider-ui-wiring | Badge provider, form registrasi repo, hydration panel Git | ready-for-dev |
+
+**Dependencies:** 23.2 → 23.1 · 23.3 → 23.2 · 23.4 → 23.1, 23.3 — sequential waves 28–31 (shared `git` module, `webhook.service.ts`, `App.tsx`)
+
+---
+
 ## Delivery Tracking (Count-Based)
 
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
-- **Total Stories:** 61 (59 laporan sebelumnya + 2 Epic 22 CC-7)
-- **Done:** 61 (Epic 22 tuntas 2/2 di hari yang sama, 2026-09-21)
-- **Remaining:** 0
-- **Completion Rate:** 100% (61 / 61) — Fase V2 kini benar-benar tuntas termasuk DEF-006
+- **Total Stories:** 65 (61 laporan sebelumnya + 4 Epic 23 CC-8)
+- **Done:** 61 (Epic 1–22 tuntas penuh, 2026-09-21)
+- **Remaining:** 4 (Epic 23 CC-8 — 23.1 s.d. 23.4, ready-for-dev)
+- **Completion Rate:** 94% (61 / 65) — CC-8 membuka sisa Fase V2 "multi-provider Git" (Master PRD §30)
 - **Koreksi 2026-09-19 (CC-4):** angka lama (33/35, remaining 13.2–13.3) tidak mencerminkan penyelesaian Waves 12–14; factual: 43/43 done sebelum Epic 17.
 - **Koreksi 2026-09-19 (CC-5):** Epic 17 tuntas 3/3 (46/46 done, 100%) sebelum Epic 18 dibuka; Epic 18 tuntas 6/6 di hari yang sama.
 
@@ -710,6 +732,18 @@ Wave 26 (Debt Registry API) [COURSE-CORRECTION-7]:
 
 Wave 27 (Debt Registry UI) [COURSE-CORRECTION-7]:
   └── Story 22.2 (Debt Registry Tab — Real Data)
+
+Wave 28 (Provider Schema & Registry) [COURSE-CORRECTION-8]:
+  └── Story 23.1 (Multi-Provider Schema & Registry API)
+
+Wave 29 (Webhook Adapters) [COURSE-CORRECTION-8]:
+  └── Story 23.2 (GitLab & Bitbucket Verification + Normalization)
+
+Wave 30 (Canonical Processing) [COURSE-CORRECTION-8]:
+  └── Story 23.3 (Commits/MR-PR + Evidence Links dari Model Kanonik)
+
+Wave 31 (Provider UI) [COURSE-CORRECTION-8]:
+  └── Story 23.4 (Badge Provider + Registry Form + Hydration)
 ```
 
 ---

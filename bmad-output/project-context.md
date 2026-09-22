@@ -33,6 +33,8 @@ Menjadi *single source of truth* dan platform operasional internal yang menghubu
 > **Catatan 2026-09-19 (Course Correction 6):** Epic 19–21 ditambahkan — Export PDF/Excel laporan, Scheduled Delivery (cron + email SMTP + WhatsApp gateway), dan aktivasi Gemini Real AI Scan (menutup keputusan PENDING A-01). Sebagian fitur ini sebelumnya *out of scope* (Epic 10/12) — kini resmi masuk backlog via keputusan owner.
 >
 > **Catatan 2026-09-21 (Course Correction 7):** Epic 22 (DEF-006) ditambahkan — Technical Debt Registry sesuai Master PRD §11.4: kolom terstruktur origin/evidence/impact pada work_items, endpoint registry dengan aging terkomputasi, dan tab "Technical Debt" AI Intelligence View kini berbasis data nyata. Prinsip tetap: AI tidak boleh menciptakan debt tanpa evidence & approval manusia (konversi 16.3).
+>
+> **Catatan 2026-09-22 (Course Correction 8):** Epic 23 (Multi-Provider Git — GitLab & Bitbucket) ditambahkan sebagai eksekusi sisa Fase V2 "multi-provider Git" (Master PRD §30; ditunda eksplisit sejak Epic-5): kolom `provider` pada repositories/webhook_deliveries (migration 0017), Repository Registry API idempoten, webhook adapter GitLab/Bitbucket dengan normalisasi payload kanonik (ADR-005 tetap konteks: cepat + idempoten), pemrosesan evidence links regex TIDAK berubah, dan UI badge + form registrasi di panel Git eksisting (nav tidak bertambah — kemenangan CC-4 dijaga).
 
 ## Core Constraints
 1. **Kerapihan Frontend:** Tetap mempertahankan dan memanfaatkan komponen antarmuka React 19 + Tailwind 4 + Vite yang sudah dibangun di `src/` (tidak menulis ulang dari awal).
