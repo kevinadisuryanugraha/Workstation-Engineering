@@ -4,7 +4,7 @@
  */
 export function parseEntityKeys(text: string): string[] {
   if (!text) return [];
-  const regex = /\b([A-Z]{2,6}-\d+)\b/g;
+  const regex = /\b([A-Z]{2,10}-\d{1,6})\b/g;
   const matches = text.match(regex);
   if (!matches) return [];
   // Return unique keys preserving order

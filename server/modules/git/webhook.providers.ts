@@ -240,6 +240,78 @@ function normalizeBitbucket(headers: Record<string, unknown>, body: any, rawBody
   return { ok: false, reason: 'UNSUPPORTED_EVENT' };
 }
 
+/* ---------------------------------- GitHub ---------------------------------- */
+
+function normalizeGithub(headers: Record<string, unknown>, body: any): NormalizeResult {
+  const rawEvent = header(headers, 'x-github-event');
+  const deliveryId = header(headers, 'x-github-delivery');
+  if (!rawEvent || !deliveryId) return { ok: false, reason: 'BAD_HEADERS' };
+
+  const repoFullName: string | undefined = body?.repository?.full_name;
+  if (!repoFullName || typeof repoFullName !== 'string') {
+    return { ok: false, reason: 'UNPARSEABLE_PAYLOAD' };
+  }
+
+  if (rawEvent === 'push') {
+    const commits: CanonicalCommit[] = Array.isArray(body.commits)
+      ? body.commits
+          .filter((c: any) => c && typeof c.id === 'string' && c.id !== '0000000000000000000000000000000000000000')
+          .map((c: any) => ({
+            sha: c.id,
+            message: typeof c.message === 'string' ? c.message : '',
+            authorName: c.author?.name,
+            authorEmail: c.author?.email,
+            url: c.url,
+            committedAt: c.timestamp,
+          }))
+      : [];
+    return {
+      ok: true,
+      deliveryId,
+      deliveryIdSynthetic: false,
+      canonical: {
+        provider: 'GITHUB',
+        repoFullName,
+        event: 'push',
+        branch: stripRefs(body.ref),
+        commits,
+        rawEvent,
+      },
+    };
+  }
+
+  if (rawEvent === 'pull_request') {
+    const pr = body.pull_request;
+    if (!pr || pr.number === undefined) {
+      return { ok: false, reason: 'UNPARSEABLE_PAYLOAD' };
+    }
+    return {
+      ok: true,
+      deliveryId,
+      deliveryIdSynthetic: false,
+      canonical: {
+        provider: 'GITHUB',
+        repoFullName,
+        event: 'merge_request',
+        commits: [],
+        mergeRequest: {
+          prNumber: Number(pr.number),
+          title: pr.title,
+          authorName: pr.user?.login,
+          sourceBranch: pr.head?.ref,
+          targetBranch: pr.base?.ref,
+          status: mapMrStatus(pr.state, body.action),
+          rawState: pr.state,
+          url: pr.html_url,
+        },
+        rawEvent,
+      },
+    };
+  }
+
+  return { ok: false, reason: 'UNSUPPORTED_EVENT' };
+}
+
 /* --------------------------------- Dispatcher -------------------------------- */
 
 /**
@@ -254,6 +326,8 @@ export function normalizeProviderEvent(
   rawBody: string | Buffer
 ): NormalizeResult {
   switch (provider) {
+    case 'GITHUB':
+      return normalizeGithub(headers, body);
     case 'GITLAB':
       return normalizeGitlab(headers, body, rawBody);
     case 'BITBUCKET':
