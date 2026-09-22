@@ -5,6 +5,19 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-22 — Epic 24 (CC-9) Tuntas: Full Real CRUD Persistence & Direct Repository Sync Engine Live
+- **Decision:** Seluruh 3 story Epic 24 dieksekusi, diuji, dan di-merge ke `main` via worktree pipeline loop:
+  1. **24.1 Client CRUD Mutations Wiring:** Menghubungkan pembuatan & pembaruan status Work Item (`handleCreateWorkItem` ➔ `POST /api/v1/work-items`, `handleUpdateWorkItemStatus` ➔ `PUT /api/v1/work-items/:id`) dan Tiket (`handleCreateTicket` ➔ `POST /api/v1/tickets`, `handleUpdateTicketStatus` ➔ `POST /api/v1/tickets/:id/resolve` / `PATCH /triage`) ke endpoint REST API backend PostgreSQL dan menginvalidasi query cache React Query.
+  2. **24.2 Direct Repository Sync Engine:** Membangun `git-sync.service.ts` yang mem-fetch commits & PRs/MRs secara langsung dari REST API GitHub (`api.github.com`) dan GitLab (`gitlab.com`), memprosesnya melalui `gitLinkerService` (menyimpan ke tabel `commits` & `pull_requests` dan menautkan evidence kode `WRK-xxx`/`TCK-xxx`), serta mengekspos endpoint `POST /api/v1/git/sync-url` & `POST /api/v1/git/repositories/:id/sync`.
+  3. **24.3 Direct Repository Sync UI:** Menambahkan formulir input Link Repositori Git (mendukung URL GitHub/GitLab lengkap atau shorthand `owner/repo`) + tombol **"Sinkronkan Sekarang"** di panel Git Intelligence, aksi Sync per-repo di tab Repos, dan feedback ringkasan hasil sinkronisasi (jumlah commit, PR, dan evidence tertaut).
+- **Rationale:** Menjawab kebutuhan pengguna agar aplikasi beroperasi 100% data nyata & persisten (bukan hanya in-memory state lokal), dan memungkinkan penarikan riwayat commit dari repositori GitHub/GitLab publik maupun privat secara on-demand.
+- **Impact:** total 68 story (24 epic) semua DONE — 100%; test suite 449/449 test passed across 62 test files; seluruh mutasi UI kini tersimpan permanen di database PostgreSQL.
+- **In-progress stories affected:** none.
+- **Made by:** bmad-epic-pipeline-worktree (dev loop) → review → gate → finalize
+- **Supersedes:** none (penutup CC-9)
+
+---
+
 ### 2026-09-22 — Course Correction 9: Tambah Epic 24 — Full Real CRUD Persistence & Direct Repository Sync
 - **Decision:** Owner menyetujui pembukaan **Epic 24 (Course Correction 9)** untuk menuntaskan 2 kebutuhan krusial agar aplikasi 100% data nyata:
   1. **Full Real CRUD Persistence (Story 24.1):** Menghubungkan seluruh aksi mutasi UI di `src/App.tsx` (pembuatan & pembaruan status Work Item serta Tiket) ke REST API backend (`POST/PUT /api/v1/work-items` dan `POST /api/v1/tickets`) sehingga perubahan tersimpan permanen di database PostgreSQL (bukan sekadar `useState` lokal).

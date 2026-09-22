@@ -636,9 +636,9 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 24.1 | client-crud-mutations-wiring | Hubungkan seluruh mutasi UI Work Items & Tickets ke REST API PostgreSQL | ready-for-dev |
-| 24.2 | direct-repo-sync-engine | Backend Git Sync Engine (Fetch commits/PRs on-demand dari GitHub & GitLab) | ready-for-dev |
-| 24.3 | direct-repo-sync-ui | Input Link Repository & Tombol Sinkronisasi On-Demand di UI Git | ready-for-dev |
+| 24.1 | client-crud-mutations-wiring | Hubungkan seluruh mutasi UI Work Items & Tickets ke REST API PostgreSQL | done |
+| 24.2 | direct-repo-sync-engine | Backend Git Sync Engine (Fetch commits/PRs on-demand dari GitHub & GitLab) | done |
+| 24.3 | direct-repo-sync-ui | Input Link Repository & Tombol Sinkronisasi On-Demand di UI Git | done |
 
 **Dependencies:** 24.2 → 24.1 · 24.3 → 24.2 — sequential waves 32–34 (shared `App.tsx`, `git` module, `GitIntelligenceView`)
 
@@ -649,9 +649,9 @@
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
 - **Total Stories:** 68 (65 laporan sebelumnya + 3 Epic 24 CC-9)
-- **Done:** 65 (Epic 1–23 tuntas penuh)
-- **Remaining:** 3 (Epic 24 CC-9 — 24.1 s.d. 24.3, ready-for-dev)
-- **Completion Rate:** 95.6% (65 / 68) — CC-9 membuka Full Real CRUD Persistence & Direct Repo Sync
+- **Done:** 68 (Epic 24 tuntas 3/3 di hari yang sama, 2026-09-22)
+- **Remaining:** 0
+- **Completion Rate:** 100% (68 / 68) — Full Real CRUD Persistence & Direct Repo Sync tuntas penuh (449/449 test passed)
 - **Koreksi 2026-09-19 (CC-4):** angka lama (33/35, remaining 13.2–13.3) tidak mencerminkan penyelesaian Waves 12–14; factual: 43/43 done sebelum Epic 17.
 - **Koreksi 2026-09-19 (CC-5):** Epic 17 tuntas 3/3 (46/46 done, 100%) sebelum Epic 18 dibuka; Epic 18 tuntas 6/6 di hari yang sama.
 

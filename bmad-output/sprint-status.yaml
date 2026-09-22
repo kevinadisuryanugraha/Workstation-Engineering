@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-22T11:55:00+07:00" # CC-9: Epic 24 Full Real CRUD & Direct Repo Sync dibuka (3 story ready-for-dev, waves 32-34)
+last_updated: "2026-09-22T12:15:00+07:00" # Epic 24 (CC-9) TUNTAS — seluruh 24 epic / 68 story DONE (449 test)
 
 epics:
   - id: "epic-1"
@@ -194,7 +194,7 @@ epics:
   - id: "epic-24"
     title: "Full Real CRUD Persistence & Direct Repository Sync Engine"
     description: "Course Correction 9 (2026-09-22): menghubungkan seluruh aksi mutasi UI ke REST API PostgreSQL permanen dan menyediakan input Link Repo untuk sinkronisasi on-demand dari GitHub & GitLab"
-    status: in-progress
+    status: done
     story_ids:
       - "24.1.client-crud-mutations-wiring"
       - "24.2.direct-repo-sync-engine"
@@ -1240,7 +1240,7 @@ stories:
   - id: "24.3.direct-repo-sync-ui"
     title: "Direct Repository Sync UI — URL Input, Sync Button & Real Feed Hydration"
     epic_id: "epic-24"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/24.3.direct-repo-sync-ui.story.md"
     parallel_set: 34
     dependencies:
