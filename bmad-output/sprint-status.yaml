@@ -1170,7 +1170,7 @@ stories:
   - id: "23.3.git-linker-canonical-processing"
     title: "Pemrosesan Kanonik Multi-Provider — Commits, MR/PR & Evidence Links"
     epic_id: "epic-23"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/23.3.git-linker-canonical-processing.story.md"
     parallel_set: 30
     dependencies:
