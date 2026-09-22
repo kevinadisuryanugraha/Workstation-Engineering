@@ -34,6 +34,8 @@ import {
   mapPullRequestDto
 } from "./hooks/api/useGitEntities";
 import { useGitRepositories, useRegisterRepository } from "./hooks/api/useGitRepositories";
+import { useCreateWorkItem, useUpdateWorkItem } from "./hooks/api/useWorkItemMutations";
+import { useCreateTicket, useUpdateTicket } from "./hooks/api/useTicketMutations";
 import { useDeployments, mapDeploymentDto } from "./hooks/api/useDeployments";
 import { useKbArticles, mapKbArticleDto } from "./hooks/api/useKbArticles";
 import { useAuditLogs, mapAuditLogDto } from "./hooks/api/useAuditLogs";
@@ -255,6 +257,10 @@ export default function App() {
     enabled: !DEMO_MODE && Boolean(session?.user),
   });
   const registerRepoMutation = useRegisterRepository();
+  const createWorkItemMutation = useCreateWorkItem();
+  const updateWorkItemMutation = useUpdateWorkItem();
+  const createTicketMutation = useCreateTicket();
+  const updateTicketMutation = useUpdateTicket();
   const handleRegisterRepo = async (input: { fullName: string; provider: any; defaultBranch?: string }) => {
     return registerRepoMutation.mutateAsync({
       projectId: currentProject?.id || "",
@@ -343,15 +349,29 @@ export default function App() {
     progress: dynamicProgress
   };
 
-  // Handlers for Work Items
-  const handleUpdateWorkItemStatus = (itemId: string, newStatus: WorkItemStatus) => {
+  // Handlers for Work Items — Story 24.1 (CC-9): Full Real CRUD Persistence
+  const handleUpdateWorkItemStatus = async (itemId: string, newStatus: WorkItemStatus) => {
     if (!checkRBAC("PERM_WORK_ITEM_UPDATE", "Ubah Status Work Item", "Developer / QA / Tech Lead")) {
       return;
     }
 
+    const prevWorkItems = [...workItems];
     setWorkItems((prev) =>
       prev.map((item) => (item.id === itemId ? { ...item, status: newStatus } : item))
     );
+
+    if (!DEMO_MODE) {
+      try {
+        await updateWorkItemMutation.mutateAsync({
+          id: itemId,
+          payload: { status: newStatus },
+        });
+      } catch (err) {
+        console.error("Failed to persist work item status update:", err);
+        setWorkItems(prevWorkItems);
+        return;
+      }
+    }
 
     const updated = workItems.find((w) => w.id === itemId);
     if (updated) {
@@ -433,50 +453,75 @@ export default function App() {
     ]);
   };
 
-  const handleCreateWorkItem = (newItem: Partial<WorkItem>) => {
+  const handleCreateWorkItem = async (newItem: Partial<WorkItem>) => {
     if (!checkRBAC("PERM_WORK_ITEM_CREATE", "Buat Work Item Baru", "Project Manager / Developer / Tech Lead")) {
       return;
     }
 
-    const nextNumber = workItems.length + 25;
-    const code = `${activeProject.key}-${String(nextNumber).padStart(3, "0")}`;
+    const priorityDb =
+      newItem.priority === "Critical" ? "P0" : newItem.priority === "High" ? "P1" : newItem.priority === "Low" ? "P3" : "P2";
 
-    const createdItem: WorkItem = {
-      id: `item-${Date.now()}`,
-      code,
-      title: newItem.title || "Untitled Work Item",
-      description: newItem.description || "",
-      type: newItem.type || "FEATURE",
-      status: newItem.status || "BACKLOG",
-      priority: newItem.priority || "Medium",
-      projectId: activeProject.id,
-      assignee: currentUser,
-      sprintId: activeProject.currentSprint || "Sprint 01",
-      estimateHours: newItem.estimateHours || 8,
-      actualHours: 0,
-      acceptanceCriteria: (newItem.acceptanceCriteria || []).map((c: any, idx: number) => ({
-        id: `ac-${Date.now()}-${idx}`,
-        text: typeof c === "string" ? c : c.text,
-        completed: typeof c === "string" ? false : Boolean(c.completed)
-      })),
-      dependencies: newItem.dependencies || [],
-      evidence: [],
-      createdAt: "Just now",
-      updatedAt: "Just now"
-    };
+    if (!DEMO_MODE) {
+      try {
+        const res = await createWorkItemMutation.mutateAsync({
+          projectId: activeProject.id,
+          title: newItem.title || "Untitled Work Item",
+          description: newItem.description || "",
+          type: newItem.type || "FEATURE",
+          status: newItem.status || "BACKLOG",
+          priority: priorityDb,
+          estimateHours: newItem.estimateHours || 8,
+          assigneeId: currentUser.id || undefined,
+        });
 
-    setWorkItems((prev) => [createdItem, ...prev]);
+        if (res?.data) {
+          const mapped = mapWorkItemDto(res.data);
+          setWorkItems((prev) => [mapped, ...prev]);
+        }
+      } catch (err) {
+        console.error("Failed to persist new work item:", err);
+      }
+    } else {
+      const nextNumber = workItems.length + 25;
+      const code = `${activeProject.key}-${String(nextNumber).padStart(3, "0")}`;
+
+      const createdItem: WorkItem = {
+        id: `item-${Date.now()}`,
+        code,
+        title: newItem.title || "Untitled Work Item",
+        description: newItem.description || "",
+        type: newItem.type || "FEATURE",
+        status: newItem.status || "BACKLOG",
+        priority: newItem.priority || "Medium",
+        projectId: activeProject.id,
+        assignee: currentUser,
+        sprintId: activeProject.currentSprint || "Sprint 01",
+        estimateHours: newItem.estimateHours || 8,
+        actualHours: 0,
+        acceptanceCriteria: (newItem.acceptanceCriteria || []).map((c: any, idx: number) => ({
+          id: `ac-${Date.now()}-${idx}`,
+          text: typeof c === "string" ? c : c.text,
+          completed: typeof c === "string" ? false : Boolean(c.completed)
+        })),
+        dependencies: newItem.dependencies || [],
+        evidence: [],
+        createdAt: "Just now",
+        updatedAt: "Just now"
+      };
+
+      setWorkItems((prev) => [createdItem, ...prev]);
+    }
 
     setEvents((prev) => [
       {
         id: `EVT-${Date.now()}`,
         type: "TASK_CREATED",
-        title: `New Work Item ${createdItem.code} created`,
-        descriptionTechnical: `Work Item created with initial state [BACKLOG] by ${currentUser.name} (${currentUser.role}).`,
-        descriptionManagement: `Tugas baru ${createdItem.code} (${createdItem.title}) telah ditambahkan ke backlog.`,
+        title: `Work Item created: ${newItem.title || "Untitled"}`,
+        descriptionTechnical: `Work Item registered under project ${activeProject.key} with priority [${newItem.priority || "Medium"}] by ${currentUser.name}.`,
+        descriptionManagement: `Item kerja baru (${newItem.title || "Untitled"}) dibuat untuk tim pengembangan.`,
         actor: currentUser.name,
         source: "SPRINT_MANAGER",
-        evidenceRef: createdItem.code,
+        evidenceRef: activeProject.key,
         projectId: activeProject.id,
         timestamp: "Just now"
       },
@@ -484,8 +529,8 @@ export default function App() {
     ]);
   };
 
-  // Handlers for Ticketing
-  const handleUpdateTicketStatus = (ticketId: string, newStatus: TicketStatus) => {
+  // Handlers for Ticketing — Story 24.1 (CC-9): Full Real CRUD Persistence
+  const handleUpdateTicketStatus = async (ticketId: string, newStatus: TicketStatus) => {
     if (newStatus === "RESOLVED" || newStatus === "CLOSED") {
       if (!checkRBAC("PERM_TICKET_RESOLVE", "Tutup/Selesaikan Tiket", "Tech Lead / QA / PM")) {
         return;
@@ -496,9 +541,23 @@ export default function App() {
       }
     }
 
+    const prevTickets = [...tickets];
     setTickets((prev) =>
       prev.map((t) => (t.id === ticketId ? { ...t, status: newStatus } : t))
     );
+
+    if (!DEMO_MODE) {
+      try {
+        await updateTicketMutation.mutateAsync({
+          id: ticketId,
+          payload: { status: newStatus },
+        });
+      } catch (err) {
+        console.error("Failed to persist ticket status update:", err);
+        setTickets(prevTickets);
+        return;
+      }
+    }
 
     const ticket = tickets.find((t) => t.id === ticketId);
     if (ticket) {
@@ -520,44 +579,70 @@ export default function App() {
     }
   };
 
-  const handleCreateTicket = (newTicket: Partial<Ticket>) => {
+  const handleCreateTicket = async (newTicket: Partial<Ticket>) => {
     if (!checkRBAC("PERM_TICKET_CREATE", "Buat Tiket ITSM Baru", "Semua Pengguna Terdaftar")) {
       return;
     }
 
-    const nextCode = `TK-2026-${String(tickets.length + 183).padStart(4, "0")}`;
-    const ticket: Ticket = {
-      title: newTicket.title || "Untitled Ticket",
-      description: newTicket.description || "",
-      type: newTicket.type || "BUG",
-      category: newTicket.category || "General",
-      severity: newTicket.severity || "Minor",
-      priority: newTicket.priority || "P3",
-      status: newTicket.status || "NEW",
-      projectId: newTicket.projectId || activeProject.id,
-      assignee: newTicket.assignee || currentUser,
-      id: `tk-${Date.now()}`,
-      code: nextCode,
-      slaStatus: "ON_TRACK",
-      slaTargetResolution: "4 hours",
-      slaRemainingMinutes: 240,
-      evidence: [],
-      createdAt: "Just now",
-      reporter: currentUser.name
-    };
+    const severityDb =
+      newTicket.severity === "Critical" ? "Critical" : newTicket.severity === "Major" ? "High" : newTicket.severity === "Low" ? "Low" : "Medium";
+    const priorityDb =
+      newTicket.priority === "P1" ? "P0" : newTicket.priority === "P2" ? "P1" : newTicket.priority === "P4" ? "P3" : "P2";
 
-    setTickets((prev) => [ticket, ...prev]);
+    if (!DEMO_MODE) {
+      try {
+        const res = await createTicketMutation.mutateAsync({
+          projectId: newTicket.projectId || activeProject.id,
+          title: newTicket.title || "Untitled Ticket",
+          description: newTicket.description || "",
+          type: newTicket.type || "BUG",
+          severity: severityDb,
+          priority: priorityDb,
+          assigneeId: currentUser.id || undefined,
+        });
+
+        if (res?.data) {
+          const mapped = mapTicketDto(res.data);
+          setTickets((prev) => [mapped, ...prev]);
+        }
+      } catch (err) {
+        console.error("Failed to persist new ticket:", err);
+      }
+    } else {
+      const nextCode = `TK-2026-${String(tickets.length + 183).padStart(4, "0")}`;
+      const ticket: Ticket = {
+        title: newTicket.title || "Untitled Ticket",
+        description: newTicket.description || "",
+        type: newTicket.type || "BUG",
+        category: newTicket.category || "General",
+        severity: newTicket.severity || "Minor",
+        priority: newTicket.priority || "P3",
+        status: newTicket.status || "NEW",
+        projectId: newTicket.projectId || activeProject.id,
+        assignee: newTicket.assignee || currentUser,
+        id: `tk-${Date.now()}`,
+        code: nextCode,
+        slaStatus: "ON_TRACK",
+        slaTargetResolution: "4 hours",
+        slaRemainingMinutes: 240,
+        evidence: [],
+        createdAt: "Just now",
+        reporter: currentUser.name
+      };
+
+      setTickets((prev) => [ticket, ...prev]);
+    }
 
     setEvents((prev) => [
       {
         id: `EVT-${Date.now()}`,
         type: "TICKET_CREATED",
-        title: `New Ticket logged: ${ticket.code}`,
-        descriptionTechnical: `ITSM engine registered ${ticket.type} with priority [${ticket.priority}] by ${currentUser.name}.`,
-        descriptionManagement: `Tiket baru ${ticket.code} (${ticket.title}) dibuat dengan prioritas ${ticket.priority}.`,
+        title: `New Ticket logged: ${newTicket.title || "Untitled"}`,
+        descriptionTechnical: `ITSM engine registered ${newTicket.type || "BUG"} by ${currentUser.name}.`,
+        descriptionManagement: `Tiket baru (${newTicket.title || "Untitled"}) dibuat.`,
         actor: currentUser.name,
         source: "ITSM_ENGINE",
-        evidenceRef: ticket.code,
+        evidenceRef: activeProject.key,
         projectId: currentProject.id,
         timestamp: "Just now"
       },
