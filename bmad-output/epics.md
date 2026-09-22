@@ -612,10 +612,10 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 23.1 | multi-provider-schema-registry | Migration 0017 (kolom provider) + Repository Registry API idempoten | ready-for-dev |
-| 23.2 | webhook-provider-adapters | Route & verifikasi GitLab/Bitbucket + normalisasi payload kanonik | ready-for-dev |
-| 23.3 | git-linker-canonical-processing | Pemrosesan commits/MR-PR + evidence links dari model kanonik | ready-for-dev |
-| 23.4 | provider-ui-wiring | Badge provider, form registrasi repo, hydration panel Git | ready-for-dev |
+| 23.1 | multi-provider-schema-registry | Migration 0017 (kolom provider) + Repository Registry API idempoten | done |
+| 23.2 | webhook-provider-adapters | Route & verifikasi GitLab/Bitbucket + normalisasi payload kanonik | done |
+| 23.3 | git-linker-canonical-processing | Pemrosesan commits/MR-PR + evidence links dari model kanonik | done |
+| 23.4 | provider-ui-wiring | Badge provider, form registrasi repo, hydration panel Git | done |
 
 **Dependencies:** 23.2 → 23.1 · 23.3 → 23.2 · 23.4 → 23.1, 23.3 — sequential waves 28–31 (shared `git` module, `webhook.service.ts`, `App.tsx`)
 
@@ -626,9 +626,9 @@
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
 - **Total Stories:** 65 (61 laporan sebelumnya + 4 Epic 23 CC-8)
-- **Done:** 61 (Epic 1–22 tuntas penuh, 2026-09-21)
-- **Remaining:** 4 (Epic 23 CC-8 — 23.1 s.d. 23.4, ready-for-dev)
-- **Completion Rate:** 94% (61 / 65) — CC-8 membuka sisa Fase V2 "multi-provider Git" (Master PRD §30)
+- **Done:** 65 (Epic 23 tuntas 4/4 di hari yang sama, 2026-09-22)
+- **Remaining:** 0
+- **Completion Rate:** 100% (65 / 65) — Sisa Fase V2 \"multi-provider Git\" (Master PRD §30) tuntas penuh (433/433 test)
 - **Koreksi 2026-09-19 (CC-4):** angka lama (33/35, remaining 13.2–13.3) tidak mencerminkan penyelesaian Waves 12–14; factual: 43/43 done sebelum Epic 17.
 - **Koreksi 2026-09-19 (CC-5):** Epic 17 tuntas 3/3 (46/46 done, 100%) sebelum Epic 18 dibuka; Epic 18 tuntas 6/6 di hari yang sama.
 

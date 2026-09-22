@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-22T10:50:00+07:00" # CC-8: Epic 23 Multi-Provider Git dibuka (4 story ready-for-dev, waves 28-31)
+last_updated: "2026-09-22T11:45:00+07:00" # Epic 23 (CC-8) TUNTAS — seluruh 23 epic / 65 story DONE (433 test)
 
 epics:
   - id: "epic-1"
@@ -183,7 +183,7 @@ epics:
   - id: "epic-23"
     title: "Multi-Provider Git — GitLab & Bitbucket"
     description: "Course Correction 8 (2026-09-22): webhook adapter GitLab/Bitbucket terverifikasi, payload kanonik, registry API multi-provider, UI badge + form — Master PRD §30 Fase V2"
-    status: in-progress
+    status: done
     story_ids:
       - "23.1.multi-provider-schema-registry"
       - "23.2.webhook-provider-adapters"
@@ -1186,7 +1186,7 @@ stories:
   - id: "23.4.provider-ui-wiring"
     title: "Multi-Provider Git — UI Badge Provider, Registry Form & Hydration"
     epic_id: "epic-23"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/23.4.provider-ui-wiring.story.md"
     parallel_set: 31
     dependencies:
