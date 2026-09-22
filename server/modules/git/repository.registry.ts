@@ -7,6 +7,7 @@ import { projects } from '../../db/schema/projects.ts';
 import { repositories, GIT_PROVIDERS, type GitProvider } from '../../db/schema/repositories.ts';
 import { requirePermission } from '../../middlewares/rbac.ts';
 import { safeAsync } from '../../middlewares/safeAsync.ts';
+import { auditService } from '../audit/audit.service.ts';
 
 /**
  * Story 23.1 (CC-8, Master PRD §30 Fase V2) — Repository Registry API.
@@ -88,6 +89,9 @@ export class RepositoryRegistryService {
     fullName: string;
     provider: GitProvider;
     defaultBranch?: string;
+    actorId?: string;
+    actorName?: string;
+    correlationId?: string;
   }): Promise<{ repository: GitRepositoryDto; created: boolean }> {
     const existing = await db
       .select()
@@ -115,6 +119,24 @@ export class RepositoryRegistryService {
         webhookSecret: generateWebhookSecret(),
       })
       .returning();
+
+    // AC 23.1.6 — audit trail append-only (pola eksplisit work-item.service):
+    // registrasi repo = perubahan konfigurasi sensitif yang wajib tercatat.
+    // Secret TIDAK pernah masuk details.
+    await auditService.logEvent({
+      actorId: input.actorId || 'unknown',
+      actorName: input.actorName || 'System',
+      action: 'REPOSITORY_REGISTERED',
+      targetEntity: 'repositories',
+      targetId: inserted[0].id,
+      details: {
+        fullName: input.fullName,
+        provider: input.provider,
+        projectId: input.projectId,
+        defaultBranch: input.defaultBranch ?? 'main',
+      },
+      correlationId: input.correlationId || 'system',
+    });
 
     return { repository: toRepositoryDto(inserted[0]), created: true };
   }
@@ -177,7 +199,12 @@ repositoryRegistryRouter.post(
       });
     }
 
-    const { repository, created } = await repositoryRegistryService.register(input);
+    const { repository, created } = await repositoryRegistryService.register({
+      ...input,
+      actorId: (req as any).user?.userId || 'unknown',
+      actorName: (req as any).user?.name || 'System',
+      correlationId: (req as any).correlationId || 'system',
+    });
     return res.status(created ? 201 : 200).json({
       success: true,
       data: repository,
