@@ -31,6 +31,8 @@ Menjadi *single source of truth* dan platform operasional internal yang menghubu
 > **Catatan 2026-09-19 (Course Correction 4):** Epic 8–16 tereksekusi sebagai gelombang V1/V2 pra-jadwal (lihat decision-log). Epic 17 (UI Clarity & Role-Based Navigation) ditambahkan berdasarkan umpan balik owner soal kepadatan UI. Fitur baru wajib lewat course correction.
 >
 > **Catatan 2026-09-19 (Course Correction 6):** Epic 19–21 ditambahkan — Export PDF/Excel laporan, Scheduled Delivery (cron + email SMTP + WhatsApp gateway), dan aktivasi Gemini Real AI Scan (menutup keputusan PENDING A-01). Sebagian fitur ini sebelumnya *out of scope* (Epic 10/12) — kini resmi masuk backlog via keputusan owner.
+>
+> **Catatan 2026-09-21 (Course Correction 7):** Epic 22 (DEF-006) ditambahkan — Technical Debt Registry sesuai Master PRD §11.4: kolom terstruktur origin/evidence/impact pada work_items, endpoint registry dengan aging terkomputasi, dan tab "Technical Debt" AI Intelligence View kini berbasis data nyata. Prinsip tetap: AI tidak boleh menciptakan debt tanpa evidence & approval manusia (konversi 16.3).
 
 ## Core Constraints
 1. **Kerapihan Frontend:** Tetap mempertahankan dan memanfaatkan komponen antarmuka React 19 + Tailwind 4 + Vite yang sudah dibangun di `src/` (tidak menulis ulang dari awal).

@@ -579,14 +579,34 @@
 
 ---
 
+## Epic 22: Technical Debt Registry (DEF-006)
+
+> # COURSE-CORRECTION-7 (2026-09-21) — Sisa Fase V2: DEF-006 (Master PRD §11.4) — satu-satunya item Fase V2 yang disetujui namun belum tereksekusi (terverifikasi tidak pernah dibahas di decision-log/epics/PRD).
+
+**Goal:** Debt item terlacak sistematis sesuai Master PRD §11.4 — setiap debt memiliki **origin, evidence, impact, effort, owner, target milestone, status, dan aging** — melalui endpoint registry terpusat dan tab "Technical Debt" di AI Intelligence View yang kini menampilkan data nyata (sebelumnya selalu kosong di boot real, komentar 18.5).
+
+**In scope:** kolom terstruktur `debt_origin`/`debt_impact`/`debt_source_ref` pada work_items (migration 0016), endpoint registry `GET /api/v1/work-items/debts` (aging terkomputasi + agregat + filter), pengayaan konversi rekomendasi AI (16.3) agar mengisi field terstruktur, hidupkan tab techdebt AIIntelligenceView dengan data nyata.
+**Out of scope:** nav baru (menjaga kemenangan CC-4 — debt tetap di dalam view AI sesuai struktur Master PRD §11); perubahan finding lifecycle (16.2); pembuatan debt otomatis oleh AI tanpa approval manusia (prinsip §11.4: *"AI tidak boleh menciptakan debt sebagai fakta tanpa evidence"*).
+
+**Stories:**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 22.1 | debt-registry-api | Skema + API registry (origin/impact/evidence/aging) + pengayaan konversi AI | ready-for-dev |
+| 22.2 | debt-registry-ui | Hidupkan tab Technical Debt AIIntelligenceView dengan data registry nyata | ready-for-dev |
+
+**Dependencies:** 22.2 depends on 22.1 · 22.1 depends on 2.1, 16.3 (done) — sequential wave (shared `work-items` module + `App.tsx` + `AIIntelligenceView`)
+
+---
+
 ## Delivery Tracking (Count-Based)
 
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
-- **Total Stories:** 59 (52 laporan sebelumnya + 7 Epic 19-21 CC-6)
-- **Done:** 59 (52 + 7 CC-6)
-- **Remaining:** 0
-- **Completion Rate:** 100% (59 / 59)
+- **Total Stories:** 61 (59 laporan sebelumnya + 2 Epic 22 CC-7)
+- **Done:** 59
+- **Remaining:** 2 (22.1, 22.2)
+- **Completion Rate:** 97% (59 / 61)
 - **Koreksi 2026-09-19 (CC-4):** angka lama (33/35, remaining 13.2–13.3) tidak mencerminkan penyelesaian Waves 12–14; factual: 43/43 done sebelum Epic 17.
 - **Koreksi 2026-09-19 (CC-5):** Epic 17 tuntas 3/3 (46/46 done, 100%) sebelum Epic 18 dibuka; Epic 18 tuntas 6/6 di hari yang sama.
 
@@ -684,6 +704,12 @@ Wave 24 (Gemini Real Scan) [COURSE-CORRECTION-6]:
 
 Wave 25 (AI Real UI) [COURSE-CORRECTION-6]:
   └── Story 21.2 (AI Mode Badge & Filter UI)
+
+Wave 26 (Debt Registry API) [COURSE-CORRECTION-7]:
+  └── Story 22.1 (Debt Registry Schema & API)
+
+Wave 27 (Debt Registry UI) [COURSE-CORRECTION-7]:
+  └── Story 22.2 (Debt Registry Tab — Real Data)
 ```
 
 ---

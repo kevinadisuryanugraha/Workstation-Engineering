@@ -5,6 +5,16 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-21 — Course Correction 7: Tambah Epic 22 — Technical Debt Registry (DEF-006)
+- **Decision:** Owner memilih Opsi A — mengeksekusi sisa Fase V2 yang disetujui: **DEF-006 Technical Debt Registry** (Master PRD §11.4), satu-satunya item V2 yang belum tereksekusi (terverifikasi tidak pernah dibahas di decision-log/epics/PRD). **Epic 22** (2 story): **22.1** Debt Registry API — kolom terstruktur `debt_origin`/`debt_impact`/`debt_source_ref` pada work_items (migration 0016), endpoint `GET /api/v1/work-items/debts` (aging terkomputasi server + bucket FRESH/AGING/STALE/CRITICAL + agregat + filter), pengayaan konversi rekomendasi AI (16.3) agar mengisi field terstruktur; **22.2** hidupkan tab "Technical Debt" AIIntelligenceView dengan data nyata (tab eksisting yang selalu kosong di boot real — komentar 18.5), hook `useDebtRegistry`, hydration via mapper kontrak.
+- **Rationale:** Master PRD §11.4 mensyaratkan debt item memiliki origin, evidence, impact, effort, owner, target milestone, status, dan aging — saat ini semua hanya teks bebas di deskripsi; prinsip *"AI tidak boleh menciptakan debt sebagai fakta tanpa evidence"* ditegakkan via `debt_source_ref` wajib pada konversi human-approved. UI ditempatkan di tab AI eksisting (struktur Master PRD §11) — nav TIDAK bertambah, menjaga kemenangan CC-4. Alternatif yang ditolak: nav/view terpisah (menambah kepadatan yang sudah diperbaiki CC-4), tabel debt terpisah (duplikatif — owner/milestone/effort sudah ada di work_items).
+- **Impact:** epics.md (+Epic 22, total 61 story: done 59, remaining 2, 97%); stories/ (+2 file ready-for-dev); sprint-status.yaml (+epic-22 in-progress, parallel_set 26–27 sequential — shared `work-items` module, `App.tsx`, `AIIntelligenceView`); project-context.md (catatan CC-7).
+- **In-progress stories affected:** none (59 story lama tetap done).
+- **Made by:** bmad-correct-course → bmad-epics-and-stories → bmad-sprint-planning
+- **Supersedes:** none (additive — melengkapi eksekusi Fase V2 yang dibuka keputusan 2026-09-18)
+
+---
+
 ### 2026-09-19 — Course Correction 6: Ekspansi Distribusi Laporan & AI Real (Epic 19-21)
 - **Decision:** Owner menyetujui 3 fitur yang sebelumnya eksplisit *out of scope* untuk masuk backlog: **(1) Epic 19** Report Export PDF & Excel (endpoint server `pdfkit`/`exceljs` + tombol UI), **(2) Epic 20** Scheduled Delivery — cron produksi idempoten (`node-cron`, default OFF via env), pengiriman email SMTP (`nodemailer`) & WhatsApp gateway HTTP generik dengan tabel append-only `report_deliveries`, **(3) Epic 21** Aktivasi Gemini Real AI Scan — path analisis kode nyata via `@google/genai` dengan mode `REAL_GEMINI` + fallback demo statis yang tetap terlabel jujur. Total **7 story baru** (19.1, 19.2, 20.1, 20.2, 20.3, 21.1, 21.2), waves 19-25 sequential (shared `server.ts`/`App.tsx`).
 - **Rationale:** Laporan terarsip (Epic 12) belum menjangkau distribusi di luar aplikasi; generate masih manual; keputusan PENDING (A-01, 2026-09-18) mengenai AI real kini diputuskan AKTIF dengan kunci Gemini. Prinsip tetap: AI adalah analis bukan otoritas (lifecycle findings 16.2 tidak berubah).

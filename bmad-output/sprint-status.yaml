@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-21T19:40:00+07:00" # 21.2 done — Epic 21 & CC-6 tuntas; seluruh 21 epic / 59 story DONE
+last_updated: "2026-09-21T22:10:00+07:00" # CC-7 — Epic 22 (DEF-006 Debt Registry) dibuka: 22.1 & 22.2 ready-for-dev
 
 epics:
   - id: "epic-1"
@@ -170,6 +170,14 @@ epics:
     story_ids:
       - "21.1.gemini-real-scan"
       - "21.2.ai-real-ui"
+
+  - id: "epic-22"
+    title: "Technical Debt Registry (DEF-006)"
+    description: "Course Correction 7 (2026-09-21): registry debt terstruktur (origin/evidence/impact/aging) + tab Technical Debt data nyata — Master PRD §11.4"
+    status: in-progress
+    story_ids:
+      - "22.1.debt-registry-api"
+      - "22.2.debt-registry-ui"
 
 stories:
   # Wave 1 (Immediate Foundation)
@@ -1076,3 +1084,40 @@ stories:
       - "src/lib/aiMode.ts (BARU)"
       - "src/App.tsx (blok AI — badge/filter/label)"
       - "tests/ai-mode-ui.test.ts (BARU)"
+
+  - id: "22.1.debt-registry-api"
+    title: "Debt Registry — Skema & API (origin/evidence/impact/aging)"
+    epic_id: "epic-22"
+    status: ready-for-dev
+    file: "bmad-output/stories/22.1.debt-registry-api.story.md"
+    parallel_set: 26
+    dependencies:
+      - "2.1.work-items-crud-api"
+      - "16.3.recommendation-to-work-item"
+    owned_scope:
+      - "server/db/schema/work_items.ts"
+      - "server/db/migrations/0016_add_debt_fields.sql (BARU)"
+      - "server/db/migrations/meta/**"
+      - "server/modules/work-items/work-item.schema.ts"
+      - "server/modules/work-items/work-item.service.ts"
+      - "server/modules/work-items/work-item.repository.ts"
+      - "server/modules/work-items/work-item.routes.ts"
+      - "server/modules/ai/ai-intel.routes.ts (blok convert)"
+      - "src/types.ts (tipe DTO debt)"
+      - "src/lib/contractMappers.ts"
+      - "tests/debt-registry.test.ts (BARU)"
+
+  - id: "22.2.debt-registry-ui"
+    title: "Debt Registry — Tab Technical Debt Data Nyata"
+    epic_id: "epic-22"
+    status: ready-for-dev
+    file: "bmad-output/stories/22.2.debt-registry-ui.story.md"
+    parallel_set: 27
+    dependencies:
+      - "22.1.debt-registry-api"
+    owned_scope:
+      - "src/hooks/api/useAiIntel.ts (tambah hook)"
+      - "src/components/AIIntelligenceView.tsx (tab techdebt)"
+      - "src/App.tsx (blok hydration debt)"
+      - "src/lib/contractMappers.ts (mapper debt)"
+      - "tests/debt-registry-ui.test.ts (BARU)"
