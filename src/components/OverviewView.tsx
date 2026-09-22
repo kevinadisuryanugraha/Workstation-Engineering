@@ -12,7 +12,8 @@ import {
   FileCheck2,
   TrendingUp,
   Cpu,
-  HardDrive
+  HardDrive,
+  Plus
 } from "lucide-react";
 import { Project, EngineeringEvent, ServerTelemetry } from "../types";
 import { AnimatedCounter } from "./ui/AnimatedCounter";
@@ -27,6 +28,7 @@ interface OverviewViewProps {
   isManagementView: boolean;
   onSelectProject: (p: Project) => void;
   onNavigateTab: (tab: any) => void;
+  onOpenCreateProject?: () => void;
 }
 
 export const OverviewView: React.FC<OverviewViewProps> = ({
@@ -35,7 +37,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
   servers,
   isManagementView,
   onSelectProject,
-  onNavigateTab
+  onNavigateTab,
+  onOpenCreateProject
 }) => {
   return (
     <div className="space-y-6 pb-12">
@@ -184,9 +187,20 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                 Calculated mathematically from deliverables, verified test passes, and deployments
               </p>
             </div>
-            <span className="text-[10px] font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300 font-bold self-start sm:self-auto">
-              Formula: 40% Tasks + 30% AC + 20% Milestones + 10% Deploy
-            </span>
+            <div className="flex items-center gap-2 self-start sm:self-auto flex-wrap">
+              {onOpenCreateProject && (
+                <button
+                  onClick={onOpenCreateProject}
+                  className="px-2.5 py-1 rounded-lg text-xs font-mono font-bold border-2 border-slate-900 bg-[#dcfce7] hover:bg-emerald-200 text-slate-950 shadow-[1.5px_1.5px_0px_#18181b] flex items-center gap-1 cursor-pointer transition-colors active:translate-x-0.5 active:translate-y-0.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Tambah Proyek</span>
+                </button>
+              )}
+              <span className="text-[10px] font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300 font-bold">
+                Formula: 40% Tasks + 30% AC + 20% Milestones + 10% Deploy
+              </span>
+            </div>
           </div>
 
           <div className="space-y-3.5">

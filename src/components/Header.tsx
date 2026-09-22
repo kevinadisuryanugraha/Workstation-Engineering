@@ -10,7 +10,8 @@ import {
   Menu,
   ShieldCheck,
   Key,
-  LogOut
+  LogOut,
+  Plus
 } from "lucide-react";
 import { Project, User } from "../types";
 import { Badge } from "./ui/Badge";
@@ -20,6 +21,7 @@ interface HeaderProps {
   currentProject: Project;
   projects: Project[];
   onSelectProject: (p: Project) => void;
+  onOpenCreateProject?: () => void;
   isManagementView: boolean;
   onToggleView: () => void;
   onOpenSearch: () => void;
@@ -34,6 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
   currentProject,
   projects,
   onSelectProject,
+  onOpenCreateProject,
   isManagementView,
   onToggleView,
   onOpenSearch,
@@ -80,25 +83,36 @@ export const Header: React.FC<HeaderProps> = ({
         <div className="h-6 w-0.5 bg-slate-300 hidden md:block shrink-0" />
 
         {/* Project Selector Styled cleanly with project icon and dynamic responsive width */}
-        <div className="relative min-w-0 flex-1 sm:flex-initial max-w-[150px] sm:max-w-[200px] md:max-w-[240px]">
-          <div className="flex items-center bg-white rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] hover:bg-slate-50 transition-colors">
-            <select
-              value={currentProject.id}
-              onChange={(e) => {
-                const selected = projects.find((p) => p.id === e.target.value);
-                if (selected) onSelectProject(selected);
-              }}
-              aria-label="Active Project"
-              className="w-full appearance-none bg-transparent text-[11px] sm:text-xs font-mono font-bold text-slate-950 pl-2 sm:pl-3 pr-6 sm:pr-7 py-1.5 focus:outline-none cursor-pointer truncate"
-            >
-              {projects.map((p) => (
-                <option key={p.id} value={p.id} className="bg-white text-slate-900 font-mono">
-                  [{p.key}] {p.name}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-900 absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2.5]" />
+        <div className="flex items-center gap-1.5 min-w-0 flex-1 sm:flex-initial max-w-[170px] sm:max-w-[230px] md:max-w-[270px]">
+          <div className="relative flex-1 min-w-0">
+            <div className="flex items-center bg-white rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] hover:bg-slate-50 transition-colors">
+              <select
+                value={currentProject.id}
+                onChange={(e) => {
+                  const selected = projects.find((p) => p.id === e.target.value);
+                  if (selected) onSelectProject(selected);
+                }}
+                aria-label="Active Project"
+                className="w-full appearance-none bg-transparent text-[11px] sm:text-xs font-mono font-bold text-slate-950 pl-2 sm:pl-3 pr-6 sm:pr-7 py-1.5 focus:outline-none cursor-pointer truncate"
+              >
+                {projects.map((p) => (
+                  <option key={p.id} value={p.id} className="bg-white text-slate-900 font-mono">
+                    [{p.key}] {p.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown className="w-3.5 h-3.5 text-slate-900 absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2.5]" />
+            </div>
           </div>
+          {onOpenCreateProject && (
+            <button
+              onClick={onOpenCreateProject}
+              title="Buat Proyek Baru"
+              className="p-1.5 sm:p-2 rounded-xl bg-[#dcfce7] hover:bg-emerald-200 border-2 border-slate-900 text-slate-950 shadow-[1.5px_1.5px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer shrink-0 font-bold"
+            >
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+            </button>
+          )}
         </div>
       </div>
 
