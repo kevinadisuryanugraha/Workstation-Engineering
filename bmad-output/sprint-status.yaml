@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-21T22:10:00+07:00" # CC-7 — Epic 22 (DEF-006 Debt Registry) dibuka: 22.1 & 22.2 ready-for-dev
+last_updated: "2026-09-21T22:30:00+07:00" # 22.1 done (Debt Registry API, 357/357 test) — 22.2 ready-for-dev
 
 epics:
   - id: "epic-1"
@@ -1088,7 +1088,7 @@ stories:
   - id: "22.1.debt-registry-api"
     title: "Debt Registry — Skema & API (origin/evidence/impact/aging)"
     epic_id: "epic-22"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/22.1.debt-registry-api.story.md"
     parallel_set: 26
     dependencies:

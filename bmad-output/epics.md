@@ -592,7 +592,7 @@
 
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
-| 22.1 | debt-registry-api | Skema + API registry (origin/impact/evidence/aging) + pengayaan konversi AI | ready-for-dev |
+| 22.1 | debt-registry-api | Skema + API registry (origin/impact/evidence/aging) + pengayaan konversi AI | done |
 | 22.2 | debt-registry-ui | Hidupkan tab Technical Debt AIIntelligenceView dengan data registry nyata | ready-for-dev |
 
 **Dependencies:** 22.2 depends on 22.1 · 22.1 depends on 2.1, 16.3 (done) — sequential wave (shared `work-items` module + `App.tsx` + `AIIntelligenceView`)
