@@ -66,7 +66,7 @@ app.disable("x-powered-by"); // Hide framework fingerprint (SEC-03)
 app.use(helmet(buildHelmetOptions(process.env.NODE_ENV ?? "development"))); // Standard security headers (SEC-03)
 
 app.use(cors());
-app.use(express.json({ limit: "500kb" })); // Tightened from 10mb — DoS resistance (SEC-04)
+app.use(express.json({ limit: "500kb", verify: (req: any, _res, buf) => { req.rawBody = buf; } })); // Tightened from 10mb — DoS resistance (SEC-04); rawBody capture untuk verifikasi HMAC webhook (Story 23.2/CC-8 — Bitbucket menandatangani byte asli)
 app.use(requestCorrelationId);
 
 // Brute-force protection on login endpoints only (SEC-02)
