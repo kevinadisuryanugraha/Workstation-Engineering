@@ -1227,7 +1227,7 @@ stories:
   - id: "24.2.direct-repo-sync-engine"
     title: "Direct Repository Sync Engine — Backend GitHub & GitLab On-Demand Fetcher"
     epic_id: "epic-24"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/24.2.direct-repo-sync-engine.story.md"
     parallel_set: 33
     dependencies:
