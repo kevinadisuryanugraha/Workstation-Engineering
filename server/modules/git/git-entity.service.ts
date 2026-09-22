@@ -35,6 +35,7 @@ export const gitEntityService = {
         url: commits.url,
         committedAt: commits.committedAt,
         projectId: repositories.projectId,
+        provider: repositories.provider,
       })
       .from(commits)
       .leftJoin(repositories, eq(commits.repoId, repositories.id))
@@ -58,6 +59,7 @@ export const gitEntityService = {
         url: pullRequests.url,
         mergedAt: pullRequests.mergedAt,
         projectId: repositories.projectId,
+        provider: repositories.provider,
       })
       .from(pullRequests)
       .leftJoin(repositories, eq(pullRequests.repoId, repositories.id))

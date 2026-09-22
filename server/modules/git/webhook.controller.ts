@@ -108,6 +108,13 @@ export async function providerWebhookHandler(provider: GitProvider, req: Request
     });
   }
 
+  // Tahap 2 asinkron (ADR-005) — tidak memblok respons 202 ke webhook runner
+  setImmediate(() => {
+    webhookService.processDelivery(deliveryId).catch((err) => {
+      console.error('[WebhookService] Async delivery processing error:', err);
+    });
+  });
+
   // Fast response (< 50ms) sesuai kontrak webhook runner (ADR-005 tahap 1).
   res.status(202).json({
     success: true,
@@ -159,7 +166,10 @@ export async function githubWebhookHandler(req: Request, res: Response) {
   }
 
   // Idempotency check & ingestion
-  const { duplicate, delivery } = await webhookService.ingestWebhook(deliveryId, event, req.body);
+  const normalized = normalizeProviderEvent('GITHUB', req.headers as any, req.body, rawBody);
+  const canonical = normalized.ok ? normalized.canonical : undefined;
+
+  const { duplicate, delivery } = await webhookService.ingestWebhook(deliveryId, event, req.body, 'GITHUB', canonical);
 
   if (duplicate) {
     return res.status(200).json({
@@ -169,6 +179,13 @@ export async function githubWebhookHandler(req: Request, res: Response) {
       timestamp: new Date().toISOString(),
     });
   }
+
+  // Tahap 2 asinkron (ADR-005)
+  setImmediate(() => {
+    webhookService.processDelivery(deliveryId).catch((err) => {
+      console.error('[WebhookService] Async delivery processing error:', err);
+    });
+  });
 
   // Fast response (< 50ms) to satisfy GitHub Webhook runner timeout requirement
   res.status(202).json({
