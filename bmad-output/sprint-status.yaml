@@ -1214,7 +1214,7 @@ stories:
   - id: "24.1.client-crud-mutations-wiring"
     title: "Client CRUD Mutations Wiring — Work Items & Tickets Persisted to REST API"
     epic_id: "epic-24"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/24.1.client-crud-mutations-wiring.story.md"
     parallel_set: 32
     dependencies: []
