@@ -8,6 +8,7 @@ import {
   listAcceptanceCriteriaHandler,
   addAcceptanceCriterionHandler,
   toggleAcceptanceCriterionHandler,
+  listDebtsHandler,
 } from './work-item.controller.ts';
 import {
   listDependenciesHandler,
@@ -24,6 +25,12 @@ router.use(authenticateToken);
 
 // GET /api/v1/work-items - list with filters & pagination
 router.get('/', listWorkItemsHandler);
+
+// GET /api/v1/work-items/debts - Debt Registry (Story 22.1, Master PRD §11.4)
+// HARUS terdaftar sebelum '/:id' agar 'debts' tidak tertangkap sebagai param.
+// Mengikuti pola GET '/' eksisting: auth-only (PERM_WORK_ITEM_VIEW tidak ada
+// di matriks RBAC — keputusan minimum blast radius, lihat Dev Agent Record).
+router.get('/debts', listDebtsHandler);
 
 // GET /api/v1/work-items/:id - single work item
 router.get('/:id', getWorkItemByIdHandler);

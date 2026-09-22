@@ -7,6 +7,78 @@ import { sprintService, AssignmentValidationError } from '../sprints/sprint.serv
 import { NotFoundError } from '../projects/project.service.ts';
 import { acceptanceCriteriaService } from './acceptance-criteria.service.ts';
 
+// ─── Story 22.1 (CC-7, Master PRD §11.4): Debt Registry helpers ───────────
+
+export type DebtAgingBucket = 'FRESH' | 'AGING' | 'STALE' | 'CRITICAL';
+
+export interface DebtRegistryItem {
+  id: string;
+  key: string;
+  projectId: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  ownerId: string | null;
+  milestoneId: string | null;
+  estimateHours: number | null;
+  debtOrigin: string | null;
+  debtImpact: string | null;
+  debtSourceRef: string | null;
+  createdAt: string;
+  agingDays: number;
+  agingBucket: DebtAgingBucket;
+}
+
+export interface DebtRegistrySummary {
+  total: number;
+  open: number;
+  byStatus: Record<string, number>;
+  byOrigin: Record<string, number>;
+  byImpact: Record<string, number>;
+  byAgingBucket: Record<DebtAgingBucket, number>;
+}
+
+/** Aging hari penuh sejak dibuat (UTC, floor) — murni agar test deterministik. */
+export function computeAgingDays(createdAt: Date | string, now: Date = new Date()): number {
+  const created = typeof createdAt === 'string' ? new Date(createdAt) : createdAt;
+  const diffMs = now.getTime() - created.getTime();
+  return Math.max(0, Math.floor(diffMs / 86_400_000));
+}
+
+/** Bucket aging: FRESH 0–30, AGING 31–90, STALE 91–180, CRITICAL >180. */
+export function computeAgingBucket(agingDays: number): DebtAgingBucket {
+  if (agingDays <= 30) return 'FRESH';
+  if (agingDays <= 90) return 'AGING';
+  if (agingDays <= 180) return 'STALE';
+  return 'CRITICAL';
+}
+
+const DEBT_OPEN_STATUSES = new Set(['BACKLOG', 'READY', 'IN_PROGRESS', 'IN_REVIEW', 'READY_FOR_TEST']);
+
+function tally(items: DebtRegistryItem[], pick: (i: DebtRegistryItem) => string | null): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const item of items) {
+    const v = pick(item);
+    if (v) out[v] = (out[v] ?? 0) + 1;
+  }
+  return out;
+}
+
+export function summarizeDebts(items: DebtRegistryItem[]): DebtRegistrySummary {
+  const byAgingBucket: Record<DebtAgingBucket, number> = { FRESH: 0, AGING: 0, STALE: 0, CRITICAL: 0 };
+  for (const item of items) byAgingBucket[item.agingBucket] += 1;
+  return {
+    total: items.length,
+    open: items.filter((i) => DEBT_OPEN_STATUSES.has(i.status)).length,
+    byStatus: tally(items, (i) => i.status),
+    byOrigin: tally(items, (i) => i.debtOrigin),
+    byImpact: tally(items, (i) => i.debtImpact),
+    byAgingBucket,
+  };
+}
+
+
 export class GateValidationError extends Error {
   constructor(message: string) {
     super(message);
@@ -19,6 +91,39 @@ export class WorkItemService {
 
   async listWorkItems(filters: FilterWorkItemInput): Promise<{ items: WorkItem[]; total: number }> {
     return this.repo.findMany(filters);
+  }
+
+  /**
+   * Story 22.1 (CC-7, Master PRD §11.4): registry debt — item TECH_DEBT
+   * dengan aging terkomputasi server-side + ringkasan agregat.
+   */
+  async listDebts(
+    filters: { projectId?: string; status?: string; origin?: string; impact?: string },
+    now: Date = new Date()
+  ): Promise<{ items: DebtRegistryItem[]; summary: DebtRegistrySummary }> {
+    const rows = await this.repo.findDebts(filters);
+    const items: DebtRegistryItem[] = rows.map((row) => {
+      const agingDays = computeAgingDays(row.createdAt, now);
+      return {
+        id: row.id,
+        key: row.key,
+        projectId: row.projectId,
+        title: row.title,
+        description: row.description,
+        status: row.status,
+        priority: row.priority,
+        ownerId: row.assigneeId,
+        milestoneId: row.milestoneId,
+        estimateHours: row.estimateHours,
+        debtOrigin: row.debtOrigin,
+        debtImpact: row.debtImpact,
+        debtSourceRef: row.debtSourceRef,
+        createdAt: (row.createdAt as Date).toISOString(),
+        agingDays,
+        agingBucket: computeAgingBucket(agingDays),
+      };
+    });
+    return { items, summary: summarizeDebts(items) };
   }
 
   async getWorkItemById(id: string): Promise<WorkItem> {
@@ -53,6 +158,11 @@ export class WorkItemService {
       status: input.status,
       assigneeId: input.assigneeId || null,
       estimateHours: input.estimateHours || null,
+      // Story 22.1 (CC-7): field registry debt — zod sudah menormalkan
+      // (field dibuang otomatis untuk type non-TECH_DEBT).
+      debtOrigin: input.debtOrigin ?? null,
+      debtImpact: input.debtImpact ?? null,
+      debtSourceRef: input.debtSourceRef ?? null,
     };
 
     const item = await this.repo.create(newRecord);
