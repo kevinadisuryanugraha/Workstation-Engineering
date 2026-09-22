@@ -44,9 +44,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenMobileMenu
 }) => {
   return (
-    <header className="h-14 sm:h-16 bg-[#FAF7EE] border-b-2 border-slate-900 px-3 sm:px-5 flex items-center justify-between text-slate-900 z-30 sticky top-0 gap-3 select-none">
+    <header className="h-14 sm:h-16 bg-[#FAF7EE] border-b-2 border-slate-900 px-2 sm:px-4 flex items-center justify-between text-slate-900 z-30 sticky top-0 gap-1.5 sm:gap-3 select-none">
       {/* Left: Brand & Project Selector */}
-      <div className="flex items-center gap-2.5 sm:gap-4 min-w-0 flex-1 sm:flex-initial">
+      <div className="flex items-center gap-1.5 sm:gap-3 min-w-0 flex-1">
         {/* Mobile Hamburger Menu Toggle */}
         <button
           onClick={onOpenMobileMenu}
@@ -57,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         {/* Workstation Logo */}
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex items-center gap-2 shrink-0">
           <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#f6ae2d] border-2 border-slate-900 flex items-center justify-center text-slate-950 font-mono font-black text-xs shadow-[2px_2px_0px_#18181b]">
             WS
             <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#2ec4b6] border border-slate-900" />
@@ -79,8 +79,8 @@ export const Header: React.FC<HeaderProps> = ({
 
         <div className="h-6 w-0.5 bg-slate-300 hidden md:block shrink-0" />
 
-        {/* Project Selector Styled cleanly with project icon and proper width */}
-        <div className="relative min-w-0 max-w-[140px] sm:max-w-[220px] md:max-w-[260px]">
+        {/* Project Selector Styled cleanly with project icon and dynamic responsive width */}
+        <div className="relative min-w-0 flex-1 sm:flex-initial max-w-[150px] sm:max-w-[200px] md:max-w-[240px]">
           <div className="flex items-center bg-white rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] hover:bg-slate-50 transition-colors">
             <select
               value={currentProject.id}
@@ -89,7 +89,7 @@ export const Header: React.FC<HeaderProps> = ({
                 if (selected) onSelectProject(selected);
               }}
               aria-label="Active Project"
-              className="w-full appearance-none bg-transparent text-[11px] sm:text-xs font-mono font-bold text-slate-950 pl-2.5 sm:pl-3 pr-7 py-1.5 focus:outline-none cursor-pointer truncate"
+              className="w-full appearance-none bg-transparent text-[11px] sm:text-xs font-mono font-bold text-slate-950 pl-2 sm:pl-3 pr-6 sm:pr-7 py-1.5 focus:outline-none cursor-pointer truncate"
             >
               {projects.map((p) => (
                 <option key={p.id} value={p.id} className="bg-white text-slate-900 font-mono">
@@ -97,13 +97,13 @@ export const Header: React.FC<HeaderProps> = ({
                 </option>
               ))}
             </select>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-900 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2.5]" />
+            <ChevronDown className="w-3.5 h-3.5 text-slate-900 absolute right-2 sm:right-2.5 top-1/2 -translate-y-1/2 pointer-events-none stroke-[2.5]" />
           </div>
         </div>
       </div>
 
       {/* Middle: Global Quick Search Button (Desktop) */}
-      <div className="hidden xl:flex items-center max-w-sm flex-1 mx-4">
+      <div className="hidden xl:flex items-center max-w-sm flex-1 mx-3">
         <button
           onClick={onOpenSearch}
           className="w-full flex items-center justify-between px-3.5 py-1.5 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-950 text-xs rounded-xl border-2 border-slate-900 transition-all shadow-[2px_2px_0px_#18181b] group cursor-pointer"
@@ -120,22 +120,23 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Right Controls: View Switcher, Quick Search & RBAC User Badge */}
-      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
         {/* Quick Search on tablet/mobile */}
         <button
           onClick={onOpenSearch}
           className="xl:hidden p-1.5 sm:p-2 rounded-xl bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50 shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 cursor-pointer shrink-0"
           title="Search (Cmd+K)"
         >
-          <Search className="w-4 h-4 stroke-[2.5]" />
+          <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[2.5]" />
         </button>
 
-        {/* Dual Language / Perspective Toggle with clean retro segmented pill */}
-        <div className="flex items-center bg-white p-0.5 sm:p-1 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
+        {/* Dual Language / Perspective Toggle (hidden on smallest mobile < 400px to prevent crowding) */}
+        <div className="hidden xs:flex items-center bg-white p-0.5 sm:p-1 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
           <button
             onClick={() => isManagementView && onToggleView()}
+            title="Engineering View"
             className={cn(
-              "relative px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-mono font-bold transition-all outline-none cursor-pointer flex items-center gap-1.5 z-10",
+              "relative px-1.5 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-mono font-bold transition-all outline-none cursor-pointer flex items-center gap-1.5 z-10",
               !isManagementView ? "text-slate-950" : "text-slate-500 hover:text-slate-900"
             )}
           >
@@ -147,13 +148,14 @@ export const Header: React.FC<HeaderProps> = ({
               />
             )}
             <Terminal className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span className="hidden sm:inline">Engineering</span>
+            <span className="hidden md:inline">Engineering</span>
           </button>
 
           <button
             onClick={() => !isManagementView && onToggleView()}
+            title="Management View"
             className={cn(
-              "relative px-2 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-mono font-bold transition-all outline-none cursor-pointer flex items-center gap-1.5 z-10",
+              "relative px-1.5 sm:px-2.5 py-1 rounded-lg text-[11px] sm:text-xs font-mono font-bold transition-all outline-none cursor-pointer flex items-center gap-1.5 z-10",
               isManagementView ? "text-slate-950" : "text-slate-500 hover:text-slate-900"
             )}
           >
@@ -165,7 +167,7 @@ export const Header: React.FC<HeaderProps> = ({
               />
             )}
             <Briefcase className="w-3.5 h-3.5 stroke-[2.5]" />
-            <span className="hidden sm:inline">Management</span>
+            <span className="hidden md:inline">Management</span>
           </button>
         </div>
 

@@ -53,6 +53,7 @@ export const IncidentRoomView: React.FC<IncidentRoomViewProps> = ({
   const [filterSeverity, setFilterSeverity] = useState<string>("ALL");
   const [filterStatus, setFilterStatus] = useState<"ALL" | "ACTIVE" | "RESOLVED">("ALL");
   const [showDeclareModal, setShowDeclareModal] = useState(false);
+  const [showMobileDrawer, setShowMobileDrawer] = useState(false);
 
   // New incident form states
   const [newTitle, setNewTitle] = useState("");
@@ -173,10 +174,281 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
     setTimeout(() => setIsCopiedPostmortem(false), 2000);
   };
 
+  const renderIncidentDetails = () => {
+    if (!selectedIncident) {
+      return (
+        <KokonutCard variant="default" className="p-8 text-center" interactive={false}>
+          <ShieldAlert className="w-10 h-10 text-slate-600 mx-auto mb-3" />
+          <h3 className="text-sm font-mono font-black text-slate-950">Select an Incident</h3>
+          <p className="text-xs font-mono text-slate-600 mt-1">
+            Choose an active or historical incident from the left stream to inspect live chronology, blast radius, and war room telemetry.
+          </p>
+        </KokonutCard>
+      );
+    }
+
+    return (
+      <div className="space-y-4">
+        {/* War Room Header Card */}
+        <KokonutCard variant="default" className="p-4 sm:p-5" interactive={false}>
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-4 border-b-2 border-slate-900/10">
+            <div>
+              <div className="flex items-center gap-2 mb-1 flex-wrap">
+                <span className="font-mono text-xs font-black text-slate-950 bg-[#f6ae2d] px-2 py-0.5 rounded-md border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#18181b]">
+                  WAR ROOM: {selectedIncident.code}
+                </span>
+                <Badge variant="secondary" size="sm">
+                  {selectedIncident.environment}
+                </Badge>
+                {selectedIncident.relatedTicketCode && (
+                  <button
+                    onClick={() => {
+                      setShowMobileDrawer(false);
+                      if (onNavigateTab) onNavigateTab("tickets", selectedIncident.relatedTicketCode);
+                    }}
+                    className="text-[10px] font-mono font-bold bg-[#FAF7EE] text-blue-800 px-2 py-0.5 rounded border border-slate-900 flex items-center gap-1 hover:bg-blue-50 cursor-pointer shadow-[1px_1px_0px_#18181b]"
+                  >
+                    Ticket: {selectedIncident.relatedTicketCode}
+                    <ExternalLink className="w-2.5 h-2.5" />
+                  </button>
+                )}
+              </div>
+              <h2 className="text-base sm:text-lg font-mono font-black text-slate-950 mt-1">
+                {selectedIncident.title}
+              </h2>
+            </div>
+
+            {/* Status Dropdown / State Machine */}
+            <div className="shrink-0 flex items-center gap-2">
+              <select
+                value={selectedIncident.status || (selectedIncident.resolvedAt ? "RESOLVED" : "INVESTIGATING")}
+                onChange={(e) => {
+                  if (onUpdateIncidentStatus) {
+                    onUpdateIncidentStatus(selectedIncident.id, e.target.value as Incident["status"]);
+                  }
+                }}
+                className="bg-[#FAF7EE] text-xs font-mono font-black text-slate-950 px-3 py-1.5 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] focus:outline-none cursor-pointer"
+                aria-label="Ubah status insiden"
+              >
+                <option value="INVESTIGATING">INVESTIGATING</option>
+                <option value="IDENTIFIED">IDENTIFIED</option>
+                <option value="MONITORING">MONITORING</option>
+                <option value="MITIGATED">MITIGATED</option>
+                <option value="RESOLVED">RESOLVED</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Impact & Scope Box */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4">
+            <div className="bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
+              <span className="text-[10px] font-mono text-slate-600 font-bold uppercase block">Commander on Duty</span>
+              <span className="text-xs font-mono font-black text-slate-950 mt-0.5 block truncate">
+                {selectedIncident.commander}
+              </span>
+            </div>
+            <div className="bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
+              <span className="text-[10px] font-mono text-slate-600 font-bold uppercase block">Host / Server Node</span>
+              <span className="text-xs font-mono font-black text-slate-950 mt-0.5 block truncate">
+                {selectedIncident.server}
+              </span>
+            </div>
+            <div className="bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
+              <span className="text-[10px] font-mono text-slate-600 font-bold uppercase block">Detection Timestamp</span>
+              <span className="text-xs font-mono font-black text-slate-950 mt-0.5 block">
+                {selectedIncident.detectedAt}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-3 bg-amber-50 rounded-xl border-2 border-amber-400 text-xs font-mono text-slate-900 font-semibold mb-2">
+            <strong className="text-amber-950">Blast Radius &amp; Business Impact: </strong>
+            {selectedIncident.impact}
+          </div>
+
+          {/* Quick Mitigation Action Buttons */}
+          <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t-2 border-slate-900/10">
+            <button
+              onClick={handleSimulateMitigation}
+              disabled={isSimulatingMitigation}
+              className="px-3 py-1.5 rounded-xl bg-[#2ec4b6] hover:bg-[#28ad9f] text-slate-950 border-2 border-slate-900 font-mono font-bold text-xs shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <Zap className={cn("w-3.5 h-3.5", isSimulatingMitigation && "animate-spin")} />
+              {isSimulatingMitigation ? "Executing Mitigation..." : "Trigger Auto-Mitigation"}
+            </button>
+
+            {selectedIncident.runbookUrl && (
+              <button
+                onClick={() => {
+                  setShowMobileDrawer(false);
+                  if (onNavigateTab) onNavigateTab("knowledge");
+                }}
+                className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-950 border-2 border-slate-900 font-mono font-bold text-xs shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer"
+              >
+                <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
+                View Runbook: {selectedIncident.runbookUrl.split(":")[0]}
+              </button>
+            )}
+
+            <button
+              onClick={handleCopyPostmortem}
+              className="px-3 py-1.5 rounded-xl bg-[#FAF7EE] hover:bg-slate-200 text-slate-950 border-2 border-slate-900 font-mono font-bold text-xs shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer sm:ml-auto"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              {isCopiedPostmortem ? "Postmortem Copied!" : "Export Post-Mortem"}
+            </button>
+          </div>
+        </KokonutCard>
+
+        {/* Timeline & War Room Feed */}
+        <KokonutCard variant="default" className="p-4 sm:p-5" interactive={false}>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-xs font-mono font-black text-slate-950 uppercase flex items-center gap-1.5">
+              <Radio className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
+              Live Incident Chronology &amp; Triage Stream
+            </h3>
+            <span className="text-[10px] font-mono text-slate-500 font-bold">
+              {selectedIncident.timeline?.length || 0} events recorded
+            </span>
+          </div>
+
+          <div className="space-y-3 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-900/20 py-2">
+            {selectedIncident.timeline?.map((item, idx) => (
+              <div key={idx} className="relative flex items-start gap-3 pl-8">
+                <div
+                  className={cn(
+                    "absolute left-2 top-1 w-3.5 h-3.5 rounded-full border-2 border-slate-900 shadow-[1px_1px_0px_#18181b]",
+                    item.type === "alert"
+                      ? "bg-rose-500"
+                      : item.type === "mitigation"
+                      ? "bg-emerald-400"
+                      : item.type === "resolution"
+                      ? "bg-blue-400"
+                      : "bg-[#f6ae2d]"
+                  )}
+                />
+                <div className="flex-1 bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
+                  <div className="flex items-center justify-between text-[10px] font-mono font-bold text-slate-600 mb-1">
+                    <span className="text-slate-950 font-black">{item.actor}</span>
+                    <span>{item.time}</span>
+                  </div>
+                  <p className="text-xs font-mono font-bold text-slate-900 leading-relaxed">
+                    {item.event}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Add Timeline Update Input */}
+          <form onSubmit={handleSendTimelineUpdate} className="mt-4 pt-3 border-t-2 border-slate-900/10">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <span className="text-[10px] font-mono font-bold text-slate-600">Event Type:</span>
+              {(["action", "mitigation", "alert"] as const).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => setTimelineType(t)}
+                  className={cn(
+                    "px-2 py-0.5 rounded text-[10px] font-mono font-bold border cursor-pointer",
+                    timelineType === t
+                      ? "bg-slate-950 text-white border-slate-900"
+                      : "bg-white text-slate-700 border-slate-900/30"
+                  )}
+                >
+                  {t.toUpperCase()}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <input
+                type="text"
+                placeholder="Post live war room update or mitigation action..."
+                value={timelineMessage}
+                onChange={(e) => setTimelineMessage(e.target.value)}
+                className="flex-1 bg-[#FAF7EE] text-xs font-mono font-bold text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 focus:outline-none shadow-[2px_2px_0px_#18181b]"
+                aria-label="Post live war room update or mitigation action"
+              />
+              <button
+                type="submit"
+                disabled={!timelineMessage.trim()}
+                className="px-4 py-2 bg-[#f6ae2d] hover:bg-[#e59d1c] text-slate-950 rounded-xl border-2 border-slate-900 font-mono font-black text-xs shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5 shrink-0"
+              >
+                <Send className="w-3.5 h-3.5" />
+                Post
+              </button>
+            </div>
+          </form>
+        </KokonutCard>
+
+        {/* Postmortem & Root Cause Card */}
+        {selectedIncident.postmortem && (
+          <KokonutCard variant="default" className="p-4 sm:p-5" interactive={false}>
+            <div className="flex items-center justify-between mb-3 border-b-2 border-slate-900/10 pb-2">
+              <h3 className="text-xs font-mono font-black text-slate-950 uppercase flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-purple-600" />
+                AI Synthesized Root Cause &amp; Post-Mortem Analysis
+              </h3>
+              <Badge variant="purple" size="sm">
+                VERIFIED POSTMORTEM
+              </Badge>
+            </div>
+
+            <div className="space-y-3">
+              <div className="bg-[#FAF7EE] p-3.5 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
+                <span className="text-[10px] font-mono text-purple-900 font-bold uppercase block mb-1">
+                  Root Cause Breakdown
+                </span>
+                <p className="text-xs font-mono font-bold text-slate-950 leading-relaxed">
+                  {selectedIncident.postmortem.rootCause}
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
+                  <span className="text-[10px] font-mono text-slate-600 font-bold uppercase block">
+                    Preventative Mitigation
+                  </span>
+                  <p className="text-xs font-mono font-bold text-slate-950 mt-1">
+                    {selectedIncident.postmortem.mitigation}
+                  </p>
+                </div>
+
+                <div className="bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
+                  <span className="text-[10px] font-mono text-slate-600 font-bold uppercase block">
+                    Corrective Action Ticket
+                  </span>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-xs font-mono font-black text-slate-950">
+                      {selectedIncident.postmortem.correctiveActionWorkItemCode}
+                    </span>
+                    <button
+                      onClick={() => {
+                        setShowMobileDrawer(false);
+                        if (onNavigateTab) {
+                          onNavigateTab("workitems", selectedIncident.postmortem?.correctiveActionWorkItemCode);
+                        }
+                      }}
+                      className="text-[10px] font-mono font-bold text-indigo-700 hover:underline flex items-center gap-1"
+                    >
+                      Open Task
+                      <ArrowRight className="w-2.5 h-2.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </KokonutCard>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6 pb-12">
       {/* Top Incident Command Banner */}
-      <KokonutCard variant="default" className="p-5" interactive={false}>
+      <KokonutCard variant="default" className="p-4 sm:p-5" interactive={false}>
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
@@ -233,7 +505,7 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
           <div className="bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
             <span className="text-[10px] font-mono text-slate-600 font-bold uppercase block">Incident Commander</span>
             <div className="flex items-center gap-1.5 mt-1">
-              <div className="w-4 h-4 rounded-full bg-[#f6ae2d] border border-slate-900 text-[9px] font-mono font-black flex items-center justify-center text-slate-950">
+              <div className="w-4 h-4 rounded-full bg-[#f6ae2d] border border-slate-900 text-[9px] font-mono font-black flex items-center justify-center text-slate-950 shrink-0">
                 {currentUser.name[0]}
               </div>
               <span className="text-xs font-mono font-bold text-slate-950 truncate">{currentUser.name}</span>
@@ -243,13 +515,13 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
       </KokonutCard>
 
       {/* Main Split Layout: Incidents Stream vs Active War Room */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Incidents List (4 cols) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Incidents List (5 cols on lg) */}
         <div className="lg:col-span-5 space-y-4">
           <KokonutCard variant="default" className="p-4" interactive={false}>
             {/* Filter Bar */}
             <div className="flex flex-col gap-3 mb-4">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <span className="text-xs font-mono font-black text-slate-950 uppercase">
                   Incident Feed ({filteredIncidents.length})
                 </span>
@@ -307,7 +579,10 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
                     <motion.div
                       key={inc.id}
                       whileHover={{ x: 2 }}
-                      onClick={() => setSelectedIncidentId(inc.id)}
+                      onClick={() => {
+                        setSelectedIncidentId(inc.id);
+                        setShowMobileDrawer(true);
+                      }}
                       className={cn(
                         "p-3.5 rounded-xl border-2 transition-all cursor-pointer relative",
                         isSelected
@@ -315,8 +590,8 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
                           : "bg-white border-slate-900/50 hover:border-slate-900 shadow-[1.5px_1.5px_0px_#18181b]"
                       )}
                     >
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <div className="flex items-center gap-1.5">
+                      <div className="flex items-center justify-between gap-2 mb-1.5 flex-wrap">
+                        <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-mono text-[11px] font-black text-slate-950 bg-white px-1.5 py-0.5 rounded border border-slate-900 shadow-[1px_1px_0px_#18181b]">
                             {inc.code}
                           </span>
@@ -326,7 +601,7 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
                           >
                             {inc.severity}
                           </Badge>
-                          {/* Story 13.2/13.3 — SLA badge: hijau MET, merah BREACHED, abu PENDING */}
+                          {/* Story 13.2/13.3 — SLA badge */}
                           {inc.sla && (
                             <span
                               title={`SLA tanggap ${inc.sla.response.status} · SLA penyelesaian ${inc.sla.resolution.status}`}
@@ -372,269 +647,61 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
                 })
               )}
             </div>
+
+            {/* Mobile quick banner to open War Room */}
+            {selectedIncident && (
+              <div className="lg:hidden mt-3 p-3 bg-[#FFFDF8] rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <span className="text-[10px] font-mono font-bold text-slate-500 uppercase block">Selected War Room</span>
+                  <span className="text-xs font-mono font-black text-slate-950 truncate block">
+                    {selectedIncident.code} - {selectedIncident.title}
+                  </span>
+                </div>
+                <button
+                  onClick={() => setShowMobileDrawer(true)}
+                  className="px-3 py-1.5 rounded-lg bg-[#2ec4b6] hover:bg-[#28ad9f] text-slate-950 border-2 border-slate-900 font-mono font-bold text-xs shadow-[1.5px_1.5px_0px_#18181b] shrink-0 active:translate-x-0.5 active:translate-y-0.5"
+                >
+                  Open Details
+                </button>
+              </div>
+            )}
           </KokonutCard>
         </div>
 
-        {/* Right Column: Active War Room & RCA Details (7 cols) */}
-        <div className="lg:col-span-7 space-y-4">
-          {selectedIncident ? (
-            <>
-              {/* War Room Header Card */}
-              <KokonutCard variant="default" className="p-5" interactive={false}>
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-4 border-b-2 border-slate-900/10">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="font-mono text-xs font-black text-slate-950 bg-[#f6ae2d] px-2 py-0.5 rounded-md border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#18181b]">
-                        WAR ROOM: {selectedIncident.code}
-                      </span>
-                      <Badge variant="secondary" size="sm">
-                        {selectedIncident.environment}
-                      </Badge>
-                      {selectedIncident.relatedTicketCode && (
-                        <button
-                          onClick={() => onNavigateTab && onNavigateTab("tickets", selectedIncident.relatedTicketCode)}
-                          className="text-[10px] font-mono font-bold bg-[#FAF7EE] text-blue-800 px-2 py-0.5 rounded border border-slate-900 flex items-center gap-1 hover:bg-blue-50 cursor-pointer shadow-[1px_1px_0px_#18181b]"
-                        >
-                          Ticket: {selectedIncident.relatedTicketCode}
-                          <ExternalLink className="w-2.5 h-2.5" />
-                        </button>
-                      )}
-                    </div>
-                    <h2 className="text-base sm:text-lg font-mono font-black text-slate-950 mt-1">
-                      {selectedIncident.title}
-                    </h2>
-                  </div>
-
-                  {/* Status Dropdown / State Machine */}
-                  <div className="shrink-0 flex items-center gap-2">
-                    <select
-                      value={selectedIncident.status || (selectedIncident.resolvedAt ? "RESOLVED" : "INVESTIGATING")}
-                      onChange={(e) => {
-                        if (onUpdateIncidentStatus) {
-                          onUpdateIncidentStatus(selectedIncident.id, e.target.value as Incident["status"]);
-                        }
-                      }}
-                      className="bg-[#FAF7EE] text-xs font-mono font-black text-slate-950 px-3 py-1.5 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] focus:outline-none cursor-pointer"
-                  aria-label="Ubah status insiden"
-                >
-                      <option value="INVESTIGATING">INVESTIGATING</option>
-                      <option value="IDENTIFIED">IDENTIFIED</option>
-                      <option value="MONITORING">MONITORING</option>
-                      <option value="MITIGATED">MITIGATED</option>
-                      <option value="RESOLVED">RESOLVED</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Impact & Scope Box */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 my-4">
-                  <div className="bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
-                    <span className="text-[10px] font-mono text-slate-600 font-bold uppercase block">Commander on Duty</span>
-                    <span className="text-xs font-mono font-black text-slate-950 mt-0.5 block truncate">
-                      {selectedIncident.commander}
-                    </span>
-                  </div>
-                  <div className="bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
-                    <span className="text-[10px] font-mono text-slate-600 font-bold uppercase block">Host / Server Node</span>
-                    <span className="text-xs font-mono font-black text-slate-950 mt-0.5 block truncate">
-                      {selectedIncident.server}
-                    </span>
-                  </div>
-                  <div className="bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
-                    <span className="text-[10px] font-mono text-slate-600 font-bold uppercase block">Detection Timestamp</span>
-                    <span className="text-xs font-mono font-black text-slate-950 mt-0.5 block">
-                      {selectedIncident.detectedAt}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-3 bg-amber-50 rounded-xl border-2 border-amber-400 text-xs font-mono text-slate-900 font-semibold mb-2">
-                  <strong className="text-amber-950">Blast Radius &amp; Business Impact: </strong>
-                  {selectedIncident.impact}
-                </div>
-
-                {/* Quick Mitigation Action Buttons */}
-                <div className="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t-2 border-slate-900/10">
-                  <button
-                    onClick={handleSimulateMitigation}
-                    disabled={isSimulatingMitigation}
-                    className="px-3 py-1.5 rounded-xl bg-[#2ec4b6] hover:bg-[#28ad9f] text-slate-950 border-2 border-slate-900 font-mono font-bold text-xs shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                  >
-                    <Zap className={cn("w-3.5 h-3.5", isSimulatingMitigation && "animate-spin")} />
-                    {isSimulatingMitigation ? "Executing Mitigation..." : "Trigger Auto-Mitigation"}
-                  </button>
-
-                  {selectedIncident.runbookUrl && (
-                    <button
-                      onClick={() => onNavigateTab && onNavigateTab("knowledge")}
-                      className="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-50 text-slate-950 border-2 border-slate-900 font-mono font-bold text-xs shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <BookOpen className="w-3.5 h-3.5 text-indigo-600" />
-                      View Runbook: {selectedIncident.runbookUrl.split(":")[0]}
-                    </button>
-                  )}
-
-                  <button
-                    onClick={handleCopyPostmortem}
-                    className="px-3 py-1.5 rounded-xl bg-[#FAF7EE] hover:bg-slate-200 text-slate-950 border-2 border-slate-900 font-mono font-bold text-xs shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 transition-all flex items-center gap-1.5 cursor-pointer ml-auto"
-                  >
-                    <FileText className="w-3.5 h-3.5" />
-                    {isCopiedPostmortem ? "Postmortem Copied!" : "Export Post-Mortem"}
-                  </button>
-                </div>
-              </KokonutCard>
-
-              {/* Timeline & War Room Feed */}
-              <KokonutCard variant="default" className="p-5" interactive={false}>
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-xs font-mono font-black text-slate-950 uppercase flex items-center gap-1.5">
-                    <Radio className="w-3.5 h-3.5 text-rose-600 animate-pulse" />
-                    Live Incident Chronology &amp; Triage Stream
-                  </h3>
-                  <span className="text-[10px] font-mono text-slate-500 font-bold">
-                    {selectedIncident.timeline?.length || 0} events recorded
-                  </span>
-                </div>
-
-                <div className="space-y-3 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-900/20 py-2">
-                  {selectedIncident.timeline?.map((item, idx) => (
-                    <div key={idx} className="relative flex items-start gap-3 pl-8">
-                      <div
-                        className={cn(
-                          "absolute left-2 top-1 w-3.5 h-3.5 rounded-full border-2 border-slate-900 shadow-[1px_1px_0px_#18181b]",
-                          item.type === "alert"
-                            ? "bg-rose-500"
-                            : item.type === "mitigation"
-                            ? "bg-emerald-400"
-                            : item.type === "resolution"
-                            ? "bg-blue-400"
-                            : "bg-[#f6ae2d]"
-                        )}
-                      />
-                      <div className="flex-1 bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
-                        <div className="flex items-center justify-between text-[10px] font-mono font-bold text-slate-600 mb-1">
-                          <span className="text-slate-950 font-black">{item.actor}</span>
-                          <span>{item.time}</span>
-                        </div>
-                        <p className="text-xs font-mono font-bold text-slate-900 leading-relaxed">
-                          {item.event}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Add Timeline Update Input */}
-                <form onSubmit={handleSendTimelineUpdate} className="mt-4 pt-3 border-t-2 border-slate-900/10">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-[10px] font-mono font-bold text-slate-600">Event Type:</span>
-                    {(["action", "mitigation", "alert"] as const).map((t) => (
-                      <button
-                        key={t}
-                        type="button"
-                        onClick={() => setTimelineType(t)}
-                        className={cn(
-                          "px-2 py-0.5 rounded text-[10px] font-mono font-bold border cursor-pointer",
-                          timelineType === t
-                            ? "bg-slate-950 text-white border-slate-900"
-                            : "bg-white text-slate-700 border-slate-900/30"
-                        )}
-                      >
-                        {t.toUpperCase()}
-                      </button>
-                    ))}
-                  </div>
-
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      placeholder="Post live war room update or mitigation action..."
-                      value={timelineMessage}
-                      onChange={(e) => setTimelineMessage(e.target.value)}
-                      className="flex-1 bg-[#FAF7EE] text-xs font-mono font-bold text-slate-950 px-3 py-2 rounded-xl border-2 border-slate-900 focus:outline-none shadow-[2px_2px_0px_#18181b]"
-                aria-label="Post live war room update or mitigation action"
-              />
-                    <button
-                      type="submit"
-                      disabled={!timelineMessage.trim()}
-                      className="px-4 py-2 bg-[#f6ae2d] hover:bg-[#e59d1c] text-slate-950 rounded-xl border-2 border-slate-900 font-mono font-black text-xs shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 transition-all cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                      Post
-                    </button>
-                  </div>
-                </form>
-              </KokonutCard>
-
-              {/* Postmortem & Root Cause Card */}
-              {selectedIncident.postmortem && (
-                <KokonutCard variant="default" className="p-5" interactive={false}>
-                  <div className="flex items-center justify-between mb-3 border-b-2 border-slate-900/10 pb-2">
-                    <h3 className="text-xs font-mono font-black text-slate-950 uppercase flex items-center gap-1.5">
-                      <Sparkles className="w-4 h-4 text-purple-600" />
-                      AI Synthesized Root Cause &amp; Post-Mortem Analysis
-                    </h3>
-                    <Badge variant="purple" size="sm">
-                      VERIFIED POSTMORTEM
-                    </Badge>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="bg-[#FAF7EE] p-3.5 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
-                      <span className="text-[10px] font-mono text-purple-900 font-bold uppercase block mb-1">
-                        Root Cause Breakdown
-                      </span>
-                      <p className="text-xs font-mono font-bold text-slate-950 leading-relaxed">
-                        {selectedIncident.postmortem.rootCause}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div className="bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
-                        <span className="text-[10px] font-mono text-slate-600 font-bold uppercase block">
-                          Preventative Mitigation
-                        </span>
-                        <p className="text-xs font-mono font-bold text-slate-950 mt-1">
-                          {selectedIncident.postmortem.mitigation}
-                        </p>
-                      </div>
-
-                      <div className="bg-[#FAF7EE] p-3 rounded-xl border border-slate-900/30">
-                        <span className="text-[10px] font-mono text-slate-600 font-bold uppercase block">
-                          Corrective Action Ticket
-                        </span>
-                        <div className="flex items-center justify-between mt-1">
-                          <span className="text-xs font-mono font-black text-slate-950">
-                            {selectedIncident.postmortem.correctiveActionWorkItemCode}
-                          </span>
-                          <button
-                            onClick={() =>
-                              onNavigateTab &&
-                              onNavigateTab("workitems", selectedIncident.postmortem?.correctiveActionWorkItemCode)
-                            }
-                            className="text-[10px] font-mono font-bold text-indigo-700 hover:underline flex items-center gap-1"
-                          >
-                            Open Task
-                            <ArrowRight className="w-2.5 h-2.5" />
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </KokonutCard>
-              )}
-            </>
-          ) : (
-            <KokonutCard variant="default" className="p-8 text-center" interactive={false}>
-              <ShieldAlert className="w-10 h-10 text-slate-600 mx-auto mb-3" />
-              <h3 className="text-sm font-mono font-black text-slate-950">Select an Incident</h3>
-              <p className="text-xs font-mono text-slate-600 mt-1">
-                Choose an active or historical incident from the left stream to inspect live chronology, blast radius, and war room telemetry.
-              </p>
-            </KokonutCard>
-          )}
+        {/* Right Column: Active War Room & RCA Details (Desktop only) */}
+        <div className="hidden lg:block lg:col-span-7 space-y-4">
+          {renderIncidentDetails()}
         </div>
       </div>
+
+      {/* Mobile/Tablet Slide-Over Sheet Drawer */}
+      <AnimatePresence>
+        {showMobileDrawer && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex justify-end lg:hidden">
+            <motion.div
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="w-full max-w-xl h-full bg-[#FAF7EE] border-l-2 border-slate-900 p-4 sm:p-6 overflow-y-auto shadow-[-4px_0px_0px_#18181b] space-y-4"
+            >
+              <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900/10">
+                <div className="flex items-center gap-2">
+                  <Radio className="w-4 h-4 text-rose-600 animate-pulse" />
+                  <h3 className="text-sm font-mono font-black text-slate-950">War Room Inspector</h3>
+                </div>
+                <button
+                  onClick={() => setShowMobileDrawer(false)}
+                  className="p-1.5 rounded-lg border-2 border-slate-900 bg-white hover:bg-slate-100 text-slate-900 shadow-[1.5px_1.5px_0px_#18181b] cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              {renderIncidentDetails()}
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
       {/* Declare Incident Modal */}
       <AnimatePresence>
@@ -644,7 +711,7 @@ Mitigation: ${selectedIncident.postmortem?.mitigation || "N/A"}`;
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white border-2 border-slate-900 rounded-2xl max-w-lg w-full p-6 shadow-[4px_4px_0px_#18181b] relative"
+              className="bg-white border-2 border-slate-900 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-4 sm:p-6 shadow-[4px_4px_0px_#18181b] relative"
             >
               <div className="flex items-center justify-between mb-4 border-b-2 border-slate-900/10 pb-3">
                 <div className="flex items-center gap-2">

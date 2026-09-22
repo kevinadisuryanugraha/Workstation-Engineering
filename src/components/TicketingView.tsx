@@ -40,6 +40,8 @@ export const TicketingView: React.FC<TicketingViewProps> = ({
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(tickets[0] || null);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [activeSubTab, setActiveSubTab] = useState<"tickets" | "incident-room">("tickets");
+  const [isInspectorOpen, setIsInspectorOpen] = useState(true);
+  const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
 
   // New ticket form states
   const [newTitle, setNewTitle] = useState("");
@@ -164,156 +166,295 @@ export const TicketingView: React.FC<TicketingViewProps> = ({
       </KokonutCard>
 
       {activeSubTab === "tickets" ? (
-        /* Tickets List & Detail Split */
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left 2 Cols: Tickets Table */}
-          <KokonutCard variant="default" className="lg:col-span-2 p-0 overflow-hidden" interactive={false}>
-            <div className="p-4 border-b border-slate-900/20 flex items-center justify-between">
-              <span className="text-xs font-mono font-black uppercase tracking-wider text-slate-950">
-                Active Ticket Queue
-              </span>
-              <span className="text-xs font-mono text-slate-600 font-bold">
-                SLA Compliance: <strong className="text-emerald-700">96.8%</strong>
-              </span>
-            </div>
+        /* Tickets List & Adaptive Master-Detail Split */
+        <div className="flex flex-col xl:flex-row items-start gap-6">
+          {/* Left: Tickets Table */}
+          <div className="flex-1 min-w-0 w-full">
+            <KokonutCard variant="default" className="p-0 overflow-hidden" interactive={false}>
+              <div className="p-4 border-b border-slate-900/20 flex flex-wrap items-center justify-between gap-2">
+                <span className="text-xs font-mono font-black uppercase tracking-wider text-slate-950">
+                  Active Ticket Queue ({tickets.length})
+                </span>
+                <div className="flex items-center gap-3">
+                  <span className="text-xs font-mono text-slate-600 font-bold">
+                    SLA Compliance: <strong className="text-emerald-700">96.8%</strong>
+                  </span>
+                  <button
+                    onClick={() => setIsInspectorOpen(!isInspectorOpen)}
+                    className={cn(
+                      "hidden xl:inline-flex px-2.5 py-1 rounded-lg border-2 border-slate-900 text-[11px] font-mono font-bold shadow-xs cursor-pointer transition-colors",
+                      isInspectorOpen ? "bg-[#FAF7EE] text-slate-950" : "bg-white text-slate-600 hover:text-slate-950"
+                    )}
+                  >
+                    {isInspectorOpen ? "Tutup Panel" : "Buka Panel"}
+                  </button>
+                </div>
+              </div>
 
-            <div className="divide-y divide-slate-900/10">
-              {tickets.map((t) => (
-                <div
-                  key={t.id}
-                  onClick={() => setSelectedTicket(t)}
-                  className={cn(
-                    "p-3.5 sm:p-4 cursor-pointer transition-colors relative",
-                    selectedTicket?.id === t.id
-                      ? "bg-[#FAF7EE] border-l-4 border-l-[#2ec4b6]"
-                      : "hover:bg-slate-50 bg-white"
-                  )}
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
-                    <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
-                      <span className="text-xs font-mono font-bold px-2 py-0.5 rounded bg-[#e0f2fe] text-blue-950 border border-slate-900">
-                        {t.code}
-                      </span>
-                      <Badge
-                        size="sm"
-                        variant={t.priority === "P1" ? "destructive" : t.priority === "P2" ? "warning" : "secondary"}
-                      >
-                        {t.priority} • {t.severity}
-                      </Badge>
+              <div className="divide-y divide-slate-900/10">
+                {tickets.map((t) => (
+                  <div
+                    key={t.id}
+                    onClick={() => {
+                      setSelectedTicket(t);
+                      setIsInspectorOpen(true);
+                      setIsMobileDrawerOpen(true);
+                    }}
+                    className={cn(
+                      "p-3.5 sm:p-4 cursor-pointer transition-colors relative",
+                      selectedTicket?.id === t.id
+                        ? "bg-[#FAF7EE] border-l-4 border-l-[#2ec4b6]"
+                        : "hover:bg-slate-50 bg-white"
+                    )}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                        <span className="text-xs font-mono font-black px-2 py-0.5 rounded bg-[#e0f2fe] text-blue-950 border border-slate-900 shadow-xs">
+                          {t.code}
+                        </span>
+                        <Badge
+                          size="sm"
+                          variant={t.priority === "P1" ? "destructive" : t.priority === "P2" ? "warning" : "secondary"}
+                        >
+                          {t.priority} • {t.severity}
+                        </Badge>
+                      </div>
+
+                      {/* SLA status badge */}
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <Badge
+                          size="sm"
+                          variant={t.slaStatus === "ON_TRACK" ? "success" : t.slaStatus === "AT_RISK" ? "warning" : "destructive"}
+                        >
+                          SLA: {t.slaStatus}
+                        </Badge>
+                        <Badge variant="secondary" size="sm">
+                          {t.status}
+                        </Badge>
+                      </div>
                     </div>
 
-                    {/* SLA status badge */}
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <Badge
-                        size="sm"
-                        variant={t.slaStatus === "ON_TRACK" ? "success" : t.slaStatus === "AT_RISK" ? "warning" : "destructive"}
-                      >
-                        SLA: {t.slaStatus}
-                      </Badge>
-                      <Badge variant="secondary" size="sm">
-                        {t.status}
-                      </Badge>
+                    <h3 className="text-xs font-mono font-black text-slate-950 mb-1 leading-snug">{t.title}</h3>
+                    <p className="text-xs text-slate-600 font-mono line-clamp-1">{t.description}</p>
+
+                    <div className="flex items-center justify-between gap-2 text-[11px] text-slate-600 mt-2 pt-2 border-t border-slate-900/10 font-mono font-semibold">
+                      <div className="flex items-center gap-1.5 min-w-0 flex-1 truncate">
+                        <span className="truncate">Rep: <strong className="text-slate-900">{t.reporter}</strong></span>
+                        <span className="text-slate-300">•</span>
+                        <span className="truncate">Asg: <strong className="text-slate-900">{t.assignee?.name || "Unassigned"}</strong></span>
+                      </div>
+                      {t.linkedWorkItemId && (
+                        <span className="text-teal-800 font-bold shrink-0 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200 text-[10px]">
+                          Linked: {t.linkedWorkItemId}
+                        </span>
+                      )}
                     </div>
                   </div>
+                ))}
+              </div>
+            </KokonutCard>
+          </div>
 
-                  <h3 className="text-xs font-mono font-bold text-slate-950 mb-1">{t.title}</h3>
-                  <p className="text-xs text-slate-600 font-mono line-clamp-1">{t.description}</p>
+          {/* Desktop Inspector (>= xl) */}
+          {isInspectorOpen && (
+            <div className="hidden xl:block w-[380px] 2xl:w-[420px] shrink-0 sticky top-20 space-y-4">
+              <KokonutCard variant="default" className="p-5 space-y-4" interactive={false}>
+                {selectedTicket ? (
+                  <>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-black font-mono px-2 py-0.5 rounded bg-[#e0f2fe] text-blue-950 border border-slate-900 shadow-[1.5px_1.5px_0px_#18181b]">
+                          {selectedTicket.code}
+                        </span>
+                        <span className="text-[11px] font-mono font-bold text-slate-600">{selectedTicket.createdAt}</span>
+                      </div>
+                      <button
+                        onClick={() => setIsInspectorOpen(false)}
+                        className="w-6 h-6 rounded-md bg-white hover:bg-slate-100 border border-slate-900 flex items-center justify-center text-xs font-bold shadow-xs cursor-pointer"
+                        title="Tutup Panel"
+                      >
+                        ✕
+                      </button>
+                    </div>
 
-                  <div className="flex flex-wrap items-center justify-between gap-1.5 text-[11px] text-slate-600 mt-2 pt-2 border-t border-slate-900/10 font-mono font-bold">
-                    <span className="truncate max-w-[150px]">Rep: {t.reporter}</span>
-                    <span className="truncate max-w-[150px]">Asg: {t.assignee?.name || "Unassigned"}</span>
-                    {t.linkedWorkItemId && (
-                      <span className="text-teal-800 font-bold truncate">Linked: {t.linkedWorkItemId}</span>
+                    <div>
+                      <h2 className="text-sm font-mono font-black text-slate-950">{selectedTicket.title}</h2>
+                      <p className="text-xs text-slate-600 font-mono mt-1.5 leading-relaxed">{selectedTicket.description}</p>
+                    </div>
+
+                    {/* Visual Workflow Stepper Bar */}
+                    <div className="p-3.5 bg-white rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
+                      <div className="flex items-center justify-between mb-2.5">
+                        <span className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider">
+                          Workflow Pipeline
+                        </span>
+                        <Badge variant="success" size="sm">
+                          {selectedTicket.status}
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-11 gap-1 mb-3">
+                        {workflowStages.map((stg, sIdx) => (
+                          <div
+                            key={stg}
+                            title={stg}
+                            className={cn(
+                              "h-2 rounded-full border border-slate-900 transition-all",
+                              sIdx <= currentStageIndex ? "bg-[#4ade80]" : "bg-[#FAF7EE]"
+                            )}
+                          />
+                        ))}
+                      </div>
+
+                      <select
+                        value={selectedTicket.status}
+                        onChange={(e) => onUpdateTicketStatus(selectedTicket.id, e.target.value as TicketStatus)}
+                        aria-label="Advance Workflow Stage"
+                        className="w-full bg-white text-xs font-mono font-bold text-slate-950 px-3 py-2 rounded-lg border-2 border-slate-900 cursor-pointer focus:outline-none shadow-[2px_2px_0px_#18181b]"
+                      >
+                        {workflowStages.map((stage) => (
+                          <option key={stage} value={stage}>
+                            Transition to: {stage}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* SLA Details */}
+                    <div className="p-3.5 bg-white rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] space-y-1.5 text-xs font-mono">
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 font-bold">SLA Policy:</span>
+                        <span className="text-slate-950 font-bold">{selectedTicket.priority} Target Resolution</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 font-bold">Target Time:</span>
+                        <span className="text-slate-950 font-bold">{selectedTicket.slaTargetResolution}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 font-bold">Status:</span>
+                        <span className="text-emerald-700 font-black">{selectedTicket.slaStatus}</span>
+                      </div>
+                    </div>
+
+                    {/* Resolution summary if resolved */}
+                    {selectedTicket.resolution && (
+                      <div className="p-3.5 bg-[#f0fdf4] border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] rounded-xl text-xs font-mono">
+                        <span className="font-bold text-emerald-950 block mb-1">Official Resolution:</span>
+                        <p className="text-slate-900 leading-relaxed">{selectedTicket.resolution}</p>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="text-center text-xs text-slate-500 py-12 font-mono">Pilih tiket untuk melihat rincian.</div>
+                )}
+              </KokonutCard>
+            </div>
+          )}
+
+          {/* Tablet & Mobile Slide-Over Drawer (< xl) */}
+          <AnimatePresence>
+            {isMobileDrawerOpen && selectedTicket && (
+              <div className="fixed inset-0 z-50 xl:hidden flex justify-end">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  onClick={() => setIsMobileDrawerOpen(false)}
+                  className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs"
+                />
+                <motion.div
+                  initial={{ x: "100%" }}
+                  animate={{ x: 0 }}
+                  exit={{ x: "100%" }}
+                  transition={{ type: "spring", damping: 28, stiffness: 280 }}
+                  className="relative w-full max-w-md bg-white border-l-[3px] border-slate-900 shadow-2xl h-full flex flex-col z-10 overflow-y-auto"
+                >
+                  <div className="p-4 bg-[#2ec4b6] border-b-2 border-slate-900 flex items-center justify-between sticky top-0 z-20">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-black font-mono px-2 py-0.5 rounded bg-white text-slate-950 border border-slate-900 shadow-xs">
+                        {selectedTicket.code}
+                      </span>
+                      <span className="font-mono font-black text-xs text-slate-950 uppercase">
+                        Ticket Detail
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => setIsMobileDrawerOpen(false)}
+                      className="w-7 h-7 rounded-lg bg-white hover:bg-slate-100 border-2 border-slate-900 flex items-center justify-center font-bold text-xs shadow-xs cursor-pointer"
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div className="p-5 space-y-4 flex-1 bg-[#FAF7EE]">
+                    <div>
+                      <h2 className="text-sm font-mono font-black text-slate-950">{selectedTicket.title}</h2>
+                      <p className="text-xs text-slate-600 font-mono mt-1.5 leading-relaxed">{selectedTicket.description}</p>
+                    </div>
+
+                    <div className="p-3.5 bg-white rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
+                      <div className="flex items-center justify-between mb-2.5">
+                        <span className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider">
+                          Workflow Pipeline
+                        </span>
+                        <Badge variant="success" size="sm">
+                          {selectedTicket.status}
+                        </Badge>
+                      </div>
+
+                      <div className="grid grid-cols-11 gap-1 mb-3">
+                        {workflowStages.map((stg, sIdx) => (
+                          <div
+                            key={stg}
+                            title={stg}
+                            className={cn(
+                              "h-2 rounded-full border border-slate-900 transition-all",
+                              sIdx <= currentStageIndex ? "bg-[#4ade80]" : "bg-[#FAF7EE]"
+                            )}
+                          />
+                        ))}
+                      </div>
+
+                      <select
+                        value={selectedTicket.status}
+                        onChange={(e) => onUpdateTicketStatus(selectedTicket.id, e.target.value as TicketStatus)}
+                        aria-label="Advance Workflow Stage Mobile"
+                        className="w-full bg-white text-xs font-mono font-bold text-slate-950 px-3 py-2 rounded-lg border-2 border-slate-900 cursor-pointer focus:outline-none shadow-[2px_2px_0px_#18181b]"
+                      >
+                        {workflowStages.map((stage) => (
+                          <option key={stage} value={stage}>
+                            Transition to: {stage}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="p-3.5 bg-white rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] space-y-1.5 text-xs font-mono">
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 font-bold">SLA Policy:</span>
+                        <span className="text-slate-950 font-bold">{selectedTicket.priority} Target</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 font-bold">Target Time:</span>
+                        <span className="text-slate-950 font-bold">{selectedTicket.slaTargetResolution}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-600 font-bold">Status:</span>
+                        <span className="text-emerald-700 font-black">{selectedTicket.slaStatus}</span>
+                      </div>
+                    </div>
+
+                    {selectedTicket.resolution && (
+                      <div className="p-3.5 bg-[#f0fdf4] border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] rounded-xl text-xs font-mono">
+                        <span className="font-bold text-emerald-950 block mb-1">Official Resolution:</span>
+                        <p className="text-slate-900 leading-relaxed">{selectedTicket.resolution}</p>
+                      </div>
                     )}
                   </div>
-                </div>
-              ))}
-            </div>
-          </KokonutCard>
-
-          {/* Right 1 Col: Ticket Inspector & 11-Stage Workflow */}
-          <KokonutCard variant="default" className="p-5 space-y-5" interactive={false}>
-            {selectedTicket ? (
-              <>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-black font-mono px-2 py-0.5 rounded bg-[#e0f2fe] text-blue-950 border border-slate-900 shadow-[1.5px_1.5px_0px_#18181b]">
-                      {selectedTicket.code}
-                    </span>
-                    <span className="text-[11px] font-mono font-bold text-slate-600">{selectedTicket.createdAt}</span>
-                  </div>
-                  <h2 className="text-sm font-mono font-bold text-slate-950">{selectedTicket.title}</h2>
-                  <p className="text-xs text-slate-600 font-mono mt-1.5 leading-relaxed">{selectedTicket.description}</p>
-                </div>
-
-                {/* Visual Workflow Stepper Bar */}
-                <div className="p-3.5 bg-white rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <span className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider">
-                      Workflow Pipeline (11-Stage)
-                    </span>
-                    <Badge variant="success" size="sm">
-                      {selectedTicket.status}
-                    </Badge>
-                  </div>
-
-                  {/* Micro Stage Steps Progress */}
-                  <div className="grid grid-cols-11 gap-1 mb-3">
-                    {workflowStages.map((stg, sIdx) => (
-                      <div
-                        key={stg}
-                        title={stg}
-                        className={cn(
-                          "h-2 rounded-full border border-slate-900 transition-all",
-                          sIdx <= currentStageIndex ? "bg-[#4ade80]" : "bg-[#FAF7EE]"
-                        )}
-                      />
-                    ))}
-                  </div>
-
-                  {/* Stage Dropdown to trigger transition */}
-                  <select
-                    value={selectedTicket.status}
-                    onChange={(e) => onUpdateTicketStatus(selectedTicket.id, e.target.value as TicketStatus)}
-                    aria-label="Advance Workflow Stage"
-                    className="w-full bg-white text-xs font-mono font-bold text-slate-950 px-3 py-2 rounded-lg border-2 border-slate-900 cursor-pointer focus:outline-none shadow-[2px_2px_0px_#18181b]"
-                  >
-                    {workflowStages.map((stage) => (
-                      <option key={stage} value={stage}>
-                        Transition to: {stage}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* SLA Details */}
-                <div className="p-3.5 bg-white rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] space-y-1.5 text-xs font-mono">
-                  <div className="flex justify-between">
-                    <span className="text-slate-600 font-bold">SLA Policy:</span>
-                    <span className="text-slate-950 font-bold">{selectedTicket.priority} Target Resolution</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600 font-bold">Target Time:</span>
-                    <span className="text-slate-950 font-bold">{selectedTicket.slaTargetResolution}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600 font-bold">Status:</span>
-                    <span className="text-emerald-700 font-black">{selectedTicket.slaStatus}</span>
-                  </div>
-                </div>
-
-                {/* Resolution summary if resolved */}
-                {selectedTicket.resolution && (
-                  <div className="p-3.5 bg-[#f0fdf4] border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] rounded-xl text-xs font-mono">
-                    <span className="font-bold text-emerald-950 block mb-1">Official Resolution:</span>
-                    <p className="text-slate-900 leading-relaxed">{selectedTicket.resolution}</p>
-                  </div>
-                )}
-              </>
-            ) : (
-              <div className="text-center text-xs text-slate-500 py-12 font-mono">Select a ticket to inspect details.</div>
+                </motion.div>
+              </div>
             )}
-          </KokonutCard>
+          </AnimatePresence>
         </div>
       ) : (
         /* Incident Command Room View (PRD Section 15 & 63) */

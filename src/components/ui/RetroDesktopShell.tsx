@@ -124,7 +124,7 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
       </div>
 
       {/* Main Content Stage */}
-      <div className="flex-1 p-1.5 sm:p-3 md:p-5 flex flex-col justify-center">
+      <div className="flex-1 p-1 sm:p-2.5 md:p-4 flex flex-col justify-center">
         <AnimatePresence>
           {!isMinimized && (
             <motion.div
@@ -132,24 +132,24 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               className={`w-full mx-auto bg-white border-[2px] sm:border-[2.5px] border-slate-900 rounded-xl sm:rounded-2xl shadow-[3px_3px_0px_#18181b] sm:shadow-[6px_6px_0px_#18181b] flex flex-col overflow-hidden transition-all ${
-                isMaximized ? "max-w-[1550px] min-h-[82vh]" : "max-w-5xl min-h-[600px]"
+                isMaximized ? "max-w-[1600px] min-h-[82vh]" : "max-w-5xl min-h-[600px]"
               }`}
             >
               {/* Retro Window Teal Header Bar (from image.png) */}
-              <div className="bg-[#2ec4b6] border-b-[2px] sm:border-b-[2.5px] border-slate-900 px-2.5 sm:px-4 py-2 sm:py-2.5 flex items-center justify-between gap-2">
+              <div className="bg-[#2ec4b6] border-b-[2px] sm:border-b-[2.5px] border-slate-900 px-2 sm:px-4 py-1.5 sm:py-2 flex items-center justify-between gap-2">
                 {/* Browser Navigation & Address Bar */}
                 <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0 max-w-xl">
                   <div className="flex items-center gap-1 font-mono text-xs font-black text-slate-900 shrink-0">
                     <button
                       onClick={() => onSelectTab("overview")}
-                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-white border border-slate-900 flex items-center justify-center hover:bg-slate-100 font-bold cursor-pointer text-[10px] sm:text-xs"
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-white border border-slate-900 flex items-center justify-center hover:bg-slate-100 font-bold cursor-pointer text-[10px] sm:text-xs shadow-xs"
                       title="Back to Overview"
                     >
                       &lt;
                     </button>
                     <button
                       onClick={() => onSelectTab("workitems")}
-                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-white border border-slate-900 flex items-center justify-center hover:bg-slate-100 font-bold cursor-pointer text-[10px] sm:text-xs"
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-md bg-white border border-slate-900 flex items-center justify-center hover:bg-slate-100 font-bold cursor-pointer text-[10px] sm:text-xs shadow-xs"
                       title="Next to Work Items"
                     >
                       &gt;
@@ -219,8 +219,8 @@ export const RetroDesktopShell: React.FC<RetroDesktopShellProps> = ({
         )}
       </div>
 
-      {/* Bottom Retro Windows Taskbar */}
-      <footer className="bg-[#FAF7EE] border-t-[2.5px] border-slate-900 px-2 sm:px-3 py-1.5 sm:py-2 flex items-center justify-between z-30 relative font-mono text-xs shadow-[0px_-2px_0px_rgba(0,0,0,0.05)] overflow-hidden gap-1.5">
+      {/* Bottom Retro Windows Taskbar (Desktop only to avoid colliding with MobileBottomBar) */}
+      <footer className="hidden lg:flex bg-[#FAF7EE] border-t-[2.5px] border-slate-900 px-2 sm:px-3 py-1.5 sm:py-2 items-center justify-between z-30 relative font-mono text-xs shadow-[0px_-2px_0px_rgba(0,0,0,0.05)] overflow-hidden gap-1.5">
         <div className="flex items-center gap-1.5 sm:gap-2 min-w-0">
           {/* Retro START Button */}
           <button

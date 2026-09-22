@@ -84,14 +84,14 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
         {/* Metric 1 */}
         <KokonutCard variant="default" glowColor="emerald" className="p-4">
           <div className="flex items-center justify-between text-slate-600 mb-2">
-            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-600">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-600">
               Active Projects
             </span>
-            <Layers className="w-4 h-4 text-emerald-400" />
+            <Layers className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
           </div>
           <div className="flex items-baseline justify-between">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-bold text-white font-mono">
+              <span className="text-2xl sm:text-3xl font-black text-slate-950 font-mono">
                 <AnimatedCounter value={projects.length} />
               </span>
               <Badge variant="success" size="sm">
@@ -100,20 +100,20 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             </div>
             <LiveSparkline data={[2, 2, 3, 3, 3]} color="emerald" width={60} height={20} />
           </div>
-          <p className="text-[11px] text-slate-600 mt-2 font-mono">LMS • POS Retail • ERP Ledger</p>
+          <p className="text-[11px] text-slate-600 mt-2 font-mono font-semibold">LMS • POS Retail • ERP Ledger</p>
         </KokonutCard>
 
         {/* Metric 2 */}
         <KokonutCard variant="default" glowColor="amber" className="p-4">
           <div className="flex items-center justify-between text-slate-600 mb-2">
-            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-600">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-600">
               Open Tickets
             </span>
-            <Activity className="w-4 h-4 text-amber-400" />
+            <Activity className="w-4 h-4 text-amber-600 stroke-[2.5]" />
           </div>
           <div className="flex items-baseline justify-between">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-bold text-white font-mono">
+              <span className="text-2xl sm:text-3xl font-black text-slate-950 font-mono">
                 <AnimatedCounter value={32} />
               </span>
               <Badge variant="warning" size="sm">
@@ -122,20 +122,20 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             </div>
             <LiveSparkline data={[45, 38, 40, 35, 32]} color="amber" width={60} height={20} />
           </div>
-          <p className="text-[11px] text-slate-600 mt-2 font-mono">94.2% within SLA target</p>
+          <p className="text-[11px] text-slate-600 mt-2 font-mono font-semibold">94.2% within SLA target</p>
         </KokonutCard>
 
         {/* Metric 3 */}
         <KokonutCard variant="default" glowColor="blue" className="p-4">
           <div className="flex items-center justify-between text-slate-600 mb-2">
-            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-600">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-600">
               Deployments
             </span>
-            <Rocket className="w-4 h-4 text-blue-400" />
+            <Rocket className="w-4 h-4 text-blue-600 stroke-[2.5]" />
           </div>
           <div className="flex items-baseline justify-between">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-bold text-white font-mono">
+              <span className="text-2xl sm:text-3xl font-black text-slate-950 font-mono">
                 <AnimatedCounter value={21} />
               </span>
               <Badge variant="cyan" size="sm">
@@ -144,20 +144,20 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             </div>
             <LiveSparkline data={[12, 15, 17, 19, 21]} color="blue" width={60} height={20} />
           </div>
-          <p className="text-[11px] text-slate-600 mt-2 font-mono">Latest: v1.4.2 on Kontabo</p>
+          <p className="text-[11px] text-slate-600 mt-2 font-mono font-semibold">Latest: v1.4.2 on Kontabo</p>
         </KokonutCard>
 
         {/* Metric 4 */}
         <KokonutCard variant="default" glowColor="rose" className="p-4">
           <div className="flex items-center justify-between text-slate-600 mb-2">
-            <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-slate-600">
+            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-600">
               Critical Incidents
             </span>
-            <ShieldAlert className="w-4 h-4 text-rose-400" />
+            <ShieldAlert className="w-4 h-4 text-rose-600 stroke-[2.5]" />
           </div>
           <div className="flex items-baseline justify-between">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-bold text-white font-mono">
+              <span className="text-2xl sm:text-3xl font-black text-slate-950 font-mono">
                 <AnimatedCounter value={1} />
               </span>
               <Badge variant="success" size="sm">
@@ -166,7 +166,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             </div>
             <LiveSparkline data={[3, 2, 2, 1, 1]} color="rose" width={60} height={20} />
           </div>
-          <p className="text-[11px] text-slate-600 mt-2 font-mono">INC-00042 PIR complete</p>
+          <p className="text-[11px] text-slate-600 mt-2 font-mono font-semibold">INC-00042 PIR complete</p>
         </KokonutCard>
       </div>
 
@@ -174,17 +174,17 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Project Delivery Health */}
         <KokonutCard variant="default" className="lg:col-span-2 p-5" interactive={false}>
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-800">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b-2 border-slate-900/15">
             <div>
-              <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+              <h2 className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider flex items-center gap-2">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
                 Project Delivery & Evidence Progress
               </h2>
-              <p className="text-[11px] text-slate-600 mt-0.5">
+              <p className="text-[11px] text-slate-600 mt-0.5 font-semibold">
                 Calculated mathematically from deliverables, verified test passes, and deployments
               </p>
             </div>
-            <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 self-start sm:self-auto">
+            <span className="text-[10px] font-mono text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300 font-bold self-start sm:self-auto">
               Formula: 40% Tasks + 30% AC + 20% Milestones + 10% Deploy
             </span>
           </div>
@@ -198,35 +198,35 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                   onSelectProject(proj);
                   onNavigateTab("project360");
                 }}
-                className="p-4 rounded-xl bg-slate-900/60 hover:bg-slate-800/80 border border-slate-800/80 hover:border-slate-700/80 cursor-pointer transition-all shadow-sm group"
+                className="p-4 rounded-xl bg-white hover:bg-[#FAF7EE] border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] cursor-pointer transition-all group"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2.5">
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-md bg-slate-800 text-slate-200 border border-slate-700">
+                    <span className="text-xs font-black font-mono px-2 py-0.5 rounded-md bg-[#FAF7EE] text-slate-950 border-2 border-slate-900 shadow-xs">
                       {proj.key}
                     </span>
                     <div>
-                      <h3 className="text-sm font-semibold text-white group-hover:text-emerald-300 transition-colors">
+                      <h3 className="text-sm font-black font-mono text-slate-950 group-hover:text-emerald-800 transition-colors">
                         {proj.name}
                       </h3>
-                      <p className="text-[11px] text-slate-600 font-mono">{proj.currentSprint}</p>
+                      <p className="text-[11px] text-slate-600 font-mono font-semibold">{proj.currentSprint}</p>
                     </div>
                   </div>
                   <div className="flex sm:flex-col items-center sm:items-end justify-between gap-2">
                     <div className="flex items-center gap-2 justify-end">
-                      <span className="text-base font-bold font-mono text-emerald-400">
+                      <span className="text-base font-black font-mono text-emerald-700">
                         <AnimatedCounter value={proj.progress} suffix="%" />
                       </span>
                       <Badge variant="secondary" size="sm">
                         Health: {proj.health}/100
                       </Badge>
                     </div>
-                    <span className="text-[10px] text-slate-600 font-mono">{proj.latestRelease}</span>
+                    <span className="text-[10px] text-slate-600 font-mono font-bold">{proj.latestRelease}</span>
                   </div>
                 </div>
 
                 {/* Animated Progress bar */}
-                <div className="w-full bg-slate-950 rounded-full h-2 overflow-hidden mb-2.5 border border-slate-800/60">
+                <div className="w-full bg-[#FAF7EE] rounded-full h-2.5 overflow-hidden mb-2.5 border border-slate-900">
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${proj.progress}%` }}
@@ -237,12 +237,12 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                   />
                 </div>
 
-                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-600 font-mono">
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-700 font-mono font-bold">
                   <span>Open: {proj.openTickets}</span>
                   <span>Blockers: {proj.blockersCount}</span>
-                  <span className="text-emerald-400">● {proj.productionStatus}</span>
-                  <span className="text-emerald-400 flex items-center gap-1 group-hover:underline">
-                    Project 360° <ArrowRight className="w-3 h-3" />
+                  <span className="text-emerald-700">● {proj.productionStatus}</span>
+                  <span className="text-emerald-800 flex items-center gap-1 group-hover:underline">
+                    Project 360° <ArrowRight className="w-3 h-3 stroke-[2.5]" />
                   </span>
                 </div>
               </motion.div>
@@ -253,17 +253,17 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
         {/* Right 1 Col: Server Infrastructure Telemetry */}
         <KokonutCard variant="default" className="p-5 flex flex-col justify-between" interactive={false}>
           <div>
-            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-800">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b-2 border-slate-900/15">
               <div>
-                <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Server className="w-3.5 h-3.5 text-blue-400" />
+                <h2 className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider flex items-center gap-1.5">
+                  <Server className="w-3.5 h-3.5 text-blue-600 stroke-[2.5]" />
                   Telemetry Nodes
                 </h2>
-                <p className="text-[11px] text-slate-600">Workstation Linux Agents</p>
+                <p className="text-[11px] text-slate-600 font-semibold">Workstation Linux Agents</p>
               </div>
               <button
                 onClick={() => onNavigateTab("infrastructure")}
-                className="text-xs text-emerald-400 hover:text-emerald-300 font-medium"
+                className="text-xs text-emerald-700 hover:text-emerald-900 font-mono font-bold"
               >
                 Inspect →
               </button>

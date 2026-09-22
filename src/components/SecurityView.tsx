@@ -160,14 +160,14 @@ export const SecurityView: React.FC<SecurityViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2 font-mono text-xs">
-          <div className="px-3 py-1.5 rounded-xl bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] flex items-center gap-2 font-bold text-slate-950">
+        <div className="flex items-center gap-2 font-mono text-xs flex-wrap">
+          <div className="px-3 py-1.5 rounded-xl bg-white border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] flex items-center gap-2 font-bold text-slate-950 shrink-0">
             <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse border border-slate-900" />
             <span>Middleware Active</span>
           </div>
           <button
             onClick={onLogout}
-            className="px-3 py-1.5 rounded-xl bg-red-100 hover:bg-red-200 border-2 border-slate-900 text-red-950 font-bold shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 flex items-center gap-1.5 cursor-pointer"
+            className="px-3 py-1.5 rounded-xl bg-red-100 hover:bg-red-200 border-2 border-slate-900 text-red-950 font-bold shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5 flex items-center gap-1.5 cursor-pointer shrink-0"
             title="Sign Out / Lock Workspace"
           >
             <LogOut className="w-3.5 h-3.5" />
@@ -482,18 +482,18 @@ export const SecurityView: React.FC<SecurityViewProps> = ({
                         </Badge>
                       </div>
 
-                      <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-700 font-mono space-y-1">
-                        <div className="flex items-center justify-between text-[10px] font-bold text-slate-500">
+                      <div className="p-2.5 bg-[#FAF7EE] rounded-xl border-2 border-slate-900/30 text-[11px] text-slate-800 font-mono space-y-1">
+                        <div className="flex items-center justify-between text-[10px] font-bold text-slate-600">
                           <span>TOTAL HAK AKSES RESMI:</span>
                           <span className="text-emerald-700 font-black">{userPerms.length} / 20 Izin</span>
                         </div>
-                        <div className="w-full bg-slate-200 h-1.5 rounded-full overflow-hidden">
+                        <div className="w-full bg-white h-2 rounded-full overflow-hidden border border-slate-900/30">
                           <div
                             className="bg-emerald-500 h-full rounded-full"
                             style={{ width: `${(userPerms.length / 20) * 100}%` }}
                           />
                         </div>
-                        <p className="text-[10px] text-slate-500 pt-1">
+                        <p className="text-[10px] text-slate-600 font-semibold pt-1">
                           {user.role === "Super Admin"
                             ? "Full system control, war room commander, emergency rollback, user management."
                             : user.role === "Tech Lead"

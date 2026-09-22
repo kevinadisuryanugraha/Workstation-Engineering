@@ -89,182 +89,185 @@ export const InfrastructureView: React.FC<InfrastructureViewProps> = ({
 
       {/* Server Selector Tabs */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {servers.map((srv) => (
-          <div
-            key={srv.id}
-            onClick={() => setSelectedServer(srv)}
-            className={cn(
-              "p-5 rounded-xl border cursor-pointer transition-all bg-white shadow-sm",
-              selectedServer.id === srv.id
-                ? "border-teal-600 ring-2 ring-teal-500/20 bg-teal-50/10"
-                : "border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/50"
-            )}
-          >
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-slate-100 text-slate-800 border border-slate-200">
-                  <Server className="w-5 h-5 stroke-[2]" />
+        {servers.map((srv) => {
+          const isSelected = selectedServer?.id === srv.id;
+          return (
+            <div
+              key={srv.id}
+              onClick={() => setSelectedServer(srv)}
+              className={cn(
+                "p-4 sm:p-5 rounded-2xl border-2 cursor-pointer transition-all",
+                isSelected
+                  ? "bg-[#FAF7EE] border-slate-900 shadow-[3px_3px_0px_#18181b]"
+                  : "bg-white border-slate-900/40 hover:border-slate-900 shadow-[1.5px_1.5px_0px_#18181b]"
+              )}
+            >
+              <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-white text-slate-950 border-2 border-slate-900 shadow-[1px_1px_0px_#18181b]">
+                    <Server className="w-5 h-5 stroke-[2.5]" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-mono font-black text-slate-950">{srv.name}</h3>
+                    <p className="text-xs text-slate-600 font-mono font-semibold">
+                      IP: <span className="text-slate-950 font-bold">{srv.ip}</span> • {srv.provider}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-sm font-mono font-bold text-slate-900">{srv.name}</h3>
-                  <p className="text-xs text-slate-500 font-mono">
-                    IP: <span className="text-slate-800 font-semibold">{srv.ip}</span> • {srv.provider}
-                  </p>
+
+                <div className="text-right shrink-0">
+                  <Badge variant="success" size="sm" pulse>
+                    {srv.status}
+                  </Badge>
+                  <p className="text-[10px] text-slate-600 font-mono mt-1 font-bold">{srv.lastHeartbeat}</p>
                 </div>
               </div>
 
-              <div className="text-right">
-                <Badge variant="success" size="sm" pulse>
-                  {srv.status}
-                </Badge>
-                <p className="text-[10px] text-slate-600 font-mono mt-1">{srv.lastHeartbeat}</p>
+              {/* Quick telemetry indicators */}
+              <div className="grid grid-cols-3 gap-2 pt-3 border-t-2 border-slate-900/10 text-center font-mono">
+                <div className="bg-white p-2 sm:p-2.5 rounded-lg border-2 border-slate-900/40 shadow-[1px_1px_0px_#18181b]">
+                  <div className="text-[10px] text-slate-600 font-bold mb-0.5 truncate">CPU Load</div>
+                  <div className="text-xs sm:text-sm font-black text-emerald-700">{srv.cpuUsage}%</div>
+                </div>
+                <div className="bg-white p-2 sm:p-2.5 rounded-lg border-2 border-slate-900/40 shadow-[1px_1px_0px_#18181b]">
+                  <div className="text-[10px] text-slate-600 font-bold mb-0.5 truncate">RAM Memory</div>
+                  <div className="text-xs sm:text-sm font-black text-blue-700">{srv.ramUsage}%</div>
+                </div>
+                <div className="bg-white p-2 sm:p-2.5 rounded-lg border-2 border-slate-900/40 shadow-[1px_1px_0px_#18181b]">
+                  <div className="text-[10px] text-slate-600 font-bold mb-0.5 truncate">NVMe Disk</div>
+                  <div className="text-xs sm:text-sm font-black text-purple-700">{srv.diskUsage}%</div>
+                </div>
               </div>
             </div>
-
-            {/* Quick telemetry indicators */}
-            <div className="grid grid-cols-3 gap-2 pt-3 border-t border-slate-100 text-center font-mono">
-              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                <div className="text-[10px] text-slate-500 font-bold mb-0.5">CPU Load</div>
-                <div className="text-xs font-black text-emerald-700">{srv.cpuUsage}%</div>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                <div className="text-[10px] text-slate-500 font-bold mb-0.5">RAM Memory</div>
-                <div className="text-xs font-black text-blue-700">{srv.ramUsage}%</div>
-              </div>
-              <div className="bg-slate-50 p-2.5 rounded-lg border border-slate-100">
-                <div className="text-[10px] text-slate-500 font-bold mb-0.5">NVMe Disk</div>
-                <div className="text-xs font-black text-purple-700">{srv.diskUsage}%</div>
-              </div>
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Selected Server Full Telemetry Inspector */}
       {selectedServer ? (
-      <div className="bg-white rounded-2xl border border-slate-200/90 shadow-sm p-6 sm:p-7 space-y-6">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b border-slate-100">
-          <div className="space-y-1.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
-                Node: {selectedServer.id}
-              </span>
-              <span className="text-xs text-slate-500 font-mono">OS: {selectedServer.os}</span>
-            </div>
-            <h2 className="text-base sm:text-lg font-mono font-black text-slate-900 tracking-tight leading-snug">
-              {selectedServer.name} Detailed Telemetry
-            </h2>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-500">
-            <span className="bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200/80">
-              Uptime: <strong className="text-slate-800 font-semibold">{selectedServer.uptime}</strong>
-            </span>
-            <span className="bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200/80">
-              Load: <strong className="text-slate-800 font-semibold">{selectedServer.loadAverage}</strong>
-            </span>
-            <span className="bg-teal-50 text-teal-800 px-2.5 py-1 rounded-md border border-teal-200 font-semibold">
-              Agent: {selectedServer.agentVersion}
-            </span>
-          </div>
-        </div>
-
-        {/* Telemetry Resource Gauges */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* CPU Gauge */}
-          <div className="p-4 sm:p-5 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2.5">
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                <Cpu className="w-4 h-4 text-emerald-600" /> CPU Core Utilization
-              </span>
-              <span className="font-black text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 text-[11px]">
-                {selectedServer.cpuUsage}%
-              </span>
-            </div>
-            <div className="w-full bg-slate-200/80 h-2.5 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${selectedServer.cpuUsage}%` }}
-                transition={{ duration: 0.8 }}
-                className="bg-emerald-500 h-full rounded-full"
-              />
-            </div>
-            <p className="text-[11px] text-slate-500 font-mono">Kernel 6.8 • 8 vCPUs Dedicated</p>
-          </div>
-
-          {/* RAM Gauge */}
-          <div className="p-4 sm:p-5 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2.5">
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                <Activity className="w-4 h-4 text-blue-600" /> RAM Memory Allocation
-              </span>
-              <span className="font-black text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 text-[11px]">
-                {selectedServer.ramUsage}%
-              </span>
-            </div>
-            <div className="w-full bg-slate-200/80 h-2.5 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${selectedServer.ramUsage}%` }}
-                transition={{ duration: 0.8 }}
-                className="bg-blue-500 h-full rounded-full"
-              />
-            </div>
-            <p className="text-[11px] text-slate-500 font-mono">{(selectedServer.ramUsage / 100 * 7.75).toFixed(1)} GB Used / 7.75 GB Total</p>
-          </div>
-
-          {/* NVMe Gauge */}
-          <div className="p-4 sm:p-5 rounded-xl bg-slate-50/70 border border-slate-200/80 space-y-2.5">
-            <div className="flex items-center justify-between text-xs font-mono">
-              <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                <HardDrive className="w-4 h-4 text-purple-600" /> NVMe Storage Volume
-              </span>
-              <span className="font-black text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 text-[11px]">
-                {selectedServer.diskUsage}%
-              </span>
-            </div>
-            <div className="w-full bg-slate-200/80 h-2.5 rounded-full overflow-hidden">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${selectedServer.diskUsage}%` }}
-                transition={{ duration: 0.8 }}
-                className="bg-purple-500 h-full rounded-full"
-              />
-            </div>
-            <p className="text-[11px] text-slate-500 font-mono">192 GB Used / 400 GB NVMe</p>
-          </div>
-        </div>
-
-        {/* Managed Services Status */}
-        <div className="space-y-3.5">
-          <h3 className="text-xs font-mono font-black text-slate-900 uppercase tracking-wider flex items-center gap-2 pb-2 border-b border-slate-100">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Systemd Services Monitored by Agent ({selectedServer.services.length})</span>
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-            {selectedServer.services.map((svc) => (
-              <div
-                key={svc.name}
-                className="p-3.5 bg-white rounded-xl border border-slate-200/80 hover:border-slate-300 shadow-xs text-xs space-y-2 transition-colors"
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-mono font-bold text-slate-900 truncate">{svc.name}</span>
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-mono font-bold shrink-0">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                    <span>Running</span>
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-[11px] text-slate-500 font-mono pt-2 border-t border-slate-100">
-                  <span>{svc.port ? `Port: ${svc.port}` : "Daemon Process"}</span>
-                  <span className="font-semibold text-slate-700">{svc.memoryMb} MB RSS</span>
-                </div>
+        <div className="bg-white rounded-2xl border-2 border-slate-900 shadow-[3px_3px_0px_#18181b] p-4 sm:p-6 space-y-6">
+          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 pb-4 border-b-2 border-slate-900/10">
+            <div className="space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-mono font-black px-2.5 py-1 rounded-md bg-[#FAF7EE] text-slate-950 border-2 border-slate-900 shadow-[1px_1px_0px_#18181b]">
+                  Node: {selectedServer.id}
+                </span>
+                <span className="text-xs text-slate-700 font-mono font-bold">OS: {selectedServer.os}</span>
               </div>
-            ))}
+              <h2 className="text-base sm:text-lg font-mono font-black text-slate-950 tracking-tight leading-snug">
+                {selectedServer.name} Detailed Telemetry
+              </h2>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-slate-700 font-bold">
+              <span className="bg-[#FAF7EE] px-2.5 py-1 rounded-md border-2 border-slate-900 shadow-[1px_1px_0px_#18181b]">
+                Uptime: <strong className="text-slate-950 font-black">{selectedServer.uptime}</strong>
+              </span>
+              <span className="bg-[#FAF7EE] px-2.5 py-1 rounded-md border-2 border-slate-900 shadow-[1px_1px_0px_#18181b]">
+                Load: <strong className="text-slate-950 font-black">{selectedServer.loadAverage}</strong>
+              </span>
+              <span className="bg-[#2ec4b6] text-slate-950 px-2.5 py-1 rounded-md border-2 border-slate-900 shadow-[1px_1px_0px_#18181b] font-black">
+                Agent: {selectedServer.agentVersion}
+              </span>
+            </div>
+          </div>
+
+          {/* Telemetry Resource Gauges */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* CPU Gauge */}
+            <div className="p-4 sm:p-5 rounded-xl bg-[#FAF7EE] border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] space-y-2.5">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="font-black text-slate-950 flex items-center gap-1.5">
+                  <Cpu className="w-4 h-4 text-emerald-700 stroke-[2.5]" /> CPU Core Utilization
+                </span>
+                <span className="font-black text-emerald-800 bg-white px-2 py-0.5 rounded border border-slate-900 shadow-[1px_1px_0px_#18181b] text-[11px]">
+                  {selectedServer.cpuUsage}%
+                </span>
+              </div>
+              <div className="w-full bg-white h-3 rounded-full overflow-hidden border border-slate-900 shadow-inner">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${selectedServer.cpuUsage}%` }}
+                  transition={{ duration: 0.8 }}
+                  className="bg-emerald-500 h-full rounded-full"
+                />
+              </div>
+              <p className="text-[11px] text-slate-600 font-mono font-semibold">Kernel 6.8 • 8 vCPUs Dedicated</p>
+            </div>
+
+            {/* RAM Gauge */}
+            <div className="p-4 sm:p-5 rounded-xl bg-[#FAF7EE] border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] space-y-2.5">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="font-black text-slate-950 flex items-center gap-1.5">
+                  <Activity className="w-4 h-4 text-blue-700 stroke-[2.5]" /> RAM Memory Allocation
+                </span>
+                <span className="font-black text-blue-800 bg-white px-2 py-0.5 rounded border border-slate-900 shadow-[1px_1px_0px_#18181b] text-[11px]">
+                  {selectedServer.ramUsage}%
+                </span>
+              </div>
+              <div className="w-full bg-white h-3 rounded-full overflow-hidden border border-slate-900 shadow-inner">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${selectedServer.ramUsage}%` }}
+                  transition={{ duration: 0.8 }}
+                  className="bg-blue-500 h-full rounded-full"
+                />
+              </div>
+              <p className="text-[11px] text-slate-600 font-mono font-semibold">{(selectedServer.ramUsage / 100 * 7.75).toFixed(1)} GB Used / 7.75 GB Total</p>
+            </div>
+
+            {/* NVMe Gauge */}
+            <div className="p-4 sm:p-5 rounded-xl bg-[#FAF7EE] border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] space-y-2.5">
+              <div className="flex items-center justify-between text-xs font-mono">
+                <span className="font-black text-slate-950 flex items-center gap-1.5">
+                  <HardDrive className="w-4 h-4 text-purple-700 stroke-[2.5]" /> NVMe Storage Volume
+                </span>
+                <span className="font-black text-purple-800 bg-white px-2 py-0.5 rounded border border-slate-900 shadow-[1px_1px_0px_#18181b] text-[11px]">
+                  {selectedServer.diskUsage}%
+                </span>
+              </div>
+              <div className="w-full bg-white h-3 rounded-full overflow-hidden border border-slate-900 shadow-inner">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${selectedServer.diskUsage}%` }}
+                  transition={{ duration: 0.8 }}
+                  className="bg-purple-500 h-full rounded-full"
+                />
+              </div>
+              <p className="text-[11px] text-slate-600 font-mono font-semibold">192 GB Used / 400 GB NVMe</p>
+            </div>
+          </div>
+
+          {/* Managed Services Status */}
+          <div className="space-y-3.5">
+            <h3 className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider flex items-center gap-2 pb-2 border-b-2 border-slate-900/10">
+              <ShieldCheck className="w-4 h-4 text-emerald-700 stroke-[2.5]" />
+              <span>Systemd Services Monitored by Agent ({selectedServer.services.length})</span>
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {selectedServer.services.map((svc) => (
+                <div
+                  key={svc.name}
+                  className="p-3.5 bg-[#FAF7EE] rounded-xl border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#18181b] text-xs space-y-2 transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono font-black text-slate-950 truncate">{svc.name}</span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-white text-emerald-800 border border-slate-900 text-[11px] font-mono font-black shrink-0 shadow-[1px_1px_0px_#18181b]">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600 stroke-[2.5]" />
+                      <span>Running</span>
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[11px] text-slate-600 font-mono font-semibold pt-2 border-t border-slate-900/10">
+                    <span>{svc.port ? `Port: ${svc.port}` : "Daemon Process"}</span>
+                    <span className="font-bold text-slate-950">{svc.memoryMb} MB RSS</span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
       ) : (
-        <div className="bg-white rounded-2xl border border-dashed border-slate-300 shadow-sm p-6 text-sm text-slate-500 font-mono">
+        <div className="bg-white rounded-2xl border-2 border-dashed border-slate-900/30 shadow-[2px_2px_0px_#18181b] p-6 text-sm text-slate-600 font-mono">
           Belum ada server terpilih — telemetri dari workstation-agent akan tampil di sini.
         </div>
       )}

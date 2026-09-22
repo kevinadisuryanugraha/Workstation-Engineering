@@ -119,38 +119,38 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
   return (
     <div className="space-y-6 pb-12">
       {/* Top Banner */}
-      <KokonutCard variant="default" className="p-5" interactive={false}>
+      <KokonutCard variant="default" className="p-4 sm:p-5" interactive={false}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <Badge variant="success" size="sm" dot>
-                Git Intelligence & Evidence Trace
+                Git Intelligence &amp; Evidence Trace
               </Badge>
               <span className="text-xs text-slate-600 font-mono font-bold">Repo: {project.repoName}</span>
             </div>
             <h1 className="text-lg sm:text-xl font-mono font-black text-slate-950 tracking-tight">
-              Cryptographic Code Evidence & Multi-Provider Git
+              Cryptographic Code Evidence &amp; Multi-Provider Git
             </h1>
             <p className="text-xs text-slate-600 font-mono mt-0.5">
               Commits represent engineering evidence. Dukungan multi-provider: GitHub, GitLab, Bitbucket.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+          <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-start md:justify-end">
             {canRegisterRepo && (
               <button
                 onClick={() => {
                   setShowRegisterForm(!showRegisterForm);
                   setRegisteredSuccessInfo(null);
                 }}
-                className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold border-2 border-slate-900 bg-[#dcfce7] hover:bg-emerald-200 text-slate-950 shadow-[2px_2px_0px_#18181b] flex items-center gap-1.5 cursor-pointer transition-colors shrink-0"
+                className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold border-2 border-slate-900 bg-[#dcfce7] hover:bg-emerald-200 text-slate-950 shadow-[2px_2px_0px_#18181b] flex items-center gap-1.5 cursor-pointer transition-colors shrink-0 active:translate-x-0.5 active:translate-y-0.5"
               >
                 <Plus className="w-3.5 h-3.5" />
                 <span>{showRegisterForm ? "Tutup Form" : "Tambah Repositori"}</span>
               </button>
             )}
 
-            <div className="flex items-center flex-nowrap shrink-0 overflow-x-auto bg-white p-1 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
+            <div className="flex items-center flex-nowrap overflow-x-auto max-w-full bg-white p-1 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
               {(["commits", "prs", "branches", "repos"] as const).map((tabKey) => {
                 const label =
                   tabKey === "commits"
@@ -166,7 +166,7 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
                     key={tabKey}
                     onClick={() => setActiveTab(tabKey)}
                     className={cn(
-                      "relative px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-colors outline-none cursor-pointer whitespace-nowrap",
+                      "relative px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-colors outline-none cursor-pointer whitespace-nowrap",
                       isActive ? "text-slate-950" : "text-slate-600 hover:text-slate-950"
                     )}
                   >
@@ -349,33 +349,33 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
       )}
 
       {activeTab === "commits" && (
-        <KokonutCard variant="default" className="p-0 overflow-hidden" interactive={false}>
-          <div className="p-4 border-b border-slate-900/20 flex items-center justify-between">
+        <KokonutCard variant="default" className="p-0 overflow-hidden rounded-2xl border-2 border-slate-900 shadow-[3px_3px_0px_#18181b]" interactive={false}>
+          <div className="p-4 border-b-2 border-slate-900 flex items-center justify-between bg-[#FAF7EE] flex-wrap gap-2">
             <span className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider">
-              Verified Inbound Commits
+              Verified Inbound Commits ({commits.length})
             </span>
-            <Badge variant="success" size="sm">
+            <Badge variant="success" size="sm" dot>
               Webhook: 100% Signature Verified
             </Badge>
           </div>
 
-          <div className="divide-y divide-slate-900/10">
+          <div className="divide-y-2 divide-slate-900/10">
             {commits.map((c) => (
               <motion.div
                 key={c.sha}
                 whileHover={{ x: 2 }}
-                className="p-4 hover:bg-slate-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white"
+                className="p-3.5 sm:p-4 hover:bg-slate-50 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white"
               >
-                <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-xl bg-[#FAF7EE] text-slate-950 font-mono text-xs font-bold shrink-0 border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#18181b]">
+                <div className="flex items-start gap-3 min-w-0 flex-1">
+                  <div className="p-2 rounded-xl bg-[#FAF7EE] text-slate-950 font-mono text-xs font-black shrink-0 border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#18181b]">
                     {c.sha.slice(0, 7)}
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <h3 className="text-xs font-mono font-bold text-slate-950 leading-snug">{c.message}</h3>
+                      <h3 className="text-xs font-mono font-bold text-slate-950 leading-snug break-words">{c.message}</h3>
                       {renderProviderBadge(c.provider)}
                     </div>
-                    <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-600 mt-1 font-mono font-semibold">
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600 mt-1.5 font-mono font-semibold">
                       <span>Author: <strong className="text-slate-950">{c.author}</strong></span>
                       <span>•</span>
                       <span>Branch: <span className="text-teal-800 font-bold">{c.branch}</span></span>
@@ -388,7 +388,7 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-2 shrink-0 flex-wrap">
                   {c.linkedItemCodes.map((code) => (
                     <Badge key={code} variant="secondary" size="sm">
                       {code}
@@ -405,33 +405,33 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
       )}
 
       {activeTab === "prs" && (
-        <KokonutCard variant="default" className="p-0 overflow-hidden" interactive={false}>
-          <div className="p-4 border-b border-slate-900/20 flex items-center justify-between">
+        <KokonutCard variant="default" className="p-0 overflow-hidden rounded-2xl border-2 border-slate-900 shadow-[3px_3px_0px_#18181b]" interactive={false}>
+          <div className="p-4 border-b-2 border-slate-900 flex items-center justify-between bg-[#FAF7EE] flex-wrap gap-2">
             <span className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider">
-              Pull Request Governance & Review Signoffs
+              Pull Request Governance &amp; Review Signoffs ({pullRequests.length})
             </span>
             <span className="text-xs text-slate-600 font-mono font-bold">Peer-review enforcement active</span>
           </div>
-          <div className="divide-y divide-slate-900/10">
+          <div className="divide-y-2 divide-slate-900/10">
             {pullRequests.map((pr) => (
               <motion.div
                 key={pr.id}
                 whileHover={{ x: 2 }}
-                className="p-4 hover:bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white"
+                className="p-3.5 sm:p-4 hover:bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white"
               >
-                <div className="space-y-1">
+                <div className="space-y-1 min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-md bg-[#f3e8ff] text-purple-950 border border-slate-900">
+                    <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-md bg-[#f3e8ff] text-purple-950 border border-slate-900 shadow-[1px_1px_0px_#18181b]">
                       PR #{pr.id}
                     </span>
-                    <h3 className="text-xs font-mono font-bold text-slate-950">{pr.title}</h3>
+                    <h3 className="text-xs font-mono font-bold text-slate-950 break-words">{pr.title}</h3>
                     {renderProviderBadge(pr.provider)}
                     <Badge variant={pr.status === "MERGED" ? "purple" : "success"} size="sm">
                       {pr.status}
                     </Badge>
                   </div>
-                  <div className="flex items-center gap-3 text-[11px] text-slate-600 font-mono font-semibold">
-                    <span>{pr.sourceBranch} ──► {pr.targetBranch}</span>
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-slate-600 font-mono font-semibold mt-1">
+                    <span className="break-all sm:break-normal">{pr.sourceBranch} ──► {pr.targetBranch}</span>
                     <span>•</span>
                     <span>Author: {pr.author}</span>
                     <span>•</span>
@@ -439,8 +439,8 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 shrink-0">
-                  <div className="text-right text-[11px] text-slate-600 font-mono font-semibold">
+                <div className="flex items-center gap-3 shrink-0 flex-wrap">
+                  <div className="text-left sm:text-right text-[11px] text-slate-600 font-mono font-semibold">
                     <span className="block font-bold text-slate-950">Reviews:</span>
                     {pr.reviewers.map((r) => (
                       <span key={r.name} className="mr-2 text-[10px] text-emerald-700 font-bold">
@@ -459,17 +459,17 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
       )}
 
       {activeTab === "branches" && (
-        <KokonutCard variant="default" className="p-0 overflow-hidden" interactive={false}>
-          <div className="p-4 border-b border-slate-900/20">
+        <KokonutCard variant="default" className="p-0 overflow-hidden rounded-2xl border-2 border-slate-900 shadow-[3px_3px_0px_#18181b]" interactive={false}>
+          <div className="p-4 border-b-2 border-slate-900 bg-[#FAF7EE]">
             <span className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider">
-              Tracked Repository Branches & Environment Mappings
+              Tracked Repository Branches &amp; Environment Mappings ({branches.length})
             </span>
           </div>
-          <div className="divide-y divide-slate-900/10">
+          <div className="divide-y-2 divide-slate-900/10">
             {branches.map((b) => (
-              <div key={b.name} className="p-4 hover:bg-slate-50 flex items-center justify-between bg-white">
-                <div>
-                  <div className="flex items-center gap-2">
+              <div key={b.name} className="p-3.5 sm:p-4 hover:bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <GitBranch className="w-3.5 h-3.5 text-teal-800 stroke-[2.5]" />
                     <span className="text-xs font-bold font-mono text-slate-950">{b.name}</span>
                     {b.isProtected && (
@@ -478,12 +478,12 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
                       </Badge>
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-600 font-mono mt-0.5 font-semibold">
+                  <p className="text-[11px] text-slate-600 font-mono mt-1 font-semibold">
                     Last commit {b.lastCommit} by {b.author}
                   </p>
                 </div>
 
-                <div className="text-right">
+                <div className="text-left sm:text-right shrink-0">
                   <span className="text-xs font-mono text-slate-950 font-bold">{b.env || "Feature branch"}</span>
                   <div className="text-[10px] text-slate-600 font-mono font-semibold">
                     Ahead: {b.ahead} • Behind: {b.behind}

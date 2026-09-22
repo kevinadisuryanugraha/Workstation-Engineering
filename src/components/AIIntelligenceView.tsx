@@ -118,12 +118,12 @@ public function exportDailyReceipts(Request $request) {
   return (
     <div className="space-y-6 pb-12">
       {/* Top Banner */}
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm p-5 sm:p-6">
+      <div className="bg-white rounded-2xl border-2 border-slate-900 shadow-[3px_3px_0px_#18181b] p-4 sm:p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-2 mb-1.5 flex-wrap">
               <Badge variant="purple" size="sm" dot>
-                AI Codebase Intelligence & AST Scanner
+                AI Codebase Intelligence &amp; AST Scanner
               </Badge>
               {/* Story 21.2 (AC #1): badge mode hasil scan terakhir — jujur per mode, guard unknown */}
               {scanMode && (() => {
@@ -136,16 +136,17 @@ public function exportDailyReceipts(Request $request) {
               })()}
               {/* Story 21.2 (AC #3): model aktual hasil scan terakhir */}
               {scanModel && (
-                <span className="text-xs text-slate-500 font-mono font-semibold" data-testid="scan-model">
+                <span className="text-xs text-slate-600 font-mono font-bold" data-testid="scan-model">
                   Model: {scanModel}
                 </span>
               )}
-              <span className="text-xs text-slate-500 font-mono font-semibold">Project: {project.name}</span>
+              <span className="text-xs text-slate-600 font-mono font-bold">Project: [{project.key}] {project.name}</span>
             </div>
-            <h1 className="text-lg sm:text-xl font-mono font-black text-slate-900 tracking-tight">
-              Automated Architecture, Security & Performance Advisory
+            <h1 className="text-lg sm:text-xl font-mono font-black text-slate-950 tracking-tight flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-indigo-600 stroke-[2.5]" />
+              Automated Architecture, Security &amp; Performance Advisory
             </h1>
-            <p className="text-xs text-slate-600 font-sans mt-1 leading-relaxed">
+            <p className="text-xs text-slate-600 font-mono mt-1 font-semibold leading-relaxed max-w-2xl">
               Principle: AI serves as a continuous risk detector and advisory engine. Humans retain authority and final sign-off.
             </p>
           </div>
@@ -155,9 +156,9 @@ public function exportDailyReceipts(Request $request) {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => setShowScanModal(true)}
-              className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-xs font-mono font-bold text-white shadow-xs flex items-center gap-2 transition-all cursor-pointer"
+              className="px-4 py-2.5 rounded-xl bg-[#2ec4b6] hover:bg-[#28ad9f] text-xs font-mono font-black text-slate-950 border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] flex items-center gap-2 transition-all cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
             >
-              <Sparkles className="w-4 h-4 text-teal-200" />
+              <Sparkles className="w-4 h-4 text-slate-950 stroke-[2.5]" />
               <span>Run New AI Code Scan</span>
             </motion.button>
           </div>
@@ -165,7 +166,7 @@ public function exportDailyReceipts(Request $request) {
       </div>
 
       {/* Tabs selector */}
-      <div className="flex items-center flex-nowrap shrink-0 overflow-x-auto bg-slate-100/80 p-1 rounded-xl border border-slate-200/80 w-full sm:w-fit gap-1">
+      <div className="flex items-center flex-nowrap shrink-0 overflow-x-auto bg-white p-1 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] w-full sm:w-fit gap-1">
         {[
           { key: "findings", label: `AI Findings (${findings.length})` },
           { key: "recommendations", label: `AI Recommendations (${recommendations.length})` },
@@ -177,10 +178,10 @@ public function exportDailyReceipts(Request $request) {
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
               className={cn(
-                "relative px-4 py-2 rounded-lg text-xs font-mono font-bold transition-all outline-none cursor-pointer whitespace-nowrap",
+                "relative px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold transition-all outline-none cursor-pointer whitespace-nowrap",
                 isActive
-                  ? "bg-white text-slate-900 shadow-xs border border-slate-200/60"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                  ? "bg-[#FAF7EE] text-slate-950 border-2 border-slate-900 shadow-[1px_1px_0px_#18181b]"
+                  : "text-slate-600 hover:text-slate-950 hover:bg-slate-50 border-2 border-transparent"
               )}
             >
               <span className="relative z-10">{tab.label}</span>
@@ -605,46 +606,46 @@ public function exportDailyReceipts(Request $request) {
       {/* Code Scan Modal */}
       <AnimatePresence>
         {showScanModal && (
-          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-white border border-slate-200 rounded-2xl max-w-xl w-full p-6 shadow-xl space-y-4 relative"
+              className="bg-white border-2 border-slate-900 rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 shadow-[4px_4px_0px_#18181b] space-y-4 relative"
             >
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                <h2 className="text-base font-mono font-bold text-slate-900 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-teal-600" />
+              <div className="flex items-center justify-between pb-3 border-b-2 border-slate-900/10">
+                <h2 className="text-base font-mono font-black text-slate-950 flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-indigo-600 stroke-[2.5]" />
                   <span>Trigger AI Codebase Scan (Gemini Flash)</span>
                 </h2>
                 <button
                   onClick={() => setShowScanModal(false)}
-                  className="p-1 rounded-lg text-slate-600 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                  className="p-1.5 rounded-lg border-2 border-slate-900 bg-[#FAF7EE] text-slate-950 hover:bg-slate-100 transition-colors cursor-pointer shadow-[1px_1px_0px_#18181b]"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
 
-              <p className="text-xs text-slate-600 leading-relaxed font-sans">
+              <p className="text-xs text-slate-600 leading-relaxed font-mono font-semibold">
                 Submit code or architectural context to scan for N+1 queries, HMAC security leaks, missing test assertions, and technical debt.
               </p>
 
               <div>
-                <label className="block text-xs font-mono font-bold text-slate-700 mb-1.5">Code / Controller Snippet</label>
+                <label className="block text-xs font-mono font-bold text-slate-950 mb-1.5">Code / Controller Snippet</label>
                 <textarea
                   rows={8}
                   value={scanSnippet}
                   onChange={(e) => setScanSnippet(e.target.value)}
-                  className="w-full bg-slate-50 font-mono text-xs text-slate-900 p-3.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500 font-mono leading-relaxed"
+                  className="w-full bg-[#FAF7EE] font-mono text-xs text-slate-950 p-3.5 rounded-xl border-2 border-slate-900 focus:outline-none shadow-[2px_2px_0px_#18181b] font-mono leading-relaxed"
                   aria-label="Snippet kode untuk dipindai AI"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-3 border-t-2 border-slate-900/10">
                 <button
                   type="button"
                   onClick={() => setShowScanModal(false)}
-                  className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-mono font-bold transition-colors cursor-pointer"
+                  className="px-4 py-2 rounded-xl bg-white border-2 border-slate-900 text-slate-950 text-xs font-mono font-bold hover:bg-slate-50 transition-colors cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -652,7 +653,7 @@ public function exportDailyReceipts(Request $request) {
                   type="button"
                   onClick={handleTriggerScan}
                   disabled={isScanning}
-                  className="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-mono font-bold flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-colors shadow-xs"
+                  className="px-4 py-2 rounded-xl bg-[#2ec4b6] hover:bg-[#28ad9f] text-slate-950 text-xs font-mono font-black border-2 border-slate-900 flex items-center gap-2 cursor-pointer disabled:opacity-50 transition-all shadow-[2px_2px_0px_#18181b] active:translate-x-0.5 active:translate-y-0.5"
                 >
                   <Sparkles className={`w-3.5 h-3.5 ${isScanning ? "animate-spin" : ""}`} />
                   <span>{isScanning ? "Scanning with Gemini..." : "Execute Scan"}</span>

@@ -209,24 +209,25 @@ ${blockers.length > 0
   return (
     <div className="space-y-6 pb-12">
       {/* Top Banner Card */}
-      <div className="p-6 bg-white rounded-xl border border-slate-200/80 shadow-sm">
+      <div className="p-4 sm:p-6 bg-white rounded-2xl border-2 border-slate-900 shadow-[3px_3px_0px_#18181b]">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
           <div>
-            <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
               <Badge variant="cyan" size="sm" dot>
                 Automated Intelligence Reporting
               </Badge>
-              <span className="text-xs text-slate-500 font-mono font-bold">
-                Project: {project.name} ({project.key})
+              <span className="text-xs text-slate-600 font-mono font-bold">
+                Project: [{project.key}] {project.name}
               </span>
-              <span className="text-xs text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-mono font-bold border border-emerald-200">
+              <span className="text-xs text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded font-mono font-black border border-slate-900 shadow-[1px_1px_0px_#18181b]">
                 Health: {project.health}/100
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-mono font-black text-slate-900 tracking-tight">
-              Daily, Weekly & Monthly Reports
+            <h1 className="text-xl sm:text-2xl font-mono font-black text-slate-950 tracking-tight flex items-center gap-2">
+              <FileText className="w-6 h-6 text-indigo-600 stroke-[2.5]" />
+              Daily, Weekly &amp; Monthly Reports
             </h1>
-            <p className="text-xs sm:text-sm text-slate-600 font-sans mt-1 max-w-3xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 font-mono font-semibold mt-1 max-w-3xl leading-relaxed">
               Transforming raw technical developer evidence (Git commits, CI assertions, server logs) into clear, high-impact executive summaries for stakeholders.
             </p>
           </div>
@@ -237,7 +238,7 @@ ${blockers.length > 0
               whileTap={{ scale: 0.98 }}
               onClick={handleGenerateAISummary}
               disabled={isGeneratingAISummary}
-              className="px-4 py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-xs font-mono font-bold text-white shadow-sm flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+              className="px-3.5 sm:px-4 py-2 rounded-xl bg-[#2ec4b6] hover:bg-[#28ad9f] text-xs font-mono font-black text-slate-950 border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50 active:translate-x-0.5 active:translate-y-0.5"
             >
               <Sparkles className={cn("w-4 h-4", isGeneratingAISummary && "animate-spin")} />
               <span>{isGeneratingAISummary ? "Synthesizing..." : "Refresh AI Summary"}</span>
@@ -247,7 +248,7 @@ ${blockers.length > 0
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={() => handleCopyReport("markdown")}
-              className="px-3.5 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-xs font-mono font-bold text-slate-700 border border-slate-200 shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3 sm:px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-mono font-bold text-slate-950 border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] flex items-center gap-1.5 transition-colors cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
             >
               {copiedState === "markdown" ? (
                 <>
@@ -266,7 +267,7 @@ ${blockers.length > 0
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handlePrint}
-              className="px-3.5 py-2.5 rounded-lg bg-white hover:bg-slate-50 text-xs font-mono font-bold text-slate-700 border border-slate-200 shadow-sm flex items-center gap-1.5 transition-colors cursor-pointer"
+              className="px-3 sm:px-3.5 py-2 rounded-xl bg-white hover:bg-slate-50 text-xs font-mono font-bold text-slate-950 border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] flex items-center gap-1.5 transition-colors cursor-pointer active:translate-x-0.5 active:translate-y-0.5"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print / PDF</span>
@@ -276,8 +277,8 @@ ${blockers.length > 0
       </div>
 
       {/* Cadence Selectors & Tone Controls */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white border border-slate-200/90 p-3.5 sm:p-4 rounded-xl shadow-sm">
-        <div className="flex items-center overflow-x-auto gap-1 bg-slate-100/80 p-1 rounded-xl w-full lg:w-fit shrink-0">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white border-2 border-slate-900 p-3.5 sm:p-4 rounded-2xl shadow-[2px_2px_0px_#18181b]">
+        <div className="flex items-center overflow-x-auto gap-1 bg-[#FAF7EE] p-1 rounded-xl border-2 border-slate-900 w-full lg:w-fit shrink-0">
           {[
             { key: "daily", label: "Daily Engineering Log" },
             { key: "weekly", label: "Weekly Sprint Summary" },
@@ -292,10 +293,10 @@ ${blockers.length > 0
                   setCustomAISummary(null);
                 }}
                 className={cn(
-                  "px-3.5 py-2 rounded-lg text-xs font-mono font-bold transition-all outline-none cursor-pointer whitespace-nowrap",
+                  "px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all outline-none cursor-pointer whitespace-nowrap",
                   isActive
-                    ? "bg-white text-slate-900 shadow-xs border border-slate-200/60"
-                    : "text-slate-600 hover:text-slate-900 hover:bg-white/50"
+                    ? "bg-white text-slate-950 border-2 border-slate-900 shadow-[1px_1px_0px_#18181b]"
+                    : "text-slate-600 hover:text-slate-950 hover:bg-white/50 border-2 border-transparent"
                 )}
               >
                 {item.label}
@@ -305,17 +306,17 @@ ${blockers.length > 0
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-2 text-xs text-slate-600 font-mono">
-            <span className="font-semibold text-slate-500">Tone:</span>
+          <div className="flex items-center gap-2 text-xs text-slate-700 font-mono">
+            <span className="font-bold text-slate-600">Tone:</span>
             <select
               value={summaryTone}
               onChange={(e) => {
                 setSummaryTone(e.target.value as any);
                 setCustomAISummary(null);
               }}
-              className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-800 outline-none cursor-pointer hover:border-slate-300 focus:ring-1 focus:ring-slate-300"
-                  aria-label="Tone ringkasan laporan"
-                >
+              className="bg-[#FAF7EE] border-2 border-slate-900 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-950 outline-none cursor-pointer shadow-[1px_1px_0px_#18181b]"
+              aria-label="Tone ringkasan laporan"
+            >
               <option value="executive_id">Executive (Bahasa Indonesia)</option>
               <option value="executive_en">Executive (English)</option>
               <option value="technical">Engineering Deep-Dive</option>
@@ -327,16 +328,16 @@ ${blockers.length > 0
             whileTap={{ scale: 0.98 }}
             onClick={onToggleView}
             className={cn(
-              "px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold border transition-all flex items-center gap-1.5 cursor-pointer shadow-xs",
+              "px-3 py-1.5 rounded-lg text-xs font-mono font-bold border-2 border-slate-900 transition-all flex items-center gap-1.5 cursor-pointer shadow-[1.5px_1.5px_0px_#18181b]",
               isManagementView
-                ? "bg-blue-50 text-blue-900 border-blue-200 hover:bg-blue-100/70"
-                : "bg-emerald-50 text-emerald-900 border-emerald-200 hover:bg-emerald-100/70"
+                ? "bg-blue-50 text-blue-950 hover:bg-blue-100"
+                : "bg-emerald-50 text-emerald-950 hover:bg-emerald-100"
             )}
           >
             {isManagementView ? (
-              <Briefcase className="w-3.5 h-3.5 text-blue-700" />
+              <Briefcase className="w-3.5 h-3.5 text-blue-700 stroke-[2.5]" />
             ) : (
-              <Terminal className="w-3.5 h-3.5 text-emerald-700" />
+              <Terminal className="w-3.5 h-3.5 text-emerald-700 stroke-[2.5]" />
             )}
             <span>{isManagementView ? "Management View" : "Engineering View"}</span>
           </motion.button>
@@ -344,26 +345,26 @@ ${blockers.length > 0
       </div>
 
       {/* Main Report Document Sheet */}
-      <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm p-6 sm:p-8 space-y-7">
+      <div className="bg-white rounded-2xl border-2 border-slate-900 shadow-[3px_3px_0px_#18181b] p-4 sm:p-8 space-y-7">
         {/* Document Header */}
-        <div className="border-b border-slate-100 pb-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-500 mb-2.5 font-mono font-medium gap-2">
+        <div className="border-b-2 border-slate-900/10 pb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between text-xs text-slate-600 mb-2.5 font-mono font-bold gap-2">
             <span className="flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-emerald-600" />
+              <FileText className="w-3.5 h-3.5 text-emerald-600 stroke-[2.5]" />
               WORKSTATION REPORT SYSTEM • V1.0 • TELEMETRY-VERIFIED
             </span>
             <span>
               DATE: {new Date().toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }).toUpperCase()}
             </span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-mono font-black text-slate-900 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-mono font-black text-slate-950 tracking-tight">
             {reportType === "daily"
               ? `Daily Engineering Progress & Operations Report — ${project.name}`
               : reportType === "weekly"
               ? `Weekly Sprint Performance & Quality Review — ${project.name}`
               : `Monthly Portfolio Delivery & Technical Debt Audit — ${project.name}`}
           </h2>
-          <div className="flex items-center gap-4 text-xs text-slate-500 mt-2 font-mono flex-wrap">
+          <div className="flex items-center gap-4 text-xs text-slate-600 mt-2 font-mono font-semibold flex-wrap">
             <span>Project: <strong>{project.name}</strong></span>
             <span>Sprint: <strong>{project.currentSprint}</strong></span>
             <span>Release: <strong>{latestDeployment?.version || project.latestRelease || "v1.4.2"}</strong></span>
@@ -372,28 +373,28 @@ ${blockers.length > 0
         </div>
 
         {/* 1. Executive Management Summary (AI Translation Layer) */}
-        <div className="p-5 rounded-xl bg-blue-50/60 border border-blue-200/80 text-xs">
-          <div className="flex items-center justify-between mb-2.5">
-            <div className="flex items-center gap-2 text-blue-950 font-mono font-bold text-sm">
-              <div className="p-1 rounded bg-blue-600 text-white">
-                <Sparkles className="w-3.5 h-3.5" />
+        <div className="p-4 sm:p-5 rounded-xl bg-blue-50 border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] text-xs">
+          <div className="flex items-center justify-between mb-2.5 flex-wrap gap-2">
+            <div className="flex items-center gap-2 text-blue-950 font-mono font-black text-sm">
+              <div className="p-1 rounded bg-blue-600 text-white border border-slate-900">
+                <Sparkles className="w-3.5 h-3.5 stroke-[2.5]" />
               </div>
               <span>Executive Management Summary (AI Translation Layer)</span>
             </div>
-            <span className="text-[11px] font-mono text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded font-bold">
+            <span className="text-[11px] font-mono text-blue-900 bg-white px-2 py-0.5 rounded border border-slate-900 font-bold shadow-[1px_1px_0px_#18181b]">
               Gemini Translation Model • Verified
             </span>
           </div>
-          <p className="text-slate-800 text-sm leading-relaxed font-sans font-normal">
+          <p className="text-slate-900 text-sm leading-relaxed font-mono font-bold">
             {customAISummary || getDefaultAISummary()}
           </p>
         </div>
 
         {/* 2. Dual-Language Showcase: Technical Evidence vs Business Value */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-mono font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <Layers className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <h3 className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider flex items-center gap-2">
+              <Layers className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
               Dual-Language Showcase: Technical Evidence vs Business Value
             </h3>
             <Badge variant="secondary" size="sm">
@@ -403,37 +404,37 @@ ${blockers.length > 0
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             {/* Technical Explanation Column */}
-            <div className="p-4.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-900 flex items-center gap-1.5 font-mono text-xs">
-                  <Terminal className="w-3.5 h-3.5 text-emerald-600" /> Technical Explanation (For Developers & Leads)
+            <div className="p-4 sm:p-5 bg-[#FAF7EE] rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] space-y-2.5">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="font-black text-slate-950 flex items-center gap-1.5 font-mono text-xs">
+                  <Terminal className="w-4 h-4 text-emerald-700 stroke-[2.5]" /> Technical Explanation (For Developers &amp; Leads)
                 </span>
-                <span className="text-[10px] font-mono font-bold text-emerald-700 bg-emerald-100/70 px-1.5 py-0.5 rounded">
-                  RAW AST & CI
+                <span className="text-[10px] font-mono font-black text-emerald-900 bg-white border border-slate-900 shadow-[1px_1px_0px_#18181b] px-1.5 py-0.5 rounded">
+                  RAW AST &amp; CI
                 </span>
               </div>
-              <div className="p-3 bg-slate-900 rounded-lg text-emerald-400 font-mono text-xs leading-relaxed">
+              <div className="p-3 bg-slate-950 rounded-xl text-emerald-400 font-mono text-xs leading-relaxed border-2 border-slate-900 shadow-[1px_1px_0px_#18181b]">
                 "{showcase.techDetail}"
               </div>
-              <p className="text-[11px] text-slate-500 font-mono">
+              <p className="text-[11px] text-slate-600 font-mono font-bold">
                 Verified: {showcase.techMeta}
               </p>
             </div>
 
             {/* Management Explanation Column */}
-            <div className="p-4.5 bg-blue-50/40 rounded-xl border border-blue-200/70 space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="font-bold text-blue-950 flex items-center gap-1.5 font-mono text-xs">
-                  <Briefcase className="w-3.5 h-3.5 text-blue-700" /> Management Explanation (For Managers & Executives)
+            <div className="p-4 sm:p-5 bg-blue-50/50 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] space-y-2.5">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="font-black text-blue-950 flex items-center gap-1.5 font-mono text-xs">
+                  <Briefcase className="w-4 h-4 text-blue-700 stroke-[2.5]" /> Management Explanation (For Managers &amp; Executives)
                 </span>
-                <span className="text-[10px] font-mono font-bold text-blue-700 bg-blue-100/70 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] font-mono font-black text-blue-950 bg-white border border-slate-900 shadow-[1px_1px_0px_#18181b] px-1.5 py-0.5 rounded">
                   BUSINESS IMPACT
                 </span>
               </div>
-              <div className="p-3 bg-white rounded-lg border border-blue-100 text-slate-800 text-xs leading-relaxed font-sans font-medium">
+              <div className="p-3 bg-white rounded-xl border-2 border-slate-900 text-slate-950 text-xs leading-relaxed font-mono font-bold shadow-[1px_1px_0px_#18181b]">
                 "{showcase.mgmtDetail}"
               </div>
-              <p className="text-[11px] text-blue-900 font-sans font-semibold">
+              <p className="text-[11px] text-blue-950 font-mono font-bold">
                 Dampak Bisnis: {showcase.mgmtBenefit}
               </p>
             </div>

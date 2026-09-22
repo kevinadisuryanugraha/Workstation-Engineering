@@ -30,7 +30,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
   return (
     <nav
       aria-label="Mobile Navigation"
-      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FAF7EE] border-t-2 border-slate-900 px-2 py-1.5 flex items-center justify-around shadow-[0px_-2px_0px_#18181b] select-none"
+      className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#FAF7EE] border-t-2 border-slate-900 px-2 pt-1.5 pb-[calc(0.375rem+env(safe-area-inset-bottom,0px))] flex items-center justify-around shadow-[0px_-3px_0px_#18181b] select-none"
     >
       {quickItems.map((item) => {
         const Icon = item.icon;
@@ -39,7 +39,7 @@ export const MobileBottomBar: React.FC<MobileBottomBarProps> = ({
           <button
             key={item.id}
             onClick={() => onSelectTab(item.id)}
-            className={`relative flex flex-col items-center justify-center min-w-[58px] min-h-[44px] py-1 px-1 rounded-xl transition-all font-mono cursor-pointer border ${
+            className={`relative flex flex-col items-center justify-center min-w-[58px] min-h-[44px] py-1 px-1 rounded-xl transition-all font-mono cursor-pointer border active:translate-x-0.5 active:translate-y-0.5 ${
               isActive
                 ? "bg-[#f6ae2d] text-slate-950 border-slate-900 shadow-[1.5px_1.5px_0px_#18181b] font-bold"
                 : "text-slate-700 hover:text-slate-950 hover:bg-white/70 border-transparent font-medium"

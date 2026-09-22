@@ -949,18 +949,17 @@ export default function App() {
           )}
 
           {activeTab === "project360" && (
-            <SprintPanel projectId={currentProject.id} isAuthenticated={Boolean(session?.user)} />
-          )}
-
-          {activeTab === "project360" && (
-            <Project360View
-              project={activeProject}
-              workItems={projectWorkItems}
-              tickets={projectTickets}
-              deployments={projectDeployments}
-              isManagementView={isManagementView}
-              onNavigateTab={(tab: any) => setActiveTab(tab)}
-            />
+            <div className="space-y-6">
+              <SprintPanel projectId={currentProject.id} isAuthenticated={Boolean(session?.user)} />
+              <Project360View
+                project={activeProject}
+                workItems={projectWorkItems}
+                tickets={projectTickets}
+                deployments={projectDeployments}
+                isManagementView={isManagementView}
+                onNavigateTab={(tab: any) => setActiveTab(tab)}
+              />
+            </div>
           )}
 
           {activeTab === "workitems" && (
@@ -1194,10 +1193,10 @@ function HonestEmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
     <div
       data-testid="honest-empty-state"
-      className="mb-4 rounded-xl border border-dashed border-slate-300 bg-white p-5 text-center"
+      className="mb-5 rounded-xl border-2 border-slate-900 bg-[#FFFDF8] p-4 text-center shadow-[2px_2px_0px_#18181b] font-mono"
     >
-      <p className="text-sm font-semibold text-slate-700">{title}</p>
-      {hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+      <p className="text-xs font-black text-slate-950 uppercase tracking-wider">{title}</p>
+      {hint ? <p className="mt-1 text-[11px] text-slate-600 font-bold">{hint}</p> : null}
     </div>
   );
 }

@@ -78,13 +78,13 @@ export const GlobalSearchModal: React.FC<GlobalSearchModalProps> = ({
   );
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-20 p-4">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-start justify-center pt-6 sm:pt-16 p-2.5 sm:p-4">
       <motion.div
         initial={{ opacity: 0, scale: 0.96, y: -10 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: -10 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        className="bg-white border-2 border-slate-900 rounded-2xl max-w-2xl w-full shadow-[4px_4px_0px_#18181b] overflow-hidden flex flex-col max-h-[80vh] relative"
+        className="bg-white border-2 border-slate-900 rounded-2xl max-w-2xl w-full shadow-[4px_4px_0px_#18181b] overflow-hidden flex flex-col max-h-[85vh] relative"
       >
         {/* Search Input Bar */}
         <div className="p-4 border-b border-slate-900/20 flex items-center gap-3 bg-[#FAF7EE]">

@@ -66,47 +66,47 @@ export const Project360View: React.FC<Project360ViewProps> = ({
   return (
     <div className="space-y-6 pb-12">
       {/* Project Header Card */}
-      <KokonutCard variant="glow" className="p-6 relative overflow-hidden" interactive={false}>
+      <KokonutCard variant="default" className="p-5 sm:p-6 relative overflow-hidden" interactive={false}>
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 relative z-10">
           <div className="space-y-2">
-            <div className="flex items-center gap-2.5">
-              <span className="text-xs font-mono font-bold px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+            <div className="flex items-center gap-2.5 flex-wrap">
+              <span className="text-xs font-mono font-black px-2.5 py-1 rounded-md bg-[#FAF7EE] text-slate-950 border-2 border-slate-900 shadow-xs">
                 {project.key}
               </span>
-              <h1 className="text-xl sm:text-2xl font-bold text-white tracking-tight">{project.name}</h1>
+              <h1 className="text-xl sm:text-2xl font-black text-slate-950 tracking-tight font-mono">{project.name}</h1>
               <Badge variant="secondary" size="sm">
                 {project.status}
               </Badge>
             </div>
-            <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">{project.tagline}</p>
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-600 pt-1 font-mono">
-              <span>Owner: <strong className="text-slate-200">{project.owner}</strong></span>
-              <span className="text-slate-600">•</span>
-              <span>Tech Lead: <strong className="text-slate-200">{project.techLead}</strong></span>
-              <span className="text-slate-600">•</span>
-              <span>Repo: <span className="text-emerald-400 font-semibold">{project.repoName}</span></span>
+            <p className="text-xs sm:text-sm text-slate-700 font-mono max-w-3xl leading-relaxed">{project.tagline}</p>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-700 pt-1 font-mono font-semibold">
+              <span>Owner: <strong className="text-slate-950">{project.owner}</strong></span>
+              <span className="text-slate-400">•</span>
+              <span>Tech Lead: <strong className="text-slate-950">{project.techLead}</strong></span>
+              <span className="text-slate-400">•</span>
+              <span>Repo: <span className="text-emerald-800 font-bold">{project.repoName}</span></span>
             </div>
           </div>
 
-          {/* Quick Stats Block (21st.dev style metrics) */}
-          <div className="flex flex-wrap items-center justify-around gap-3 sm:gap-4 shrink-0 bg-slate-950/80 p-3.5 rounded-xl border border-slate-800 shadow-inner w-full lg:w-auto">
+          {/* Quick Stats Block */}
+          <div className="flex flex-wrap items-center justify-around gap-3 sm:gap-4 shrink-0 bg-[#FAF7EE] p-3.5 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b] w-full lg:w-auto">
             <div className="text-center px-3">
-              <div className="text-2xl sm:text-3xl font-bold font-mono text-emerald-400">
+              <div className="text-2xl sm:text-3xl font-black font-mono text-emerald-700">
                 <AnimatedCounter value={project.progress} suffix="%" />
               </div>
-              <div className="text-[10px] uppercase font-mono font-semibold text-slate-600 mt-0.5">Progress</div>
+              <div className="text-[10px] uppercase font-mono font-bold text-slate-700 mt-0.5">Progress</div>
             </div>
-            <div className="h-8 w-px bg-slate-800" />
+            <div className="h-8 w-0.5 bg-slate-300" />
             <div className="text-center px-3">
-              <div className="text-2xl sm:text-3xl font-bold font-mono text-blue-400">
+              <div className="text-2xl sm:text-3xl font-black font-mono text-blue-700">
                 <AnimatedCounter value={project.health} />
               </div>
-              <div className="text-[10px] uppercase font-mono font-semibold text-slate-600 mt-0.5">Health Index</div>
+              <div className="text-[10px] uppercase font-mono font-bold text-slate-700 mt-0.5">Health Index</div>
             </div>
-            <div className="h-8 w-px bg-slate-800" />
+            <div className="h-8 w-0.5 bg-slate-300" />
             <div className="text-center px-3">
-              <div className="text-xl sm:text-2xl font-bold font-mono text-purple-400">{project.latestRelease}</div>
-              <div className="text-[10px] uppercase font-mono font-semibold text-slate-600 mt-0.5">Release</div>
+              <div className="text-xl sm:text-2xl font-black font-mono text-purple-700">{project.latestRelease}</div>
+              <div className="text-[10px] uppercase font-mono font-bold text-slate-700 mt-0.5">Release</div>
             </div>
           </div>
         </div>
@@ -114,22 +114,22 @@ export const Project360View: React.FC<Project360ViewProps> = ({
 
       {/* Mathematical Progress Derivation Engine (PRD Section 14 & 32) */}
       <KokonutCard variant="default" className="p-5" interactive={false}>
-        <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-slate-900/15">
           <div>
-            <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center gap-2">
-              <FileCheck className="w-4 h-4 text-emerald-400" />
+            <h2 className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider flex items-center gap-2">
+              <FileCheck className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
               Explainable Progress Calculation Engine
             </h2>
-            <p className="text-[11px] text-slate-600 mt-0.5">
+            <p className="text-[11px] text-slate-600 mt-0.5 font-semibold">
               Prinsip mutlak: Progress bukan angka subjektif yang diinput manual. Dihitung langsung dari evidence deliverable.
             </p>
           </div>
           <button
             onClick={() => setShowFormulaDetails(!showFormulaDetails)}
-            className="text-xs text-emerald-400 hover:text-emerald-300 font-mono font-medium flex items-center gap-1 transition-colors"
+            className="text-xs text-emerald-800 hover:text-emerald-950 font-mono font-bold flex items-center gap-1 transition-colors cursor-pointer"
           >
             <span>{showFormulaDetails ? "Hide Formula" : "Inspect Formula"}</span>
-            <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showFormulaDetails ? "rotate-180" : ""}`} />
+            <ChevronDown className={`w-3.5 h-3.5 stroke-[2.5] transition-transform ${showFormulaDetails ? "rotate-180" : ""}`} />
           </button>
         </div>
 
@@ -227,13 +227,13 @@ export const Project360View: React.FC<Project360ViewProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left: Project Health Index & Visual Radar Graphic */}
         <KokonutCard variant="default" className="p-5" interactive={false}>
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-800">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b-2 border-slate-900/15">
             <div>
-              <h2 className="text-xs font-mono font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
-                <Activity className="w-4 h-4 text-blue-400" />
+              <h2 className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider flex items-center gap-1.5">
+                <Activity className="w-4 h-4 text-blue-600 stroke-[2.5]" />
                 7-Dimensional Health Radar
               </h2>
-              <p className="text-[11px] text-slate-600">Health ≠ Progress. High progress can still bear operational risk.</p>
+              <p className="text-[11px] text-slate-600 font-semibold">Health ≠ Progress. High progress can still bear operational risk.</p>
             </div>
             <Badge variant="cyan" size="sm">
               Index: {project.health}/100
@@ -256,7 +256,7 @@ export const Project360View: React.FC<Project360ViewProps> = ({
                       key={sIdx}
                       points={pts}
                       fill="none"
-                      stroke="rgba(255,255,255,0.08)"
+                      stroke="rgba(15, 23, 42, 0.15)"
                       strokeWidth="1"
                     />
                   );
@@ -274,7 +274,7 @@ export const Project360View: React.FC<Project360ViewProps> = ({
                       y1={center}
                       x2={x}
                       y2={y}
-                      stroke="rgba(255,255,255,0.08)"
+                      stroke="rgba(15, 23, 42, 0.15)"
                       strokeWidth="1"
                     />
                   );
