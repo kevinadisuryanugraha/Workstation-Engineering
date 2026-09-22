@@ -8,6 +8,7 @@ import { repositories, GIT_PROVIDERS, type GitProvider } from '../../db/schema/r
 import { requirePermission } from '../../middlewares/rbac.ts';
 import { safeAsync } from '../../middlewares/safeAsync.ts';
 import { auditService } from '../audit/audit.service.ts';
+import { gitSyncService, parseGitUrl } from './git-sync.service.ts';
 
 /**
  * Story 23.1 (CC-8, Master PRD §30 Fase V2) — Repository Registry API.
@@ -211,5 +212,117 @@ repositoryRegistryRouter.post(
       meta: { created },
       timestamp: new Date().toISOString(),
     });
+  })
+);
+
+// Story 24.2 (CC-9): POST /api/v1/git/repositories/:id/sync — on-demand sync per repo
+repositoryRegistryRouter.post(
+  '/repositories/:id/sync',
+  requirePermission('PERM_EVIDENCE_ATTACH'),
+  safeAsync(async (req: Request, res: Response) => {
+    const id = req.params.id;
+    const token = req.body?.token ? String(req.body.token).trim() : undefined;
+
+    try {
+      const result = await gitSyncService.syncRepository(id, {
+        token,
+        actorId: (req as any).user?.userId || 'unknown',
+        actorName: (req as any).user?.name || 'System',
+        correlationId: (req as any).correlationId || 'system',
+      });
+
+      return res.json({
+        success: true,
+        data: result,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err: any) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'SYNC_FAILED', message: err?.message || 'Sync operation failed' },
+        timestamp: new Date().toISOString(),
+      });
+    }
+  })
+);
+
+// Story 24.2 (CC-9): POST /api/v1/git/sync-url — on-demand sync by URL
+const syncUrlSchema = z.object({
+  projectId: z.string().min(1, 'Project ID is required'),
+  repoUrl: z.string().min(3, 'Repository URL or owner/repo is required'),
+  provider: z.enum(GIT_PROVIDERS).optional(),
+  defaultBranch: z.string().optional(),
+  token: z.string().optional(),
+});
+
+repositoryRegistryRouter.post(
+  '/sync-url',
+  requirePermission('PERM_EVIDENCE_ATTACH'),
+  safeAsync(async (req: Request, res: Response) => {
+    let input: z.infer<typeof syncUrlSchema>;
+    try {
+      input = syncUrlSchema.parse(req.body);
+    } catch (err) {
+      if (err instanceof z.ZodError) return zodErrorResponse(res, err);
+      throw err;
+    }
+
+    if (!(await repositoryRegistryService.projectExists(input.projectId))) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'PROJECT_NOT_FOUND', message: `Project ${input.projectId} not found` },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const parsed = parseGitUrl(input.repoUrl);
+    if (!parsed) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_GIT_URL',
+          message: "Format URL tidak valid. Masukkan 'https://github.com/owner/repo' atau 'owner/repo'",
+        },
+        timestamp: new Date().toISOString(),
+      });
+    }
+
+    const provider = input.provider || parsed.provider;
+    const fullName = parsed.fullName;
+
+    // Auto-register repository if not yet exists
+    const { repository } = await repositoryRegistryService.register({
+      projectId: input.projectId,
+      fullName,
+      provider,
+      defaultBranch: input.defaultBranch ?? 'main',
+      actorId: (req as any).user?.userId || 'unknown',
+      actorName: (req as any).user?.name || 'System',
+      correlationId: (req as any).correlationId || 'system',
+    });
+
+    try {
+      const syncResult = await gitSyncService.syncRepository(repository.id, {
+        token: input.token,
+        actorId: (req as any).user?.userId || 'unknown',
+        actorName: (req as any).user?.name || 'System',
+        correlationId: (req as any).correlationId || 'system',
+      });
+
+      return res.json({
+        success: true,
+        data: {
+          repository,
+          sync: syncResult,
+        },
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err: any) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'SYNC_FAILED', message: err?.message || 'Sync operation failed' },
+        timestamp: new Date().toISOString(),
+      });
+    }
   })
 );
