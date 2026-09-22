@@ -5,6 +5,17 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-22 — Deploy Produksi: Epic 22 (CC-7) Live di https://workstation.zamzami.or.id
+- **Decision:** Rilis produksi VPS Kontabo dari `4674394` (era CC-6/WA-1) → `cb58ec5` (Epic 22 tuntas): `git fetch + reset --hard origin/main`, build ulang (bundle baru `index-DBPG5UCi.js`, backup `dist.bak-cc7-*`), migrasi DB `0016_add_debt_fields.sql` ter-apply (kolom `debt_origin`/`debt_impact`/`debt_source_ref` terverifikasi di container `workstation-db`), `systemctl restart workstation`.
+- **Verification (semua hijau):** (1) service `workstation` active — RBAC ACTIVE + Report Scheduler ACTIVE (DAILY/WEEKLY/MONTHLY); (2) `/api/health` lokal & publik OK (`rbacSecurity: ENFORCED_HMAC_SHA256`, `hasGeminiKey: true`); (3) endpoint baru `GET /api/v1/work-items/debts` publik → 401 tanpa token (auth-gated benar); (4) end-to-end dengan token Super Admin → 200 + data nyata (legacy TECH_DEBT items tampil dengan aging terkomputasi — WRK-105 aging 3 hari → FRESH, math floor benar; item pra-22.1 jujur `debtOrigin: null`).
+- **Catatan operasional:** WORKSTATION berjalan di port **3020** (bukan 3000 — port itu aplikasi aaPanel lain); `npm install` di VPS mengalami ERESOLVE (tanpa dampak — Epic 22 tidak menambah dependency, node_modules eksisting lengkap).
+- **Impact:** produksi kini setara `main` — Fase V2 (DEF-005 AI + DEF-006 Debt Registry) hidup di produksi; tidak ada perubahan kode pasca-verify.
+- **In-progress stories affected:** none.
+- **Made by:** deploy loop (owner menyetujui “lanjutkan” pasca-konfirmasi commit)
+- **Supersedes:** none (deploy pertama pasca-CC-7)
+
+---
+
 ### 2026-09-21 — Epic 22 (CC-7) Tuntas: DEF-006 Debt Registry selesai — Fase V2 tuntas penuh
 - **Decision:** Seluruh 2 story Epic 22 dieksekusi, diuji, dan di-merge ke `main` via worktree loop: **22.1** Debt Registry API (migration `0016_add_debt_fields.sql`: `debt_origin`/`debt_impact`/`debt_source_ref`; endpoint `GET /api/v1/work-items/debts` dengan aging server-side + bucket FRESH/AGING/STALE/CRITICAL + agregat + filter; konversi rekomendasi AI kini mengisi field terstruktur dengan `debtSourceRef="scan/rec"` wajib — prinsip §11.4 "AI tidak boleh menciptakan debt tanpa evidence" ditegakkan; mapper DTO jujur) dan **22.2** tab Technical Debt di AI Intelligence View kini hidup dengan data nyata (strip agregat + filter status/origin/impact + pencarian + honest loading/error/empty; mode demo tetap mock legacy).
 - **Rationale:** Menutup DEF-006 — satu-satunya item Fase V2 yang tersisa; debt kini memiliki origin, evidence, impact, effort, owner, target milestone, status, dan aging persis Master PRD §11.4. Nav TIDAK bertambah (kemenangan CC-4 dijaga — debt memang bagian §11 AI Intelligence).
