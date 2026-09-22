@@ -1,4 +1,4 @@
-import { WorkItem, Ticket, User, WorkItemStatus, TicketStatus, WorkItemType, TicketType, DebtOrigin, DebtImpact, DebtAgingBucket } from '../types';
+import { WorkItem, Ticket, User, WorkItemStatus, TicketStatus, WorkItemType, TicketType, DebtOrigin, DebtImpact, DebtAgingBucket, DebtRegistryItem, DebtRegistrySummary } from '../types';
 
 /**
  * HOTFIX 2026-09-19 (pasca-deploy Epic 17/18) — DTO→UI contract mappers untuk
@@ -150,4 +150,93 @@ export function mapTicketDto(dto: Raw): Ticket {
     createdAt: dto.createdAt,
     resolution: dto.resolution ?? undefined,
   };
+}
+
+// ─── Story 22.2 (CC-7, Master PRD §11.4): Debt Registry mappers ────────────
+
+const DEBT_AGING_BUCKETS_22_2: DebtAgingBucket[] = ['FRESH', 'AGING', 'STALE', 'CRITICAL'];
+
+/** Bucket dari angka aging — fallback bila server bucket tak dikenal. */
+function debtBucketFromDays(days: number): DebtAgingBucket {
+  if (days <= 30) return 'FRESH';
+  if (days <= 90) return 'AGING';
+  if (days <= 180) return 'STALE';
+  return 'CRITICAL';
+}
+
+function isRecord(v: unknown): v is Record<string, any> {
+  return typeof v === 'object' && v !== null && !Array.isArray(v);
+}
+
+/**
+ * Normalisasi satu baris registry dari GET /api/v1/work-items/debts.
+ * Jujur: baris tanpa id/key dibuang (null) — bukan dikarang.
+ */
+export function mapDebtRegistryItem(dto: unknown): DebtRegistryItem | null {
+  if (!isRecord(dto)) return null;
+  const id = typeof dto.id === 'string' ? dto.id : '';
+  const key = typeof dto.key === 'string' ? dto.key : '';
+  if (!id || !key) return null;
+
+  const agingDays =
+    typeof dto.agingDays === 'number' && Number.isFinite(dto.agingDays) && dto.agingDays >= 0
+      ? Math.floor(dto.agingDays)
+      : 0;
+  const bucket = normalizeDebtEnum(dto.agingBucket, DEBT_AGING_BUCKETS_22_2) ?? debtBucketFromDays(agingDays);
+
+  return {
+    id,
+    key,
+    projectId: typeof dto.projectId === 'string' ? dto.projectId : '',
+    title: typeof dto.title === 'string' && dto.title ? dto.title : key,
+    description: typeof dto.description === 'string' ? dto.description : null,
+    status: typeof dto.status === 'string' ? dto.status : 'BACKLOG',
+    priority: typeof dto.priority === 'string' ? dto.priority : 'P2',
+    ownerId: typeof dto.ownerId === 'string' ? dto.ownerId : null,
+    milestoneId: typeof dto.milestoneId === 'string' ? dto.milestoneId : null,
+    estimateHours: typeof dto.estimateHours === 'number' && Number.isFinite(dto.estimateHours) ? dto.estimateHours : null,
+    debtOrigin: normalizeDebtEnum(dto.debtOrigin, DEBT_ORIGINS) ?? null,
+    debtImpact: normalizeDebtEnum(dto.debtImpact, DEBT_IMPACTS) ?? null,
+    debtSourceRef: typeof dto.debtSourceRef === 'string' && dto.debtSourceRef ? dto.debtSourceRef : null,
+    createdAt: typeof dto.createdAt === 'string' ? dto.createdAt : new Date(0).toISOString(),
+    agingDays,
+    agingBucket: bucket,
+  };
+}
+
+function normalizeDebtSummary(raw: unknown): DebtRegistrySummary | null {
+  if (!isRecord(raw)) return null;
+  const buckets: DebtAgingBucket[] = ['FRESH', 'AGING', 'STALE', 'CRITICAL'];
+  const byAgingBucket: Record<DebtAgingBucket, number> = { FRESH: 0, AGING: 0, STALE: 0, CRITICAL: 0 };
+  const rawBuckets = isRecord(raw.byAgingBucket) ? raw.byAgingBucket : {};
+  for (const b of buckets) byAgingBucket[b] = typeof rawBuckets[b] === 'number' ? rawBuckets[b] : 0;
+  const num = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : 0);
+  const tally = (v: unknown) => {
+    if (!isRecord(v)) return {};
+    const out: Record<string, number> = {};
+    for (const [k, n] of Object.entries(v)) if (typeof n === 'number' && Number.isFinite(n)) out[k] = n;
+    return out;
+  };
+  return {
+    total: num(raw.total),
+    open: num(raw.open),
+    byStatus: tally(raw.byStatus),
+    byOrigin: tally(raw.byOrigin),
+    byImpact: tally(raw.byImpact),
+    byAgingBucket,
+  };
+}
+
+/**
+ * Normalisasi envelope GET /api/v1/work-items/debts → { items, summary }.
+ * Menerima envelope { data, meta } ATAU array langsung; input sampah →
+ * registry kosong yang JUJUR (kontrak hotfix: tidak pernah crash).
+ */
+export function mapDebtRegistryPayload(raw: unknown): { items: DebtRegistryItem[]; summary: DebtRegistrySummary | null } {
+  if (!isRecord(raw)) {
+    return { items: Array.isArray(raw) ? raw.map(mapDebtRegistryItem).filter((x): x is DebtRegistryItem => x !== null) : [], summary: null };
+  }
+  const list = Array.isArray(raw.data) ? raw.data : [];
+  const items = list.map(mapDebtRegistryItem).filter((x): x is DebtRegistryItem => x !== null);
+  return { items, summary: normalizeDebtSummary(raw.meta?.summary) };
 }

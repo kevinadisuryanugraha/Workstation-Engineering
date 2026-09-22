@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiRequest } from '../../lib/apiClient.ts';
+import { apiRequest, ApiError } from '../../lib/apiClient.ts';
 import { AIFinding, AIRecommendation } from '../../types.ts';
 import { aiScansEndpoint } from '../../lib/aiMode.ts';
 
@@ -180,3 +180,85 @@ export function useAiScans(options: { mode?: string; enabled?: boolean; limit?: 
     staleTime: 15_000,
   });
 }
+
+// ─── Story 22.2 (CC-7, Master PRD §11.4): Debt Registry client ─────────────
+
+import { authManager } from '../../lib/auth.ts';
+import { mapDebtRegistryPayload } from '../../lib/contractMappers.ts';
+import type { DebtOrigin, DebtImpact, DebtRegistryItem, DebtRegistrySummary } from '../../types.ts';
+
+/** State registry yang dikonsumsi AIIntelligenceView (tab Technical Debt). */
+export interface DebtRegistryState {
+  items: DebtRegistryItem[];
+  summary: DebtRegistrySummary | null;
+  isLoading: boolean;
+  isError: boolean;
+}
+
+/**
+ * Story 22.2 (CC-7) — Debt Registry dari GET /api/v1/work-items/debts (22.1).
+ * Fetch langsung (bukan apiRequest) karena butuh meta.summary dari envelope —
+ * apiRequest hanya mengembalikan data. Endpoint auth-only (pola GET /work-items
+ * eksisting — PERM_WORK_ITEM_VIEW tidak ada di matriks RBAC, lihat 22.1).
+ */
+export function useDebtRegistry(options: { enabled?: boolean } = {}): DebtRegistryState {
+  const q = useQuery({
+    queryKey: ['debtRegistry'],
+    queryFn: async (): Promise<{ items: DebtRegistryItem[]; summary: DebtRegistrySummary | null }> => {
+      const token = authManager.getToken();
+      const headers = new Headers();
+      if (token) headers.set('Authorization', `Bearer ${token}`);
+      const res = await fetch('/api/v1/work-items/debts', { headers });
+      const json: unknown = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const err = json as { error?: { code?: string; message?: string } };
+        throw new ApiError(err?.error?.code || 'HTTP_ERROR', err?.error?.message || `Request failed (${res.status})`, res.status);
+      }
+      return mapDebtRegistryPayload(json);
+    },
+    enabled: options.enabled ?? true,
+    staleTime: 30_000,
+  });
+  return {
+    items: q.data?.items ?? [],
+    summary: q.data?.summary ?? null,
+    isLoading: q.isLoading,
+    isError: q.isError,
+  };
+}
+
+export interface DebtRegistryFilters {
+  status: string; // 'ALL' | status
+  origin: string; // 'ALL' | DebtOrigin
+  impact: string; // 'ALL' | DebtImpact
+  query: string;
+}
+
+/** Filter + sort murni (aging terlama dulu) — guard array, tanpa crash. */
+export function filterDebtRegistry(items: DebtRegistryItem[], f: DebtRegistryFilters): DebtRegistryItem[] {
+  const list = Array.isArray(items) ? items : [];
+  const q = f.query.trim().toLowerCase();
+  return list
+    .filter((i) => (f.status === 'ALL' ? true : i.status === f.status))
+    .filter((i) => (f.origin === 'ALL' ? true : i.debtOrigin === f.origin))
+    .filter((i) => (f.impact === 'ALL' ? true : i.debtImpact === f.impact))
+    .filter((i) =>
+      q === '' ? true : i.title.toLowerCase().includes(q) || i.key.toLowerCase().includes(q)
+    )
+    .sort((a, b) => b.agingDays - a.agingDays);
+}
+
+/** Opsi status untuk dropdown — diturunkan dari data aktual (jujur). */
+export function deriveDebtStatusOptions(items: DebtRegistryItem[]): string[] {
+  return Array.from(new Set((Array.isArray(items) ? items : []).map((i) => i.status)));
+}
+
+export const DEBT_ORIGIN_LABELS: Record<DebtOrigin, string> = {
+  AI_SCAN: 'AI Scan',
+  TECH_LEAD_AUDIT: 'Tech Lead Audit',
+  CODE_REVIEW: 'Code Review',
+  MANUAL: 'Manual',
+  INCIDENT: 'Incident',
+};
+
+export const DEBT_IMPACTS_ALL: DebtImpact[] = ['HIGH', 'MEDIUM', 'LOW'];

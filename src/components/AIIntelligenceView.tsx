@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Sparkles,
@@ -15,8 +15,16 @@ import {
   Cpu,
   X
 } from "lucide-react";
-import { AIFinding, AIRecommendation, TechnicalDebt, Project } from "../types";
-import { AiScanSummary } from "../hooks/api/useAiIntel";
+import { AIFinding, AIRecommendation, TechnicalDebt, Project, DebtRegistryItem } from "../types";
+import {
+  AiScanSummary,
+  DebtRegistryState,
+  DebtRegistryFilters,
+  filterDebtRegistry,
+  deriveDebtStatusOptions,
+  DEBT_ORIGIN_LABELS,
+  DEBT_IMPACTS_ALL,
+} from "../hooks/api/useAiIntel";
 import { aiModeBadge, isDemoScanMode, SCAN_MODE_FILTERS, AiModeFilterKey } from "../lib/aiMode";
 import { KokonutCard } from "./ui/KokonutCard";
 import { Badge } from "./ui/Badge";
@@ -32,6 +40,8 @@ interface AIIntelligenceViewProps {
   onScanModeFilterChange?: (key: AiModeFilterKey) => void;
   recommendations: AIRecommendation[];
   technicalDebts: TechnicalDebt[];
+  /** Story 22.2 (CC-7): state registry nyata dari GET /work-items/debts — ada di boot real, absent di mode demo. */
+  debtRegistry?: DebtRegistryState;
   project: Project;
   onUpdateFindingStatus: (id: string, status: AIFinding["status"]) => void;
   onConvertRecommendationToWorkItem: (rec: AIRecommendation) => void;
@@ -49,6 +59,7 @@ export const AIIntelligenceView: React.FC<AIIntelligenceViewProps> = ({
   onScanModeFilterChange,
   recommendations,
   technicalDebts,
+  debtRegistry,
   project,
   onUpdateFindingStatus,
   onConvertRecommendationToWorkItem,
@@ -57,6 +68,22 @@ export const AIIntelligenceView: React.FC<AIIntelligenceViewProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<"findings" | "recommendations" | "techdebt">("findings");
   const isStaticDemoPreview = isDemoScanMode(scanMode); // Story 21.2: guard via util (mode legacy/unknown tak membuat crash)
+
+  // Story 22.2 (CC-7): filter lokal tab Technical Debt — data dari registry API (22.1).
+  // Bila debtRegistry tidak tersedia (mode demo), tab memakai daftar mock legacy.
+  const [debtFilters, setDebtFilters] = useState<DebtRegistryFilters>({
+    status: "ALL",
+    origin: "ALL",
+    impact: "ALL",
+    query: "",
+  });
+  const debtRegistryItems = debtRegistry?.items ?? [];
+  const debtStatusOptions = useMemo(() => deriveDebtStatusOptions(debtRegistryItems), [debtRegistryItems]);
+  const debtFiltered = useMemo(() => filterDebtRegistry(debtRegistryItems, debtFilters), [debtRegistryItems, debtFilters]);
+
+  const debtBucketVariant = (b: DebtRegistryItem["agingBucket"]): "success" | "warning" | "purple" | "destructive" =>
+    b === "FRESH" ? "success" : b === "AGING" ? "warning" : b === "STALE" ? "purple" : "destructive";
+
   const [isScanning, setIsScanning] = useState(false);
   const [scanSnippet, setScanSnippet] = useState(
     `// OrderController.php
@@ -142,7 +169,7 @@ public function exportDailyReceipts(Request $request) {
         {[
           { key: "findings", label: `AI Findings (${findings.length})` },
           { key: "recommendations", label: `AI Recommendations (${recommendations.length})` },
-          { key: "techdebt", label: `Technical Debt (${technicalDebts.length})` }
+          { key: "techdebt", label: `Technical Debt (${debtRegistry ? debtRegistryItems.length : technicalDebts.length})` }
         ].map((tab) => {
           const isActive = activeTab === tab.key;
           return (
@@ -384,54 +411,195 @@ public function exportDailyReceipts(Request $request) {
 
       {/* Tab 3: Technical Debt Register */}
       {activeTab === "techdebt" && (
-        <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden">
-          <div className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
-            <span className="text-xs font-mono font-black text-slate-900 uppercase tracking-wider">
-              Technical Debt Lifecycle (PRD Section 28)
-            </span>
-            <span className="text-xs font-mono text-slate-500">
-              Origin strictly anchored to evidence
-            </span>
-          </div>
+        debtRegistry ? (
+          /* ── Story 22.2 (CC-7): Debt Registry — data nyata dari 22.1 ── */
+          <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden">
+            {/* Ringkasan agregat (meta.summary dari server — tidak dihitung ulang klien) */}
+            <div className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/60 space-y-3">
+              <div className="flex items-center justify-between gap-3 flex-wrap">
+                <span className="text-xs font-mono font-black text-slate-900 uppercase tracking-wider">
+                  Technical Debt Registry (PRD §11.4)
+                </span>
+                <span className="text-xs font-mono text-slate-500">
+                  Origin strictly anchored to evidence
+                </span>
+              </div>
+              <div className="flex flex-wrap items-center gap-2">
+                <Badge variant="default" size="sm">Total: {debtRegistry.summary?.total ?? debtRegistryItems.length}</Badge>
+                <Badge variant="outline" size="sm">Open: {debtRegistry.summary?.open ?? 0}</Badge>
+                {(["FRESH", "AGING", "STALE", "CRITICAL"] as const).map((b) => (
+                  <Badge key={b} variant={debtBucketVariant(b)} size="sm">
+                    {b}: {debtRegistry.summary?.byAgingBucket?.[b] ?? 0}
+                  </Badge>
+                ))}
+              </div>
+            </div>
 
-          <div className="divide-y divide-slate-100">
-            {technicalDebts.map((td) => (
-              <motion.div
-                key={td.id}
-                whileHover={{ x: 2 }}
-                className="p-4 sm:p-5 hover:bg-slate-50/70 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors"
+            {/* Filter status / origin / impact + pencarian */}
+            <div className="p-3 border-b border-slate-100 flex flex-wrap items-center gap-2 bg-white">
+              <select
+                aria-label="Filter status debt"
+                value={debtFilters.status}
+                onChange={(e) => setDebtFilters((f) => ({ ...f, status: e.target.value }))}
+                className="text-xs font-mono border border-slate-200 rounded-md px-2 py-1.5 bg-white outline-none"
               >
-                <div className="space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-2.5">
-                    <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
-                      {td.code}
+                <option value="ALL">Semua Status</option>
+                {debtStatusOptions.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+              </select>
+              <select
+                aria-label="Filter origin debt"
+                value={debtFilters.origin}
+                onChange={(e) => setDebtFilters((f) => ({ ...f, origin: e.target.value }))}
+                className="text-xs font-mono border border-slate-200 rounded-md px-2 py-1.5 bg-white outline-none"
+              >
+                <option value="ALL">Semua Origin</option>
+                {(Object.keys(DEBT_ORIGIN_LABELS) as Array<keyof typeof DEBT_ORIGIN_LABELS>).map((o) => (
+                  <option key={o} value={o}>{DEBT_ORIGIN_LABELS[o]}</option>
+                ))}
+              </select>
+              <select
+                aria-label="Filter impact debt"
+                value={debtFilters.impact}
+                onChange={(e) => setDebtFilters((f) => ({ ...f, impact: e.target.value }))}
+                className="text-xs font-mono border border-slate-200 rounded-md px-2 py-1.5 bg-white outline-none"
+              >
+                <option value="ALL">Semua Impact</option>
+                {DEBT_IMPACTS_ALL.map((i) => (
+                  <option key={i} value={i}>{i}</option>
+                ))}
+              </select>
+              <input
+                type="text"
+                aria-label="Cari debt"
+                placeholder="Cari key / judul…"
+                value={debtFilters.query}
+                onChange={(e) => setDebtFilters((f) => ({ ...f, query: e.target.value }))}
+                className="text-xs font-mono border border-slate-200 rounded-md px-2.5 py-1.5 flex-1 min-w-[140px] outline-none focus:border-slate-400"
+              />
+            </div>
+
+            {/* State jujur: loading / error / kosong */}
+            {debtRegistry.isLoading ? (
+              <div className="p-8 text-center text-xs font-mono text-slate-500">Memuat registry debt…</div>
+            ) : debtRegistry.isError ? (
+              <div className="p-8 text-center text-xs font-mono text-rose-700">
+                Gagal memuat registry debt — coba muat ulang halaman.
+              </div>
+            ) : debtFiltered.length === 0 ? (
+              <div className="p-8 text-center space-y-1">
+                <p className="text-xs font-mono font-bold text-slate-700">Belum ada technical debt tercatat.</p>
+                <p className="text-xs font-mono text-slate-500">
+                  Konversi rekomendasi AI (tab Recommendations) atau buat work item bertipe TECH_DEBT.
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {debtFiltered.map((td) => (
+                  <motion.div
+                    key={td.id}
+                    whileHover={{ x: 2 }}
+                    className="p-4 sm:p-5 hover:bg-slate-50/70 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors"
+                  >
+                    <div className="space-y-1.5 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
+                          {td.key}
+                        </span>
+                        <h3 className="text-sm font-mono font-bold text-slate-900 truncate">{td.title}</h3>
+                        {td.debtImpact && (
+                          <Badge variant={td.debtImpact === "HIGH" ? "destructive" : td.debtImpact === "MEDIUM" ? "warning" : "secondary"} size="sm">
+                            Impact: {td.debtImpact}
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-mono">
+                        {td.debtOrigin && (
+                          <span>Origin: <strong className="text-slate-700">{DEBT_ORIGIN_LABELS[td.debtOrigin] ?? td.debtOrigin}</strong></span>
+                        )}
+                        <span>•</span>
+                        <span>Owner: <strong className="text-slate-700">{td.ownerId || "—"}</strong></span>
+                        <span>•</span>
+                        <span>Milestone: <strong className="text-slate-700">{td.milestoneId || "—"}</strong></span>
+                        <span>•</span>
+                        <span>
+                          Aging: <strong className="text-amber-800 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">{td.agingDays} days</strong>{" "}
+                          <Badge variant={debtBucketVariant(td.agingBucket)} size="sm" className="ml-1">{td.agingBucket}</Badge>
+                        </span>
+                        {td.debtSourceRef && (
+                          <>
+                            <span>•</span>
+                            <span>Evidence: <strong className="text-slate-700">{td.debtSourceRef}</strong></span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0 font-mono text-xs">
+                      {td.estimateHours != null && (
+                        <span className="text-slate-700 font-semibold bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200/80">
+                          Est: {td.estimateHours}h
+                        </span>
+                      )}
+                      <Badge variant="secondary" size="sm">{td.status}</Badge>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          /* Mode demo (VITE_DEMO_MODE): daftar mock legacy tetap utuh (17.2) */
+          <div className="bg-white rounded-xl border border-slate-200/90 shadow-sm overflow-hidden">
+            <div className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
+              <span className="text-xs font-mono font-black text-slate-900 uppercase tracking-wider">
+                Technical Debt Lifecycle (PRD Section 28)
+              </span>
+              <span className="text-xs font-mono text-slate-500">
+                Origin strictly anchored to evidence
+              </span>
+            </div>
+
+            <div className="divide-y divide-slate-100">
+              {technicalDebts.map((td) => (
+                <motion.div
+                  key={td.id}
+                  whileHover={{ x: 2 }}
+                  className="p-4 sm:p-5 hover:bg-slate-50/70 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors"
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-md bg-slate-100 text-slate-800 border border-slate-200">
+                        {td.code}
+                      </span>
+                      <h3 className="text-sm font-mono font-bold text-slate-900">{td.title}</h3>
+                      <Badge variant={td.impact === "High" ? "destructive" : "warning"} size="sm">
+                        Impact: {td.impact}
+                      </Badge>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-mono">
+                      <span>Source: <strong className="text-slate-700">{td.source}</strong></span>
+                      <span>•</span>
+                      <span>Module: <strong className="text-slate-700">{td.affectedModule}</strong></span>
+                      <span>•</span>
+                      <span>Aging: <strong className="text-amber-800 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">{td.agingDays} days</strong></span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 shrink-0 font-mono text-xs">
+                    <span className="text-slate-700 font-semibold bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200/80">
+                      Est: {td.estimatedEffortHours}h
                     </span>
-                    <h3 className="text-sm font-mono font-bold text-slate-900">{td.title}</h3>
-                    <Badge variant={td.impact === "High" ? "destructive" : "warning"} size="sm">
-                      Impact: {td.impact}
+                    <Badge variant="secondary" size="sm">
+                      {td.status}
                     </Badge>
                   </div>
-                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500 font-mono">
-                    <span>Source: <strong className="text-slate-700">{td.source}</strong></span>
-                    <span>•</span>
-                    <span>Module: <strong className="text-slate-700">{td.affectedModule}</strong></span>
-                    <span>•</span>
-                    <span>Aging: <strong className="text-amber-800 font-bold bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">{td.agingDays} days</strong></span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 shrink-0 font-mono text-xs">
-                  <span className="text-slate-700 font-semibold bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200/80">
-                    Est: {td.estimatedEffortHours}h
-                  </span>
-                  <Badge variant="secondary" size="sm">
-                    {td.status}
-                  </Badge>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
+        )
       )}
 
       {/* Code Scan Modal */}
