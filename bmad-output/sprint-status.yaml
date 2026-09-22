@@ -1154,7 +1154,7 @@ stories:
   - id: "23.2.webhook-provider-adapters"
     title: "Webhook Adapter GitLab & Bitbucket — Verifikasi & Normalisasi Kanonik"
     epic_id: "epic-23"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/23.2.webhook-provider-adapters.story.md"
     parallel_set: 29
     dependencies:
