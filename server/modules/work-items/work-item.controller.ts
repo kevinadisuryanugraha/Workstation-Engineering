@@ -2,7 +2,7 @@ import { Response } from 'express';
 import { AuthenticatedRequest } from '../../middlewares/authenticate.ts';
 import { workItemService, GateValidationError } from './work-item.service.ts';
 import { AssignmentValidationError } from '../sprints/sprint.service.ts';
-import { createWorkItemSchema, updateWorkItemSchema, filterWorkItemSchema } from './work-item.schema.ts';
+import { createWorkItemSchema, updateWorkItemSchema, filterWorkItemSchema, listDebtsQuerySchema } from './work-item.schema.ts';
 import { NotFoundError } from '../projects/project.service.ts';
 import { acceptanceCriteriaService } from './acceptance-criteria.service.ts';
 
@@ -25,6 +25,37 @@ export async function listWorkItemsHandler(req: AuthenticatedRequest, res: Respo
     res.status(500).json({
       success: false,
       error: { code: 'SERVER_ERROR', message: error.message || 'Failed to list work items' },
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+
+// Story 22.1 (CC-7, Master PRD §11.4): Debt Registry — TECH_DEBT + aging terkomputasi.
+export async function listDebtsHandler(req: AuthenticatedRequest, res: Response) {
+  try {
+    const filters = listDebtsQuerySchema.parse(req.query);
+    const { items, summary } = await workItemService.listDebts(filters);
+
+    res.json({
+      success: true,
+      data: items,
+      meta: {
+        summary,
+        total: items.length,
+      },
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error: any) {
+    if (error?.name === 'ZodError') {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'VALIDATION_FAILED', message: error.issues?.[0]?.message || 'Invalid query' },
+        timestamp: new Date().toISOString(),
+      });
+    }
+    res.status(500).json({
+      success: false,
+      error: { code: 'SERVER_ERROR', message: error.message || 'Failed to list debts' },
       timestamp: new Date().toISOString(),
     });
   }

@@ -130,6 +130,17 @@ aiIntelRouter.get(
   })
 );
 
+/**
+ * Story 22.1 (CC-7, Master PRD §11.4): mapping heuristik expectedImpact
+ * (teks bebas dari rekomendasi AI) → enum debtImpact terstruktur.
+ */
+export function mapExpectedImpactToDebtImpact(expectedImpact?: string | null): 'HIGH' | 'MEDIUM' | 'LOW' {
+  const text = (expectedImpact ?? '').toLowerCase();
+  if (/high|tinggi|kritis|critical|severe|parah/.test(text)) return 'HIGH';
+  if (/low|rendah|minor|kecil/.test(text)) return 'LOW';
+  return 'MEDIUM';
+}
+
 aiIntelRouter.post(
   '/recommendations/:id/convert',
   requirePermission('PERM_WORK_ITEM_CREATE'),
@@ -168,6 +179,12 @@ aiIntelRouter.post(
         type: 'TECH_DEBT',
         priority: 'P2',
         status: 'BACKLOG',
+        // Story 22.1 (CC-7): field registry terstruktur — Master PRD §11.4.
+        // Prinsip "AI tidak boleh menciptakan debt tanpa evidence":
+        // debt_source_ref wajib membawa jejak scan/rekomendasi asal.
+        debtOrigin: 'AI_SCAN',
+        debtImpact: mapExpectedImpactToDebtImpact(rec.expectedImpact),
+        debtSourceRef: `${rec.scanRef}/${rec.recRef}`.slice(0, 120),
       },
       req.user?.userId ?? 'unknown',
       req.user?.name ?? 'System',

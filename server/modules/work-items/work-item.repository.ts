@@ -52,6 +52,32 @@ export class WorkItemRepository {
     }
   }
 
+  /**
+   * Story 22.1 (CC-7, Master PRD §11.4): daftar debt registry — work item
+   * type='TECH_DEBT' dengan filter opsional, terurut created_at terlama dulu
+   * (aging terlama di atas).
+   */
+  async findDebts(
+    filters: { projectId?: string; status?: string; origin?: string; impact?: string }
+  ): Promise<WorkItem[]> {
+    try {
+      const conditions = [eq(workItems.type, 'TECH_DEBT')];
+      if (filters.projectId) conditions.push(eq(workItems.projectId, filters.projectId));
+      if (filters.status) conditions.push(eq(workItems.status, filters.status));
+      if (filters.origin) conditions.push(eq(workItems.debtOrigin, filters.origin));
+      if (filters.impact) conditions.push(eq(workItems.debtImpact, filters.impact));
+
+      return await db
+        .select()
+        .from(workItems)
+        .where(and(...conditions))
+        .orderBy(workItems.createdAt);
+    } catch (err) {
+      console.warn('[WorkItemRepository] DB query debts failed, returning empty result:', err);
+      return [];
+    }
+  }
+
   async getNextSequenceForProject(projectId: string): Promise<number> {
     try {
       const result = await db

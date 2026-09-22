@@ -18,6 +18,11 @@ export const workItems = pgTable('work_items', {
   estimateHours: integer('estimate_hours'),
   sprintId: varchar('sprint_id', { length: 36 }).references(() => sprints.id),
   milestoneId: varchar('milestone_id', { length: 36 }).references(() => milestones.id),
+  // Story 22.1 (CC-7, Master PRD §11.4): kolom registry debt — hanya bermakna saat type = 'TECH_DEBT'.
+  // Prinsip §11.4: AI tidak boleh menciptakan debt sebagai fakta tanpa evidence (debt_source_ref wajib bila origin AI_SCAN).
+  debtOrigin: varchar('debt_origin', { length: 30 }), // AI_SCAN, TECH_LEAD_AUDIT, CODE_REVIEW, MANUAL, INCIDENT
+  debtImpact: varchar('debt_impact', { length: 10 }), // HIGH, MEDIUM, LOW
+  debtSourceRef: varchar('debt_source_ref', { length: 120 }), // mis. "SCAN-001/REC-03" — jejak evidence
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 }, (table) => [
@@ -25,6 +30,7 @@ export const workItems = pgTable('work_items', {
   index('work_items_assignee_id_idx').on(table.assigneeId),
   index('work_items_status_idx').on(table.status),
   index('work_items_key_idx').on(table.key),
+  index('work_items_debt_origin_idx').on(table.debtOrigin),
 ]);
 
 export type WorkItem = typeof workItems.$inferSelect;

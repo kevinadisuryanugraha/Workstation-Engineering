@@ -153,8 +153,48 @@ export interface WorkItem {
   dependencies: string[]; // item codes
   evidence: EvidenceItem[];
   gitBranch?: string;
+  // Story 22.1 (CC-7, Master PRD §11.4): field registry debt (opsional).
+  debtOrigin?: DebtOrigin;
+  debtImpact?: DebtImpact;
+  debtSourceRef?: string;
+  agingDays?: number;
+  agingBucket?: DebtAgingBucket;
   createdAt: string;
   updatedAt: string;
+}
+
+/** Story 22.1 (CC-7): enum registry debt — mirror server (work-item.schema.ts). */
+export type DebtOrigin = "AI_SCAN" | "TECH_LEAD_AUDIT" | "CODE_REVIEW" | "MANUAL" | "INCIDENT";
+export type DebtImpact = "HIGH" | "MEDIUM" | "LOW";
+export type DebtAgingBucket = "FRESH" | "AGING" | "STALE" | "CRITICAL";
+
+/** Item registry debt dari GET /api/v1/work-items/debts (bentuk server). */
+export interface DebtRegistryItem {
+  id: string;
+  key: string;
+  projectId: string;
+  title: string;
+  description: string | null;
+  status: string;
+  priority: string;
+  ownerId: string | null;
+  milestoneId: string | null;
+  estimateHours: number | null;
+  debtOrigin: DebtOrigin | null;
+  debtImpact: DebtImpact | null;
+  debtSourceRef: string | null;
+  createdAt: string;
+  agingDays: number;
+  agingBucket: DebtAgingBucket;
+}
+
+export interface DebtRegistrySummary {
+  total: number;
+  open: number;
+  byStatus: Record<string, number>;
+  byOrigin: Record<string, number>;
+  byImpact: Record<string, number>;
+  byAgingBucket: Record<DebtAgingBucket, number>;
 }
 
 export type TicketType =

@@ -1,4 +1,4 @@
-import { WorkItem, Ticket, User, WorkItemStatus, TicketStatus, WorkItemType, TicketType } from '../types';
+import { WorkItem, Ticket, User, WorkItemStatus, TicketStatus, WorkItemType, TicketType, DebtOrigin, DebtImpact, DebtAgingBucket } from '../types';
 
 /**
  * HOTFIX 2026-09-19 (pasca-deploy Epic 17/18) — DTO→UI contract mappers untuk
@@ -85,6 +85,17 @@ function placeholderUser(id: string | null | undefined): User {
   };
 }
 
+const DEBT_ORIGINS: DebtOrigin[] = ['AI_SCAN', 'TECH_LEAD_AUDIT', 'CODE_REVIEW', 'MANUAL', 'INCIDENT'];
+const DEBT_IMPACTS: DebtImpact[] = ['HIGH', 'MEDIUM', 'LOW'];
+const DEBT_AGING_BUCKETS: DebtAgingBucket[] = ['FRESH', 'AGING', 'STALE', 'CRITICAL'];
+
+/** Story 22.1 (CC-7): enum debt — unknown/legacy → undefined (jujur, bukan karangan). */
+function normalizeDebtEnum<T extends string>(raw: string | null | undefined, allowed: T[]): T | undefined {
+  if (raw == null || raw === '') return undefined;
+  const hit = allowed.find((a) => a.toLowerCase() === String(raw).trim().toLowerCase());
+  return hit;
+}
+
 export function mapWorkItemDto(dto: Raw): WorkItem {
   return {
     id: dto.id,
@@ -106,6 +117,12 @@ export function mapWorkItemDto(dto: Raw): WorkItem {
     dependencies: [],
     evidence: [],
     gitBranch: dto.gitBranch ?? undefined,
+    // Story 22.1 (CC-7): field registry debt — hanya bila valid (type TECH_DEBT).
+    debtOrigin: normalizeDebtEnum(dto.debtOrigin, DEBT_ORIGINS),
+    debtImpact: normalizeDebtEnum(dto.debtImpact, DEBT_IMPACTS),
+    debtSourceRef: dto.debtSourceRef || undefined,
+    agingDays: typeof dto.agingDays === 'number' && Number.isFinite(dto.agingDays) ? dto.agingDays : undefined,
+    agingBucket: normalizeDebtEnum(dto.agingBucket, DEBT_AGING_BUCKETS),
     createdAt: dto.createdAt,
     updatedAt: dto.updatedAt,
   };
