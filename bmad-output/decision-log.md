@@ -5,6 +5,16 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-21 — Epic 22 (CC-7) Tuntas: DEF-006 Debt Registry selesai — Fase V2 tuntas penuh
+- **Decision:** Seluruh 2 story Epic 22 dieksekusi, diuji, dan di-merge ke `main` via worktree loop: **22.1** Debt Registry API (migration `0016_add_debt_fields.sql`: `debt_origin`/`debt_impact`/`debt_source_ref`; endpoint `GET /api/v1/work-items/debts` dengan aging server-side + bucket FRESH/AGING/STALE/CRITICAL + agregat + filter; konversi rekomendasi AI kini mengisi field terstruktur dengan `debtSourceRef="scan/rec"` wajib — prinsip §11.4 "AI tidak boleh menciptakan debt tanpa evidence" ditegakkan; mapper DTO jujur) dan **22.2** tab Technical Debt di AI Intelligence View kini hidup dengan data nyata (strip agregat + filter status/origin/impact + pencarian + honest loading/error/empty; mode demo tetap mock legacy).
+- **Rationale:** Menutup DEF-006 — satu-satunya item Fase V2 yang tersisa; debt kini memiliki origin, evidence, impact, effort, owner, target milestone, status, dan aging persis Master PRD §11.4. Nav TIDAK bertambah (kemenangan CC-4 dijaga — debt memang bagian §11 AI Intelligence).
+- **Impact:** total 61 story (22 epic) semua DONE — 100%; test suite 331 → 371 (+40); migrasi DB 0016; owner/target milestone/effort memakai kolom work_items eksisting (assigneeId/milestoneId/estimateHours) tanpa duplikasi.
+- **In-progress stories affected:** none.
+- **Made by:** bmad-epic-pipeline-worktree (dev loop) → review → gate → finalize
+- **Supersedes:** none (penutup CC-7)
+
+---
+
 ### 2026-09-21 — Course Correction 7: Tambah Epic 22 — Technical Debt Registry (DEF-006)
 - **Decision:** Owner memilih Opsi A — mengeksekusi sisa Fase V2 yang disetujui: **DEF-006 Technical Debt Registry** (Master PRD §11.4), satu-satunya item V2 yang belum tereksekusi (terverifikasi tidak pernah dibahas di decision-log/epics/PRD). **Epic 22** (2 story): **22.1** Debt Registry API — kolom terstruktur `debt_origin`/`debt_impact`/`debt_source_ref` pada work_items (migration 0016), endpoint `GET /api/v1/work-items/debts` (aging terkomputasi server + bucket FRESH/AGING/STALE/CRITICAL + agregat + filter), pengayaan konversi rekomendasi AI (16.3) agar mengisi field terstruktur; **22.2** hidupkan tab "Technical Debt" AIIntelligenceView dengan data nyata (tab eksisting yang selalu kosong di boot real — komentar 18.5), hook `useDebtRegistry`, hydration via mapper kontrak.
 - **Rationale:** Master PRD §11.4 mensyaratkan debt item memiliki origin, evidence, impact, effort, owner, target milestone, status, dan aging — saat ini semua hanya teks bebas di deskripsi; prinsip *"AI tidak boleh menciptakan debt sebagai fakta tanpa evidence"* ditegakkan via `debt_source_ref` wajib pada konversi human-approved. UI ditempatkan di tab AI eksisting (struktur Master PRD §11) — nav TIDAK bertambah, menjaga kemenangan CC-4. Alternatif yang ditolak: nav/view terpisah (menambah kepadatan yang sudah diperbaiki CC-4), tabel debt terpisah (duplikatif — owner/milestone/effort sudah ada di work_items).
