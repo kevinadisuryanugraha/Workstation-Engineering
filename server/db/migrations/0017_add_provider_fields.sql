@@ -1,0 +1,2 @@
+ALTER TABLE "repositories" ADD COLUMN "provider" varchar(20) DEFAULT 'GITHUB' NOT NULL;--> statement-breakpoint
+ALTER TABLE "webhook_deliveries" ADD COLUMN "provider" varchar(20) DEFAULT 'GITHUB' NOT NULL;

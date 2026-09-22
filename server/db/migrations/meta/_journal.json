@@ -120,6 +120,13 @@
       "when": 1790042609105,
       "tag": "0016_add_debt_fields",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1790049403198,
+      "tag": "0017_add_provider_fields",
+      "breakpoints": true
     }
   ]
 }

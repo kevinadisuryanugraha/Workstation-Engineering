@@ -3,6 +3,7 @@ import { authenticateToken } from '../../middlewares/authenticate.ts';
 import { requirePermission } from '../../middlewares/rbac.ts';
 import { safeAsync } from '../../middlewares/safeAsync.ts';
 import { gitEntityService, parseLimit } from './git-entity.service.ts';
+import { repositoryRegistryRouter } from './repository.registry.ts';
 
 /**
  * Git entities read routes (Story 18.1 — CC-5).
@@ -17,6 +18,10 @@ export const gitEntityRouter = Router();
 // Semua route read memerlukan JWT (kontras dengan ingest webhook yang
 // diproteksi HMAC signature, bukan JWT).
 gitEntityRouter.use(authenticateToken);
+
+// Story 23.1 (CC-8): Repository Registry multi-provider (GET list + POST register).
+// Terpasang di bawah /api/v1/git → /api/v1/git/repositories. Auth JWT diwarisi.
+gitEntityRouter.use(repositoryRegistryRouter);
 
 // GET /api/v1/git/commits?projectId=&limit=
 gitEntityRouter.get(
