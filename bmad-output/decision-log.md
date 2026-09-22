@@ -5,6 +5,16 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-22 — Deploy Produksi: Epic 23 (CC-8 Multi-Provider Git) Live di https://workstation.zamzami.or.id
+- **Decision:** Rilis produksi VPS Kontabo dari `cb58ec5` (era CC-7/DEF-006) → `23a0501` (Epic 23 tuntas): `git fetch + reset --hard origin/main`, build bundle baru (`index-jvX-Czs_.js` + `index-aWEBTzrD.css`, backup `dist.bak-cc8-*`), migrasi DB `0017_add_provider_fields.sql` ter-apply sukses di container `workstation-db` (kolom `provider` pada `repositories` dan `webhook_deliveries`), `systemctl restart workstation`.
+- **Verification (semua hijau):** (1) service `workstation` active di port 3020 — RBAC ACTIVE + Report Scheduler ACTIVE (DAILY/WEEKLY/MONTHLY); (2) `/api/health` publik OK (`rbacSecurity: ENFORCED_HMAC_SHA256`, `hasGeminiKey: true`); (3) endpoint webhook `/api/v1/webhooks/gitlab` & `/api/v1/webhooks/bitbucket` aktif dan memvalidasi header; (4) endpoint `GET /api/v1/git/repositories` publik → 401 tanpa token (auth-gated benar); (5) end-to-end registrasi repo via `POST /api/v1/git/repositories` dengan token Super Admin → 201 Created (`zamzami/workstation-core` provider `GITLAB`, `hasSecret: true`, secret aman di server) + idempotensi terverifikasi (re-registrasi → 200 + `created: false`); (6) frontend bundle baru `index-jvX-Czs_.js` live di domain utama.
+- **Impact:** produksi kini setara `main` — Multi-Provider Git (GitHub/GitLab/Bitbucket) hidup di produksi; 65/65 story (23 epic) 100% selesai dan terdeploy.
+- **In-progress stories affected:** none.
+- **Made by:** deploy loop (owner menyetujui "gas Broo hati hati")
+- **Supersedes:** none (deploy pasca-CC-8)
+
+---
+
 ### 2026-09-22 — Epic 23 (CC-8) Tuntas: Multi-Provider Git (GitLab & Bitbucket) selesai — Fase V2 sisa Git tuntas penuh
 - **Decision:** Seluruh 4 story Epic 23 dieksekusi, diuji, dan di-merge ke `main` via worktree pipeline loop: **23.1** Schema & Registry API (migration `0017_add_provider_fields.sql`: kolom `provider` default `GITHUB` pada `repositories` & `webhook_deliveries`; endpoint `GET /api/v1/git/repositories` dan `POST /api/v1/git/repositories` dengan idempotensi, audit trail `REPOSITORY_REGISTERED`, dan secret webhook tak pernah dikirim ke client), **23.2** Webhook Adapters GitLab (`X-Gitlab-Token` timing-safe) & Bitbucket (`X-Hub-Signature` HMAC-SHA256) dengan normalisasi ke model kanonik dan delivery ID sintetis deterministik, **23.3** Pemrosesan kanonik `processDelivery` asinkron (lookup repo terdaftar, linking commit & MR/PR evidence dengan regex `\b([A-Z]{2,10}-\d{1,6})\b`, lifecycle `PENDING -> PROCESSED/FAILED/IGNORED`, join provider pada read API 18.1), dan **23.4** UI wiring (badge `[GitHub]`/`[GitLab]`/`[Bitbucket]` pada feed commit & PR, hook `useGitRepositories` + `useRegisterRepository`, form registrasi repo dengan panduan URL webhook pasca-registrasi, gating `PERM_EVIDENCE_ATTACH`).
 - **Rationale:** Menuntaskan item "multi-provider Git" dari Master PRD §30 Fase V2 yang sebelumnya ditunda sejak Epic-5. Seluruh alur Git evidence kini mendukung ekosistem multi-provider tim secara setara dan aman.
