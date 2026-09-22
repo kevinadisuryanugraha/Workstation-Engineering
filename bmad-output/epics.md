@@ -593,7 +593,7 @@
 | ID | Slug | Intent | Status |
 |----|------|--------|--------|
 | 22.1 | debt-registry-api | Skema + API registry (origin/impact/evidence/aging) + pengayaan konversi AI | done |
-| 22.2 | debt-registry-ui | Hidupkan tab Technical Debt AIIntelligenceView dengan data registry nyata | ready-for-dev |
+| 22.2 | debt-registry-ui | Hidupkan tab Technical Debt AIIntelligenceView dengan data registry nyata | done |
 
 **Dependencies:** 22.2 depends on 22.1 · 22.1 depends on 2.1, 16.3 (done) — sequential wave (shared `work-items` module + `App.tsx` + `AIIntelligenceView`)
 
@@ -604,9 +604,9 @@
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
 - **Total Stories:** 61 (59 laporan sebelumnya + 2 Epic 22 CC-7)
-- **Done:** 59
-- **Remaining:** 2 (22.1, 22.2)
-- **Completion Rate:** 97% (59 / 61)
+- **Done:** 61 (Epic 22 tuntas 2/2 di hari yang sama, 2026-09-21)
+- **Remaining:** 0
+- **Completion Rate:** 100% (61 / 61) — Fase V2 kini benar-benar tuntas termasuk DEF-006
 - **Koreksi 2026-09-19 (CC-4):** angka lama (33/35, remaining 13.2–13.3) tidak mencerminkan penyelesaian Waves 12–14; factual: 43/43 done sebelum Epic 17.
 - **Koreksi 2026-09-19 (CC-5):** Epic 17 tuntas 3/3 (46/46 done, 100%) sebelum Epic 18 dibuka; Epic 18 tuntas 6/6 di hari yang sama.
 

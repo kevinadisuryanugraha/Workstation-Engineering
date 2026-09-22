@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-21T22:30:00+07:00" # 22.1 done (Debt Registry API, 357/357 test) — 22.2 ready-for-dev
+last_updated: "2026-09-21T23:00:00+07:00" # Epic 22 (CC-7 / DEF-006) TUNTAS — seluruh 22 epic / 61 story DONE
 
 epics:
   - id: "epic-1"
@@ -174,7 +174,7 @@ epics:
   - id: "epic-22"
     title: "Technical Debt Registry (DEF-006)"
     description: "Course Correction 7 (2026-09-21): registry debt terstruktur (origin/evidence/impact/aging) + tab Technical Debt data nyata — Master PRD §11.4"
-    status: in-progress
+    status: done
     story_ids:
       - "22.1.debt-registry-api"
       - "22.2.debt-registry-ui"
@@ -1110,7 +1110,7 @@ stories:
   - id: "22.2.debt-registry-ui"
     title: "Debt Registry — Tab Technical Debt Data Nyata"
     epic_id: "epic-22"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/22.2.debt-registry-ui.story.md"
     parallel_set: 27
     dependencies:
