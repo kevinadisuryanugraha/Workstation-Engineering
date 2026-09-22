@@ -1137,7 +1137,7 @@ stories:
   - id: "23.1.multi-provider-schema-registry"
     title: "Multi-Provider Git — Skema Provider & Repository Registry API"
     epic_id: "epic-23"
-    status: ready-for-dev
+    status: done
     file: "bmad-output/stories/23.1.multi-provider-schema-registry.story.md"
     parallel_set: 28
     dependencies: []
