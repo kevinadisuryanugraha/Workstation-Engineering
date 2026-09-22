@@ -52,3 +52,53 @@ export function useRegisterRepository() {
     },
   });
 }
+
+/**
+ * Story 24.3 (CC-9) — Hook sinkronisasi on-demand via URL repositori.
+ */
+export interface SyncRepositoryUrlInput {
+  projectId: string;
+  repoUrl: string;
+  provider?: GitProvider;
+  token?: string;
+}
+
+export function useSyncRepositoryUrl() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: SyncRepositoryUrlInput) =>
+      apiRequest<{ repository: GitRepositoryDto; sync: any }>('/api/v1/git/sync-url', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['gitRepositories'] });
+      queryClient.invalidateQueries({ queryKey: ['gitCommits'] });
+      queryClient.invalidateQueries({ queryKey: ['gitPullRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['workItems'] });
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    },
+  });
+}
+
+/**
+ * Story 24.3 (CC-9) — Hook sinkronisasi on-demand per ID repositori terdaftar.
+ */
+export function useSyncRepositoryById() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, token }: { id: string; token?: string }) =>
+      apiRequest<any>(`/api/v1/git/repositories/${id}/sync`, {
+        method: 'POST',
+        body: JSON.stringify({ token }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['gitCommits'] });
+      queryClient.invalidateQueries({ queryKey: ['gitPullRequests'] });
+      queryClient.invalidateQueries({ queryKey: ['workItems'] });
+      queryClient.invalidateQueries({ queryKey: ['tickets'] });
+    },
+  });
+}

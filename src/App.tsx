@@ -33,7 +33,12 @@ import {
   mapCommitDto,
   mapPullRequestDto
 } from "./hooks/api/useGitEntities";
-import { useGitRepositories, useRegisterRepository } from "./hooks/api/useGitRepositories";
+import {
+  useGitRepositories,
+  useRegisterRepository,
+  useSyncRepositoryUrl,
+  useSyncRepositoryById
+} from "./hooks/api/useGitRepositories";
 import { useCreateWorkItem, useUpdateWorkItem } from "./hooks/api/useWorkItemMutations";
 import { useCreateTicket, useUpdateTicket } from "./hooks/api/useTicketMutations";
 import { useDeployments, mapDeploymentDto } from "./hooks/api/useDeployments";
@@ -257,6 +262,8 @@ export default function App() {
     enabled: !DEMO_MODE && Boolean(session?.user),
   });
   const registerRepoMutation = useRegisterRepository();
+  const syncRepoUrlMutation = useSyncRepositoryUrl();
+  const syncRepoByIdMutation = useSyncRepositoryById();
   const createWorkItemMutation = useCreateWorkItem();
   const updateWorkItemMutation = useUpdateWorkItem();
   const createTicketMutation = useCreateTicket();
@@ -268,6 +275,17 @@ export default function App() {
       provider: input.provider,
       defaultBranch: input.defaultBranch,
     });
+  };
+  const handleSyncRepoUrl = async (input: { repoUrl: string; provider?: any; token?: string }) => {
+    return syncRepoUrlMutation.mutateAsync({
+      projectId: currentProject?.id || "",
+      repoUrl: input.repoUrl,
+      provider: input.provider,
+      token: input.token,
+    });
+  };
+  const handleSyncRepoById = async (id: string, token?: string) => {
+    return syncRepoByIdMutation.mutateAsync({ id, token });
   };
   const [events, setEvents] = useState<EngineeringEvent[]>(initialData.events);
 
@@ -1112,7 +1130,10 @@ export default function App() {
                 canRegisterRepo={gitRepoPermitted}
                 repositories={gitRepos}
                 onRegisterRepo={handleRegisterRepo}
+                onSyncRepoUrl={handleSyncRepoUrl}
+                onSyncRepoById={handleSyncRepoById}
                 isRegistering={registerRepoMutation.isPending}
+                isSyncing={syncRepoUrlMutation.isPending || syncRepoByIdMutation.isPending}
               />
             </>
           )}
