@@ -10,9 +10,14 @@ import {
   Code2,
   Tag,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Plus,
+  FolderGit2,
+  Copy,
+  Check,
+  HelpCircle
 } from "lucide-react";
-import { Commit, PullRequest, Project } from "../types";
+import { Commit, PullRequest, Project, GitProvider, GitRepositoryDto } from "../types";
 import { KokonutCard } from "./ui/KokonutCard";
 import { Badge } from "./ui/Badge";
 import { cn } from "../lib/utils";
@@ -22,15 +27,34 @@ interface GitIntelligenceViewProps {
   pullRequests: PullRequest[];
   project: Project;
   isManagementView: boolean;
+  canRegisterRepo?: boolean;
+  repositories?: GitRepositoryDto[];
+  onRegisterRepo?: (input: { fullName: string; provider: GitProvider; defaultBranch?: string }) => Promise<any>;
+  isRegistering?: boolean;
 }
 
 export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
   commits,
   pullRequests,
   project,
-  isManagementView
+  isManagementView,
+  canRegisterRepo = false,
+  repositories = [],
+  onRegisterRepo,
+  isRegistering = false,
 }) => {
-  const [activeTab, setActiveTab] = useState<"commits" | "prs" | "branches">("commits");
+  const [activeTab, setActiveTab] = useState<"commits" | "prs" | "branches" | "repos">("commits");
+  const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<GitProvider>("GITHUB");
+  const [repoFullName, setRepoFullName] = useState("");
+  const [defaultBranch, setDefaultBranch] = useState("main");
+  const [formError, setFormError] = useState<string | null>(null);
+  const [registeredSuccessInfo, setRegisteredSuccessInfo] = useState<{
+    fullName: string;
+    provider: GitProvider;
+    webhookUrl: string;
+    secretHint: string;
+  } | null>(null);
 
   const branches = [
     { name: "main", isProtected: true, author: "Rina Wijaya", lastCommit: "a81f32d", ahead: 0, behind: 0, env: "Production (Kontabo)" },
@@ -38,6 +62,59 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
     { name: "feature/enrollment", isProtected: false, author: "Kevin Santoso", lastCommit: "8f31a92", ahead: 4, behind: 1, linked: "ENR-024" },
     { name: "fix/TK-182-receipt", isProtected: false, author: "Kevin Santoso", lastCommit: "a81f32d", ahead: 0, behind: 0, linked: "BUG-091" }
   ];
+
+  const handleRegisterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+
+    const trimmed = repoFullName.trim();
+    if (!trimmed.includes("/") || trimmed.split("/").length !== 2) {
+      setFormError("Format repositori wajib 'owner/repo' (contoh: acme/workstation).");
+      return;
+    }
+
+    if (!onRegisterRepo) return;
+
+    try {
+      await onRegisterRepo({
+        fullName: trimmed,
+        provider: selectedProvider,
+        defaultBranch: defaultBranch.trim() || "main",
+      });
+
+      const providerPath = selectedProvider.toLowerCase();
+      const webhookUrl = `${window.location.origin}/api/v1/webhooks/${providerPath}`;
+      const secretHint =
+        selectedProvider === "GITLAB"
+          ? "GitLab: Masukkan Secret Token pada Settings → Webhooks (header X-Gitlab-Token)."
+          : selectedProvider === "BITBUCKET"
+          ? "Bitbucket: Masukkan Secret HMAC pada Repository Settings → Webhooks."
+          : "GitHub: Masukkan Secret HMAC pada Settings → Webhooks (X-Hub-Signature-256).";
+
+      setRegisteredSuccessInfo({
+        fullName: trimmed,
+        provider: selectedProvider,
+        webhookUrl,
+        secretHint,
+      });
+
+      setRepoFullName("");
+      setShowRegisterForm(false);
+    } catch (err: any) {
+      setFormError(err?.message || "Gagal mendaftarkan repositori.");
+    }
+  };
+
+  const renderProviderBadge = (provider?: GitProvider) => {
+    if (!provider) return null;
+    const variant = provider === "GITLAB" ? "purple" : provider === "BITBUCKET" ? "warning" : "secondary";
+    const label = provider === "GITLAB" ? "GitLab" : provider === "BITBUCKET" ? "Bitbucket" : "GitHub";
+    return (
+      <Badge variant={variant as any} size="sm" className="font-mono text-[10px]">
+        {label}
+      </Badge>
+    );
+  };
 
   return (
     <div className="space-y-6 pb-12">
@@ -52,45 +129,224 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
               <span className="text-xs text-slate-600 font-mono font-bold">Repo: {project.repoName}</span>
             </div>
             <h1 className="text-lg sm:text-xl font-mono font-black text-slate-950 tracking-tight">
-              Cryptographic Code Evidence & Pull Request Governance
+              Cryptographic Code Evidence & Multi-Provider Git
             </h1>
             <p className="text-xs text-slate-600 font-mono mt-0.5">
-              Commits represent engineering evidence, not individual working hours. Synced via Webhook Ingestion.
+              Commits represent engineering evidence. Dukungan multi-provider: GitHub, GitLab, Bitbucket.
             </p>
           </div>
 
-          <div className="flex items-center flex-nowrap shrink-0 overflow-x-auto bg-white p-1 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
-            {(["commits", "prs", "branches"] as const).map((tabKey) => {
-              const label =
-                tabKey === "commits"
-                  ? `Commits (${commits.length})`
-                  : tabKey === "prs"
-                  ? `PRs (${pullRequests.length})`
-                  : `Branches (${branches.length})`;
-              const isActive = activeTab === tabKey;
-              return (
-                <button
-                  key={tabKey}
-                  onClick={() => setActiveTab(tabKey)}
-                  className={cn(
-                    "relative px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-colors outline-none cursor-pointer whitespace-nowrap",
-                    isActive ? "text-slate-950" : "text-slate-600 hover:text-slate-950"
-                  )}
-                >
-                  {isActive && (
-                    <motion.div
-                      layoutId="git-subtab-pill"
-                      transition={{ type: "spring", stiffness: 450, damping: 35 }}
-                      className="absolute inset-0 bg-[#dcfce7] border border-emerald-600 rounded-lg shadow-sm"
-                    />
-                  )}
-                  <span className="relative z-10">{label}</span>
-                </button>
-              );
-            })}
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            {canRegisterRepo && (
+              <button
+                onClick={() => {
+                  setShowRegisterForm(!showRegisterForm);
+                  setRegisteredSuccessInfo(null);
+                }}
+                className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold border-2 border-slate-900 bg-[#dcfce7] hover:bg-emerald-200 text-slate-950 shadow-[2px_2px_0px_#18181b] flex items-center gap-1.5 cursor-pointer transition-colors shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>{showRegisterForm ? "Tutup Form" : "Tambah Repositori"}</span>
+              </button>
+            )}
+
+            <div className="flex items-center flex-nowrap shrink-0 overflow-x-auto bg-white p-1 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
+              {(["commits", "prs", "branches", "repos"] as const).map((tabKey) => {
+                const label =
+                  tabKey === "commits"
+                    ? `Commits (${commits.length})`
+                    : tabKey === "prs"
+                    ? `PRs (${pullRequests.length})`
+                    : tabKey === "branches"
+                    ? `Branches (${branches.length})`
+                    : `Repos (${repositories.length})`;
+                const isActive = activeTab === tabKey;
+                return (
+                  <button
+                    key={tabKey}
+                    onClick={() => setActiveTab(tabKey)}
+                    className={cn(
+                      "relative px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-colors outline-none cursor-pointer whitespace-nowrap",
+                      isActive ? "text-slate-950" : "text-slate-600 hover:text-slate-950"
+                    )}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="git-subtab-pill"
+                        transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                        className="absolute inset-0 bg-[#dcfce7] border border-emerald-600 rounded-lg shadow-sm"
+                      />
+                    )}
+                    <span className="relative z-10">{label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
       </KokonutCard>
+
+      {/* Form Registrasi Repositori (AC 23.4.3) */}
+      <AnimatePresence>
+        {showRegisterForm && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <KokonutCard variant="default" className="p-5 border-2 border-slate-900 bg-[#FAF7EE]" interactive={false}>
+              <div className="flex items-center gap-2 mb-3">
+                <FolderGit2 className="w-4 h-4 text-emerald-800" />
+                <h3 className="text-sm font-mono font-black text-slate-950 uppercase tracking-wider">
+                  Daftarkan Repositori Multi-Provider Baru
+                </h3>
+              </div>
+              <p className="text-xs text-slate-700 font-mono mb-4">
+                Daftarkan repositori agar webhook dan evidence commit/MR otomatis tertaut ke project ini.
+              </p>
+
+              <form onSubmit={handleRegisterSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-900 mb-1">
+                      Git Provider
+                    </label>
+                    <select
+                      value={selectedProvider}
+                      onChange={(e) => setSelectedProvider(e.target.value as GitProvider)}
+                      className="w-full text-xs font-mono font-semibold p-2 rounded-lg border-2 border-slate-900 bg-white shadow-[2px_2px_0px_#18181b] outline-none"
+                    >
+                      <option value="GITHUB">GitHub</option>
+                      <option value="GITLAB">GitLab</option>
+                      <option value="BITBUCKET">Bitbucket</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-900 mb-1">
+                      Nama Lengkap (owner/repo)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="acme/workstation"
+                      value={repoFullName}
+                      onChange={(e) => setRepoFullName(e.target.value)}
+                      className="w-full text-xs font-mono p-2 rounded-lg border-2 border-slate-900 bg-white shadow-[2px_2px_0px_#18181b] outline-none"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-900 mb-1">
+                      Default Branch
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="main"
+                      value={defaultBranch}
+                      onChange={(e) => setDefaultBranch(e.target.value)}
+                      className="w-full text-xs font-mono p-2 rounded-lg border-2 border-slate-900 bg-white shadow-[2px_2px_0px_#18181b] outline-none"
+                    />
+                  </div>
+                </div>
+
+                {formError && (
+                  <div className="p-3 rounded-lg bg-rose-50 border border-rose-300 text-rose-800 text-xs font-mono font-semibold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{formError}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowRegisterForm(false)}
+                    className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold border border-slate-400 bg-white text-slate-700 hover:bg-slate-100 cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isRegistering}
+                    className="px-4 py-1.5 rounded-lg text-xs font-mono font-bold border-2 border-slate-900 bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-[2px_2px_0px_#18181b] cursor-pointer disabled:opacity-50"
+                  >
+                    {isRegistering ? "Mendaftarkan..." : "Simpan Repositori"}
+                  </button>
+                </div>
+              </form>
+            </KokonutCard>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Petunjuk Pasang Webhook Pasca-Registrasi (AC 23.4.3) */}
+      {registeredSuccessInfo && (
+        <KokonutCard variant="default" className="p-4 border-2 border-emerald-600 bg-emerald-50" interactive={false}>
+          <div className="flex items-start gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
+            <div className="space-y-1.5 text-xs font-mono">
+              <div className="font-bold text-emerald-950">
+                Repositori <strong>{registeredSuccessInfo.fullName}</strong> ({registeredSuccessInfo.provider}) berhasil didaftarkan!
+              </div>
+              <div className="text-slate-700">
+                Pasang Webhook URL berikut pada pengaturan repositori Anda:
+              </div>
+              <div className="p-2 rounded bg-white border border-emerald-300 font-bold text-slate-900 select-all break-all">
+                {registeredSuccessInfo.webhookUrl}
+              </div>
+              <p className="text-[11px] text-slate-600 font-semibold">
+                {registeredSuccessInfo.secretHint}
+              </p>
+            </div>
+          </div>
+        </KokonutCard>
+      )}
+
+      {/* Tab Repositori (AC 23.4.3) */}
+      {activeTab === "repos" && (
+        <KokonutCard variant="default" className="p-0 overflow-hidden" interactive={false}>
+          <div className="p-4 border-b border-slate-900/20 flex items-center justify-between">
+            <span className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider">
+              Daftar Repositori Terdaftar ({repositories.length})
+            </span>
+            <span className="text-xs text-slate-600 font-mono font-bold">Multi-Provider Registry</span>
+          </div>
+
+          {repositories.length === 0 ? (
+            <div className="p-8 text-center text-xs font-mono text-slate-600">
+              Belum ada repositori terdaftar untuk project ini.
+            </div>
+          ) : (
+            <div className="divide-y divide-slate-900/10">
+              {repositories.map((repo) => (
+                <div key={repo.id} className="p-4 hover:bg-slate-50 flex items-center justify-between bg-white">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <FolderGit2 className="w-4 h-4 text-emerald-700" />
+                      <span className="text-xs font-bold font-mono text-slate-950">{repo.fullName}</span>
+                      {renderProviderBadge(repo.provider)}
+                    </div>
+                    <div className="text-[11px] text-slate-600 font-mono">
+                      Default branch: <strong className="text-slate-900">{repo.defaultBranch}</strong> • Terdaftar: {new Date(repo.createdAt).toLocaleDateString("id-ID")}
+                    </div>
+                  </div>
+                  <div>
+                    {repo.hasSecret ? (
+                      <Badge variant="success" size="sm">
+                        Secret Active
+                      </Badge>
+                    ) : (
+                      <Badge variant="warning" size="sm">
+                        No Secret
+                      </Badge>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </KokonutCard>
+      )}
 
       {activeTab === "commits" && (
         <KokonutCard variant="default" className="p-0 overflow-hidden" interactive={false}>
@@ -112,10 +368,13 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
               >
                 <div className="flex items-start gap-3">
                   <div className="p-2 rounded-xl bg-[#FAF7EE] text-slate-950 font-mono text-xs font-bold shrink-0 border-2 border-slate-900 shadow-[1.5px_1.5px_0px_#18181b]">
-                    {c.sha}
+                    {c.sha.slice(0, 7)}
                   </div>
                   <div>
-                    <h3 className="text-xs font-mono font-bold text-slate-950 leading-snug">{c.message}</h3>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-xs font-mono font-bold text-slate-950 leading-snug">{c.message}</h3>
+                      {renderProviderBadge(c.provider)}
+                    </div>
                     <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-600 mt-1 font-mono font-semibold">
                       <span>Author: <strong className="text-slate-950">{c.author}</strong></span>
                       <span>•</span>
@@ -161,11 +420,12 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
                 className="p-4 hover:bg-slate-50 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white"
               >
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-xs font-bold font-mono px-2 py-0.5 rounded-md bg-[#f3e8ff] text-purple-950 border border-slate-900">
                       PR #{pr.id}
                     </span>
                     <h3 className="text-xs font-mono font-bold text-slate-950">{pr.title}</h3>
+                    {renderProviderBadge(pr.provider)}
                     <Badge variant={pr.status === "MERGED" ? "purple" : "success"} size="sm">
                       {pr.status}
                     </Badge>

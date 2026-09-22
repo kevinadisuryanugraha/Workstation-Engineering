@@ -275,9 +275,22 @@ export interface Incident {
   };
 }
 
+export type GitProvider = 'GITHUB' | 'GITLAB' | 'BITBUCKET';
+
+export interface GitRepositoryDto {
+  id: string;
+  projectId: string;
+  fullName: string;
+  provider: GitProvider;
+  defaultBranch: string;
+  hasSecret: boolean;
+  createdAt: string;
+}
+
 export interface Commit {
   sha: string;
   projectId?: string;
+  provider?: GitProvider;
   message: string;
   author: string;
   branch: string;
@@ -291,6 +304,7 @@ export interface Commit {
 export interface PullRequest {
   id: number;
   projectId?: string;
+  provider?: GitProvider;
   title: string;
   sourceBranch: string;
   targetBranch: string;
