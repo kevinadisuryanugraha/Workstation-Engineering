@@ -302,6 +302,22 @@ export default function App() {
 
   const dynamicProgress = calculateProgress();
 
+  // Dedicated Professional Auth Gateway (Story 1.4 & ADR-003)
+  // When unauthenticated, render the full-screen LoginView rather than auto-opening the dashboard
+  if (!session || !session.user) {
+    return (
+      <LoginView
+        onLoginSuccess={() => {
+          const freshSession = authManager.getSession();
+          setSession(freshSession);
+          if (freshSession?.user) {
+            setCurrentUser(freshSession.user);
+          }
+        }}
+      />
+    );
+  }
+
   // Story 17.2 (AC1/AC3): boot real menunggu proyek nyata dari API —
   // TIDAK ada fallback ke proyek fiktif. Tampilkan status jujur.
   if (!DEMO_MODE && !currentProject) {
@@ -856,22 +872,6 @@ export default function App() {
       ...prev
     ]);
   };
-
-  // Dedicated Professional Auth Gateway (Story 1.4 & ADR-003)
-  // When unauthenticated, render the full-screen LoginView rather than auto-opening the dashboard
-  if (!session || !session.user) {
-    return (
-      <LoginView
-        onLoginSuccess={() => {
-          const freshSession = authManager.getSession();
-          setSession(freshSession);
-          if (freshSession?.user) {
-            setCurrentUser(freshSession.user);
-          }
-        }}
-      />
-    );
-  }
 
   return (
     <MotionConfig reducedMotion="user">
