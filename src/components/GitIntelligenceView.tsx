@@ -15,7 +15,9 @@ import {
   FolderGit2,
   Copy,
   Check,
-  HelpCircle
+  HelpCircle,
+  RefreshCw,
+  DownloadCloud
 } from "lucide-react";
 import { Commit, PullRequest, Project, GitProvider, GitRepositoryDto } from "../types";
 import { KokonutCard } from "./ui/KokonutCard";
@@ -30,7 +32,10 @@ interface GitIntelligenceViewProps {
   canRegisterRepo?: boolean;
   repositories?: GitRepositoryDto[];
   onRegisterRepo?: (input: { fullName: string; provider: GitProvider; defaultBranch?: string }) => Promise<any>;
+  onSyncRepoUrl?: (input: { repoUrl: string; provider?: GitProvider; token?: string }) => Promise<any>;
+  onSyncRepoById?: (id: string, token?: string) => Promise<any>;
   isRegistering?: boolean;
+  isSyncing?: boolean;
 }
 
 export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
@@ -41,14 +46,28 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
   canRegisterRepo = false,
   repositories = [],
   onRegisterRepo,
+  onSyncRepoUrl,
+  onSyncRepoById,
   isRegistering = false,
+  isSyncing = false,
 }) => {
   const [activeTab, setActiveTab] = useState<"commits" | "prs" | "branches" | "repos">("commits");
   const [showRegisterForm, setShowRegisterForm] = useState(false);
+  const [showSyncForm, setShowSyncForm] = useState(false);
   const [selectedProvider, setSelectedProvider] = useState<GitProvider>("GITHUB");
   const [repoFullName, setRepoFullName] = useState("");
   const [defaultBranch, setDefaultBranch] = useState("main");
+  const [syncUrlInput, setSyncUrlInput] = useState("");
+  const [syncTokenInput, setSyncTokenInput] = useState("");
+  const [syncingRepoId, setSyncingRepoId] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
+  const [syncSuccessInfo, setSyncSuccessInfo] = useState<{
+    message: string;
+    commitsCount: number;
+    prsCount: number;
+    linkedKeys: string[];
+  } | null>(null);
+
   const [registeredSuccessInfo, setRegisteredSuccessInfo] = useState<{
     fullName: string;
     provider: GitProvider;
@@ -105,6 +124,62 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
     }
   };
 
+  const handleSyncUrlSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setFormError(null);
+    setSyncSuccessInfo(null);
+
+    if (!syncUrlInput.trim()) {
+      setFormError("Masukkan Link Repositori (misal: https://github.com/owner/repo atau owner/repo).");
+      return;
+    }
+
+    if (!onSyncRepoUrl) return;
+
+    try {
+      const res = await onSyncRepoUrl({
+        repoUrl: syncUrlInput.trim(),
+        token: syncTokenInput.trim() || undefined,
+      });
+
+      const syncData = res?.data?.sync || res?.data || {};
+      setSyncSuccessInfo({
+        message: `Berhasil menyinkronkan data riil dari ${syncUrlInput.trim()}!`,
+        commitsCount: syncData.syncedCommits || 0,
+        prsCount: syncData.syncedPullRequests || 0,
+        linkedKeys: syncData.linkedKeys || [],
+      });
+
+      setSyncUrlInput("");
+      setSyncTokenInput("");
+      setShowSyncForm(false);
+    } catch (err: any) {
+      setFormError(err?.message || "Gagal menyinkronkan repositori.");
+    }
+  };
+
+  const handleSyncById = async (repoId: string) => {
+    if (!onSyncRepoById) return;
+    setSyncingRepoId(repoId);
+    setFormError(null);
+    setSyncSuccessInfo(null);
+
+    try {
+      const res = await onSyncRepoById(repoId);
+      const syncData = res?.data || {};
+      setSyncSuccessInfo({
+        message: `Sinkronisasi repositori selesai!`,
+        commitsCount: syncData.syncedCommits || 0,
+        prsCount: syncData.syncedPullRequests || 0,
+        linkedKeys: syncData.linkedKeys || [],
+      });
+    } catch (err: any) {
+      setFormError(err?.message || "Gagal menyinkronkan repositori.");
+    } finally {
+      setSyncingRepoId(null);
+    }
+  };
+
   const renderProviderBadge = (provider?: GitProvider) => {
     if (!provider) return null;
     const variant = provider === "GITLAB" ? "purple" : provider === "BITBUCKET" ? "warning" : "secondary";
@@ -132,22 +207,38 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
               Cryptographic Code Evidence &amp; Multi-Provider Git
             </h1>
             <p className="text-xs text-slate-600 font-mono mt-0.5">
-              Commits represent engineering evidence. Dukungan multi-provider: GitHub, GitLab, Bitbucket.
+              Commits represent engineering evidence. Sinkronisasi on-demand &amp; Webhook multi-provider: GitHub, GitLab, Bitbucket.
             </p>
           </div>
 
           <div className="flex items-center gap-2 flex-wrap w-full md:w-auto justify-start md:justify-end">
             {canRegisterRepo && (
-              <button
-                onClick={() => {
-                  setShowRegisterForm(!showRegisterForm);
-                  setRegisteredSuccessInfo(null);
-                }}
-                className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold border-2 border-slate-900 bg-[#dcfce7] hover:bg-emerald-200 text-slate-950 shadow-[2px_2px_0px_#18181b] flex items-center gap-1.5 cursor-pointer transition-colors shrink-0 active:translate-x-0.5 active:translate-y-0.5"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>{showRegisterForm ? "Tutup Form" : "Tambah Repositori"}</span>
-              </button>
+              <>
+                <button
+                  onClick={() => {
+                    setShowSyncForm(!showSyncForm);
+                    setShowRegisterForm(false);
+                    setFormError(null);
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold border-2 border-slate-900 bg-[#FAF7EE] hover:bg-amber-100 text-slate-950 shadow-[2px_2px_0px_#18181b] flex items-center gap-1.5 cursor-pointer transition-colors shrink-0 active:translate-x-0.5 active:translate-y-0.5"
+                >
+                  <RefreshCw className={cn("w-3.5 h-3.5", isSyncing && "animate-spin")} />
+                  <span>{showSyncForm ? "Tutup Sync" : "Sync URL Repo"}</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    setShowRegisterForm(!showRegisterForm);
+                    setShowSyncForm(false);
+                    setRegisteredSuccessInfo(null);
+                    setFormError(null);
+                  }}
+                  className="px-3 py-1.5 rounded-lg text-xs font-mono font-bold border-2 border-slate-900 bg-[#dcfce7] hover:bg-emerald-200 text-slate-950 shadow-[2px_2px_0px_#18181b] flex items-center gap-1.5 cursor-pointer transition-colors shrink-0 active:translate-x-0.5 active:translate-y-0.5"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>{showRegisterForm ? "Tutup Form" : "Daftar Webhook"}</span>
+                </button>
+              </>
             )}
 
             <div className="flex items-center flex-nowrap overflow-x-auto max-w-full bg-white p-1 rounded-xl border-2 border-slate-900 shadow-[2px_2px_0px_#18181b]">
@@ -186,6 +277,112 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
         </div>
       </KokonutCard>
 
+      {/* Form Sinkronisasi On-Demand (Story 24.3) */}
+      <AnimatePresence>
+        {showSyncForm && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+          >
+            <KokonutCard variant="default" className="p-5 border-2 border-slate-900 bg-[#FAF7EE] shadow-[3px_3px_0px_#18181b]" interactive={false}>
+              <div className="flex items-center gap-2 mb-2">
+                <DownloadCloud className="w-5 h-5 text-teal-800" />
+                <h3 className="text-sm font-mono font-black text-slate-950 uppercase tracking-wider">
+                  Sinkronisasi Repositori Langsung (On-Demand Fetch)
+                </h3>
+              </div>
+              <p className="text-xs text-slate-700 font-mono mb-4">
+                Tarik daftar commit dan pull request nyata langsung dari REST API GitHub atau GitLab ke database WORKSTATION.
+              </p>
+
+              <form onSubmit={handleSyncUrlSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-900 mb-1">
+                      Link / URL Repositori Git
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="https://github.com/kevinadisuryanugraha/Workstation-Engineering"
+                      value={syncUrlInput}
+                      onChange={(e) => setSyncUrlInput(e.target.value)}
+                      className="w-full text-xs font-mono p-2.5 rounded-lg border-2 border-slate-900 bg-white shadow-[2px_2px_0px_#18181b] outline-none"
+                      required
+                    />
+                    <p className="text-[10px] text-slate-600 font-mono mt-1">
+                      Menerima URL lengkap GitHub/GitLab atau format shorthand <code>owner/repo</code>.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-900 mb-1">
+                      Personal Access Token (Opsional untuk Repo Privat)
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="ghp_xxxx atau glpat-xxxx"
+                      value={syncTokenInput}
+                      onChange={(e) => setSyncTokenInput(e.target.value)}
+                      className="w-full text-xs font-mono p-2.5 rounded-lg border-2 border-slate-900 bg-white shadow-[2px_2px_0px_#18181b] outline-none"
+                    />
+                    <p className="text-[10px] text-slate-600 font-mono mt-1">
+                      Kosongkan untuk repositori publik.
+                    </p>
+                  </div>
+                </div>
+
+                {formError && (
+                  <div className="p-3 rounded-lg bg-rose-50 border border-rose-300 text-rose-800 text-xs font-mono font-semibold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{formError}</span>
+                  </div>
+                )}
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowSyncForm(false)}
+                    className="px-3.5 py-1.5 rounded-lg text-xs font-mono font-bold border border-slate-400 bg-white text-slate-700 hover:bg-slate-100 cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSyncing}
+                    className="px-4 py-1.5 rounded-lg text-xs font-mono font-bold border-2 border-slate-900 bg-[#f6ae2d] hover:bg-[#fab005] text-slate-950 shadow-[2px_2px_0px_#18181b] cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                  >
+                    <RefreshCw className={cn("w-3.5 h-3.5", isSyncing && "animate-spin")} />
+                    <span>{isSyncing ? "Menyinkronkan..." : "Sinkronkan Sekarang"}</span>
+                  </button>
+                </div>
+              </form>
+            </KokonutCard>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Banner Hasil Sinkronisasi (Story 24.3) */}
+      {syncSuccessInfo && (
+        <KokonutCard variant="default" className="p-4 border-2 border-emerald-600 bg-emerald-50 shadow-[2px_2px_0px_#059669]" interactive={false}>
+          <div className="flex items-start gap-2.5">
+            <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
+            <div className="space-y-1 text-xs font-mono">
+              <div className="font-bold text-emerald-950">
+                {syncSuccessInfo.message}
+              </div>
+              <div className="text-slate-700 flex items-center gap-3 flex-wrap">
+                <span>⚡ Commits: <strong className="text-emerald-900 font-bold">{syncSuccessInfo.commitsCount}</strong></span>
+                <span>•</span>
+                <span> PRs / MRs: <strong className="text-emerald-900 font-bold">{syncSuccessInfo.prsCount}</strong></span>
+                <span>•</span>
+                <span> Evidence Terhubung: <strong className="text-emerald-900 font-bold">{syncSuccessInfo.linkedKeys.length} items</strong> {syncSuccessInfo.linkedKeys.length > 0 ? `(${syncSuccessInfo.linkedKeys.join(", ")})` : ""}</span>
+              </div>
+            </div>
+          </div>
+        </KokonutCard>
+      )}
+
       {/* Form Registrasi Repositori (AC 23.4.3) */}
       <AnimatePresence>
         {showRegisterForm && (
@@ -198,7 +395,7 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
               <div className="flex items-center gap-2 mb-3">
                 <FolderGit2 className="w-4 h-4 text-emerald-800" />
                 <h3 className="text-sm font-mono font-black text-slate-950 uppercase tracking-wider">
-                  Daftarkan Repositori Multi-Provider Baru
+                  Daftarkan Repositori Multi-Provider Baru (Webhook Listener)
                 </h3>
               </div>
               <p className="text-xs text-slate-700 font-mono mb-4">
@@ -302,43 +499,54 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
         </KokonutCard>
       )}
 
-      {/* Tab Repositori (AC 23.4.3) */}
+      {/* Tab Repositori (AC 23.4.3 + AC 24.3.4) */}
       {activeTab === "repos" && (
         <KokonutCard variant="default" className="p-0 overflow-hidden" interactive={false}>
           <div className="p-4 border-b border-slate-900/20 flex items-center justify-between">
             <span className="text-xs font-mono font-black text-slate-950 uppercase tracking-wider">
               Daftar Repositori Terdaftar ({repositories.length})
             </span>
-            <span className="text-xs text-slate-600 font-mono font-bold">Multi-Provider Registry</span>
+            <span className="text-xs text-slate-600 font-mono font-bold">Multi-Provider Registry &amp; Sync Engine</span>
           </div>
 
           {repositories.length === 0 ? (
             <div className="p-8 text-center text-xs font-mono text-slate-600">
-              Belum ada repositori terdaftar untuk project ini.
+              Belum ada repositori terdaftar untuk project ini. Gunakan tombol "Sync URL Repo" atau "Daftar Webhook" di atas.
             </div>
           ) : (
             <div className="divide-y divide-slate-900/10">
               {repositories.map((repo) => (
-                <div key={repo.id} className="p-4 hover:bg-slate-50 flex items-center justify-between bg-white">
+                <div key={repo.id} className="p-4 hover:bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <FolderGit2 className="w-4 h-4 text-emerald-700" />
                       <span className="text-xs font-bold font-mono text-slate-950">{repo.fullName}</span>
                       {renderProviderBadge(repo.provider)}
+                      {repo.hasSecret ? (
+                        <Badge variant="success" size="sm">
+                          Secret Active
+                        </Badge>
+                      ) : (
+                        <Badge variant="warning" size="sm">
+                          No Secret
+                        </Badge>
+                      )}
                     </div>
                     <div className="text-[11px] text-slate-600 font-mono">
                       Default branch: <strong className="text-slate-900">{repo.defaultBranch}</strong> • Terdaftar: {new Date(repo.createdAt).toLocaleDateString("id-ID")}
                     </div>
                   </div>
-                  <div>
-                    {repo.hasSecret ? (
-                      <Badge variant="success" size="sm">
-                        Secret Active
-                      </Badge>
-                    ) : (
-                      <Badge variant="warning" size="sm">
-                        No Secret
-                      </Badge>
+                  <div className="flex items-center gap-2">
+                    {canRegisterRepo && onSyncRepoById && (
+                      <button
+                        onClick={() => handleSyncById(repo.id)}
+                        disabled={syncingRepoId === repo.id || isSyncing}
+                        className="px-3 py-1 rounded-lg text-xs font-mono font-bold border-2 border-slate-900 bg-[#f6ae2d] hover:bg-[#fab005] text-slate-950 shadow-[1.5px_1.5px_0px_#18181b] flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        title="Tarik data commit &amp; PR terbaru sekarang"
+                      >
+                        <RefreshCw className={cn("w-3 h-3", syncingRepoId === repo.id && "animate-spin")} />
+                        <span>{syncingRepoId === repo.id ? "Syncing..." : "Sync Sekarang"}</span>
+                      </button>
                     )}
                   </div>
                 </div>
@@ -355,7 +563,7 @@ export const GitIntelligenceView: React.FC<GitIntelligenceViewProps> = ({
               Verified Inbound Commits ({commits.length})
             </span>
             <Badge variant="success" size="sm" dot>
-              Webhook: 100% Signature Verified
+              Real Engine Synced
             </Badge>
           </div>
 
