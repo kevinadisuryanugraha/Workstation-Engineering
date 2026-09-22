@@ -39,6 +39,7 @@ import { useAuditLogs, mapAuditLogDto } from "./hooks/api/useAuditLogs";
 import {
   useAiFindings,
   useAiRecommendations,
+  useDebtRegistry,
   useAiScans,
   mapFindingDto,
   mapRecommendationDto,
@@ -196,9 +197,11 @@ export default function App() {
   const [technicalDebts, setTechnicalDebts] = useState(initialData.technicalDebts);
 
   // Story 18.5 (CC-5): findings & recommendations nyata dari API (16.x) —
-  // boot real MENGANTIKAN seed; mode demo tetap utuh. technicalDebts belum
-  // punya endpoint → tetap kosong di boot real (jujur, lihat story 18.5).
+  // boot real MENGANTIKAN seed; mode demo tetap utuh. Story 22.2 (CC-7):
+  // technicalDebts kini juga punya endpoint registry (22.1) — tab Technical
+  // Debt menerima state nyata via prop debtRegistry; mode demo tetap mock.
   const aiPermitted = hasPermission(currentUser.role, "PERM_AI_SCAN_TRIGGER");
+  const debtRegistry = useDebtRegistry({ enabled: !DEMO_MODE && Boolean(session?.user) && aiPermitted });
   const { data: apiAiFindings } = useAiFindings({ enabled: !DEMO_MODE && Boolean(session?.user) && aiPermitted });
   useEffect(() => {
     if (DEMO_MODE || !Array.isArray(apiAiFindings)) return;
@@ -1062,6 +1065,7 @@ export default function App() {
               onScanModeFilterChange={setAiScanFilter}
               recommendations={aiRecommendations}
               technicalDebts={technicalDebts}
+              debtRegistry={debtRegistry}
               project={activeProject}
               onUpdateFindingStatus={handleUpdateFindingStatus}
               onConvertRecommendationToWorkItem={handleConvertRecommendationToWorkItem}
