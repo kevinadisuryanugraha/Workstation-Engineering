@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { apiRequest } from '../../lib/apiClient.ts';
-import { Commit, PullRequest } from '../../types.ts';
+import { Commit, PullRequest, GitProvider } from '../../types.ts';
 
 /**
- * Story 18.1 (CC-5) — Git entities client hooks + DTO→UI mappers.
+ * Story 18.1 (CC-5) & Story 23.4 (CC-8) — Git entities client hooks + DTO→UI mappers.
  *
  * Sumber data nyata: GET /api/v1/git/commits & /api/v1/git/pull-requests
  * (read-only di atas hasil ingest webhook). Mapper = pure function agar
@@ -20,6 +20,7 @@ export interface GitCommitDto {
   url: string | null;
   committedAt: string;
   projectId: string | null;
+  provider?: GitProvider | string | null;
 }
 
 export interface GitPullRequestDto {
@@ -33,6 +34,7 @@ export interface GitPullRequestDto {
   url: string | null;
   mergedAt: string | null;
   projectId: string | null;
+  provider?: GitProvider | string | null;
 }
 
 /** Ekstrak kode item (mis. WRK-101) dari teks nyata — cermin auto-linker 5.2. */
@@ -42,10 +44,17 @@ export function extractItemCodes(text: string | null | undefined): string[] {
   return [...new Set(matches)];
 }
 
+const KNOWN_PROVIDERS: GitProvider[] = ['GITHUB', 'GITLAB', 'BITBUCKET'];
+
 export function mapCommitDto(dto: GitCommitDto): Commit {
+  const provider = dto.provider
+    ? KNOWN_PROVIDERS.find((p) => p === String(dto.provider).toUpperCase())
+    : undefined;
+
   return {
     sha: dto.sha,
     projectId: dto.projectId ?? undefined,
+    provider,
     message: dto.message,
     author: dto.authorName,
     branch: dto.branch ?? '—',
@@ -61,9 +70,14 @@ export function mapCommitDto(dto: GitCommitDto): Commit {
 
 export function mapPullRequestDto(dto: GitPullRequestDto): PullRequest {
   const codes = extractItemCodes(`${dto.title} ${dto.sourceBranch}`);
+  const provider = dto.provider
+    ? KNOWN_PROVIDERS.find((p) => p === String(dto.provider).toUpperCase())
+    : undefined;
+
   return {
     id: dto.prNumber,
     projectId: dto.projectId ?? undefined,
+    provider,
     title: dto.title,
     sourceBranch: dto.sourceBranch,
     targetBranch: dto.targetBranch,

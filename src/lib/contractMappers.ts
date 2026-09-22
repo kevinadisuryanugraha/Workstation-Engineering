@@ -1,4 +1,4 @@
-import { WorkItem, Ticket, User, WorkItemStatus, TicketStatus, WorkItemType, TicketType, DebtOrigin, DebtImpact, DebtAgingBucket, DebtRegistryItem, DebtRegistrySummary } from '../types';
+import { WorkItem, Ticket, User, WorkItemStatus, TicketStatus, WorkItemType, TicketType, DebtOrigin, DebtImpact, DebtAgingBucket, DebtRegistryItem, DebtRegistrySummary, GitProvider, GitRepositoryDto } from '../types';
 
 /**
  * HOTFIX 2026-09-19 (pasca-deploy Epic 17/18) — DTO→UI contract mappers untuk
@@ -240,3 +240,28 @@ export function mapDebtRegistryPayload(raw: unknown): { items: DebtRegistryItem[
   const items = list.map(mapDebtRegistryItem).filter((x): x is DebtRegistryItem => x !== null);
   return { items, summary: normalizeDebtSummary(raw.meta?.summary) };
 }
+
+// ─── Story 23.4 (CC-8, Master PRD §30): Git Repository Registry mappers ───
+
+const GIT_PROVIDERS: GitProvider[] = ['GITHUB', 'GITLAB', 'BITBUCKET'];
+
+export function mapGitRepositoryDto(raw: unknown): GitRepositoryDto | null {
+  if (!isRecord(raw)) return null;
+  const id = typeof raw.id === 'string' ? raw.id : '';
+  const fullName = typeof raw.fullName === 'string' ? raw.fullName : '';
+  if (!id || !fullName) return null;
+
+  const providerRaw = String(raw.provider ?? 'GITHUB').toUpperCase();
+  const provider = GIT_PROVIDERS.find((p) => p === providerRaw) ?? 'GITHUB';
+
+  return {
+    id,
+    projectId: typeof raw.projectId === 'string' ? raw.projectId : '',
+    fullName,
+    provider,
+    defaultBranch: typeof raw.defaultBranch === 'string' && raw.defaultBranch ? raw.defaultBranch : 'main',
+    hasSecret: Boolean(raw.hasSecret),
+    createdAt: typeof raw.createdAt === 'string' ? raw.createdAt : new Date(0).toISOString(),
+  };
+}
+

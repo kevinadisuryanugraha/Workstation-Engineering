@@ -33,6 +33,7 @@ import {
   mapCommitDto,
   mapPullRequestDto
 } from "./hooks/api/useGitEntities";
+import { useGitRepositories, useRegisterRepository } from "./hooks/api/useGitRepositories";
 import { useDeployments, mapDeploymentDto } from "./hooks/api/useDeployments";
 import { useKbArticles, mapKbArticleDto } from "./hooks/api/useKbArticles";
 import { useAuditLogs, mapAuditLogDto } from "./hooks/api/useAuditLogs";
@@ -247,6 +248,21 @@ export default function App() {
     if (DEMO_MODE || !Array.isArray(apiPullRequests)) return;
     setPullRequests(apiPullRequests.map(mapPullRequestDto));
   }, [apiPullRequests]);
+
+  // Story 23.4 (CC-8): Repositories query & register mutation
+  const gitRepoPermitted = hasPermission(currentUser.role, "PERM_EVIDENCE_ATTACH");
+  const { data: gitRepos = [] } = useGitRepositories(currentProject?.id, {
+    enabled: !DEMO_MODE && Boolean(session?.user),
+  });
+  const registerRepoMutation = useRegisterRepository();
+  const handleRegisterRepo = async (input: { fullName: string; provider: any; defaultBranch?: string }) => {
+    return registerRepoMutation.mutateAsync({
+      projectId: currentProject?.id || "",
+      fullName: input.fullName,
+      provider: input.provider,
+      defaultBranch: input.defaultBranch,
+    });
+  };
   const [events, setEvents] = useState<EngineeringEvent[]>(initialData.events);
 
   // Story 18.4 + HOTFIX 2026-09-19: audit ledger — fetch HANYA untuk role
@@ -1002,13 +1018,17 @@ export default function App() {
           {activeTab === "git" && (
             <>
               {!DEMO_MODE && projectCommits.length === 0 && projectPullRequests.length === 0 && (
-                <HonestEmptyState title="Belum ada aktivitas Git" hint="Hubungkan repository via webhook GitHub — commit & PR nyata akan tertaut otomatis." />
+                <HonestEmptyState title="Belum ada aktivitas Git" hint="Hubungkan repository via webhook GitHub/GitLab/Bitbucket — commit & PR nyata akan tertaut otomatis." />
               )}
               <GitIntelligenceView
                 commits={projectCommits}
                 pullRequests={projectPullRequests}
                 project={activeProject}
                 isManagementView={isManagementView}
+                canRegisterRepo={gitRepoPermitted}
+                repositories={gitRepos}
+                onRegisterRepo={handleRegisterRepo}
+                isRegistering={registerRepoMutation.isPending}
               />
             </>
           )}
