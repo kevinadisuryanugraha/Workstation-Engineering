@@ -5,6 +5,19 @@ membaca log ini agar keputusan tetap konsisten. Entri terbaru di atas.
 
 ---
 
+### 2026-09-22 — Course Correction 9: Tambah Epic 24 — Full Real CRUD Persistence & Direct Repository Sync
+- **Decision:** Owner menyetujui pembukaan **Epic 24 (Course Correction 9)** untuk menuntaskan 2 kebutuhan krusial agar aplikasi 100% data nyata:
+  1. **Full Real CRUD Persistence (Story 24.1):** Menghubungkan seluruh aksi mutasi UI di `src/App.tsx` (pembuatan & pembaruan status Work Item serta Tiket) ke REST API backend (`POST/PUT /api/v1/work-items` dan `POST /api/v1/tickets`) sehingga perubahan tersimpan permanen di database PostgreSQL (bukan sekadar `useState` lokal).
+  2. **Direct Repository Sync Engine (Story 24.2):** Membangun backend fetcher on-demand yang memanggil REST API GitHub & GitLab untuk menarik commit/PR nyata secara langsung ke database `commits` & `pull_requests` dan menautkan evidence kode item.
+  3. **Direct Repository Sync UI (Story 24.3):** Menyediakan formulir input Link Repositori Git (misal `https://github.com/kevinadisuryanugraha/Workstation-Engineering`) + tombol **"Sinkronkan Sekarang"** di panel Git Intelligence untuk mengalirkan data commit nyata dalam 1 klik.
+- **Rationale:** Menutup celah di mana sebelumnya aksi status UI belum terhubung ke mutasi database dan repositori Git hanya mengandalkan webhook inbound pasif.
+- **Impact:** epics.md (+Epic 24, total 68 story: done 65, remaining 3); stories/ (+3 file ready-for-dev); sprint-status.yaml (+epic-24 in-progress, parallel_set 32–34).
+- **In-progress stories affected:** none.
+- **Made by:** bmad-correct-course
+- **Supersedes:** none (additive — Course Correction 9)
+
+---
+
 ### 2026-09-22 — Deploy Produksi: Epic 23 (CC-8 Multi-Provider Git) Live di https://workstation.zamzami.or.id
 - **Decision:** Rilis produksi VPS Kontabo dari `cb58ec5` (era CC-7/DEF-006) → `23a0501` (Epic 23 tuntas): `git fetch + reset --hard origin/main`, build bundle baru (`index-jvX-Czs_.js` + `index-aWEBTzrD.css`, backup `dist.bak-cc8-*`), migrasi DB `0017_add_provider_fields.sql` ter-apply sukses di container `workstation-db` (kolom `provider` pada `repositories` dan `webhook_deliveries`), `systemctl restart workstation`.
 - **Verification (semua hijau):** (1) service `workstation` active di port 3020 — RBAC ACTIVE + Report Scheduler ACTIVE (DAILY/WEEKLY/MONTHLY); (2) `/api/health` publik OK (`rbacSecurity: ENFORCED_HMAC_SHA256`, `hasGeminiKey: true`); (3) endpoint webhook `/api/v1/webhooks/gitlab` & `/api/v1/webhooks/bitbucket` aktif dan memvalidasi header; (4) endpoint `GET /api/v1/git/repositories` publik → 401 tanpa token (auth-gated benar); (5) end-to-end registrasi repo via `POST /api/v1/git/repositories` dengan token Super Admin → 201 Created (`zamzami/workstation-core` provider `GITLAB`, `hasSecret: true`, secret aman di server) + idempotensi terverifikasi (re-registrasi → 200 + `created: false`); (6) frontend bundle baru `index-jvX-Czs_.js` live di domain utama.

@@ -5,7 +5,7 @@
 project_name: "WORKSTATION"
 track: "bmad-method"
 generated_at: "2026-09-18T10:30:00Z"
-last_updated: "2026-09-22T11:45:00+07:00" # Epic 23 (CC-8) TUNTAS — seluruh 23 epic / 65 story DONE (433 test)
+last_updated: "2026-09-22T11:55:00+07:00" # CC-9: Epic 24 Full Real CRUD & Direct Repo Sync dibuka (3 story ready-for-dev, waves 32-34)
 
 epics:
   - id: "epic-1"
@@ -189,6 +189,16 @@ epics:
       - "23.2.webhook-provider-adapters"
       - "23.3.git-linker-canonical-processing"
       - "23.4.provider-ui-wiring"
+
+  # ===== COURSE-CORRECTION-9 2026-09-22: Full Real CRUD Persistence & Direct Repo Sync (Epic 24) =====
+  - id: "epic-24"
+    title: "Full Real CRUD Persistence & Direct Repository Sync Engine"
+    description: "Course Correction 9 (2026-09-22): menghubungkan seluruh aksi mutasi UI ke REST API PostgreSQL permanen dan menyediakan input Link Repo untuk sinkronisasi on-demand dari GitHub & GitLab"
+    status: in-progress
+    story_ids:
+      - "24.1.client-crud-mutations-wiring"
+      - "24.2.direct-repo-sync-engine"
+      - "24.3.direct-repo-sync-ui"
 
 stories:
   # Wave 1 (Immediate Foundation)
@@ -1199,3 +1209,44 @@ stories:
       - "src/hooks/api/useGitEntities.ts (pemetaan provider bila perlu)"
       - "src/App.tsx (blok panel Git saja)"
       - "tests/git-provider-ui.test.ts (BARU)"
+
+  # ===== COURSE-CORRECTION-9 2026-09-22: Waves 32-34 (sequential; shared App.tsx + git module) =====
+  - id: "24.1.client-crud-mutations-wiring"
+    title: "Client CRUD Mutations Wiring — Work Items & Tickets Persisted to REST API"
+    epic_id: "epic-24"
+    status: ready-for-dev
+    file: "bmad-output/stories/24.1.client-crud-mutations-wiring.story.md"
+    parallel_set: 32
+    dependencies: []
+    owned_scope:
+      - "src/hooks/api/useWorkItemMutations.ts (BARU)"
+      - "src/hooks/api/useTicketMutations.ts (BARU)"
+      - "src/App.tsx (mutasi persistensi)"
+      - "tests/client-crud-wiring.test.ts (BARU)"
+
+  - id: "24.2.direct-repo-sync-engine"
+    title: "Direct Repository Sync Engine — Backend GitHub & GitLab On-Demand Fetcher"
+    epic_id: "epic-24"
+    status: ready-for-dev
+    file: "bmad-output/stories/24.2.direct-repo-sync-engine.story.md"
+    parallel_set: 33
+    dependencies:
+      - "24.1.client-crud-mutations-wiring"
+    owned_scope:
+      - "server/modules/git/git-sync.service.ts (BARU)"
+      - "server/modules/git/git-entity.routes.ts (tambah route sync)"
+      - "tests/git-sync-engine.test.ts (BARU)"
+
+  - id: "24.3.direct-repo-sync-ui"
+    title: "Direct Repository Sync UI — URL Input, Sync Button & Real Feed Hydration"
+    epic_id: "epic-24"
+    status: ready-for-dev
+    file: "bmad-output/stories/24.3.direct-repo-sync-ui.story.md"
+    parallel_set: 34
+    dependencies:
+      - "24.2.direct-repo-sync-engine"
+    owned_scope:
+      - "src/hooks/api/useGitRepositories.ts"
+      - "src/components/GitIntelligenceView.tsx"
+      - "src/App.tsx"
+      - "tests/git-sync-ui.test.ts (BARU)"

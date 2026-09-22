@@ -621,14 +621,37 @@
 
 ---
 
+## Epic 24: Full Real CRUD Persistence & Direct Repository Sync Engine
+
+> # COURSE-CORRECTION-9 (2026-09-22) — Penuntasan Mutasi Nyata & Sinkronisasi On-Demand: Menghubungkan seluruh aksi mutasi UI ke REST API PostgreSQL permanen (Work Items & Tickets CRUD) dan menambahkan mesin sinkronisasi langsung repositori Git via Link/URL (GitHub & GitLab API fetcher) dengan tombol sync on-demand.
+
+**Goal:** Menjamin seluruh interaksi pengguna di UI tersimpan permanen di database relasional PostgreSQL (bukan hanya in-memory state) dan menyediakan input Link Repositori di UI agar riwayat commit nyata dapat langsung disinkronkan ke WORKSTATION secara on-demand.
+
+**In scope:**
+1. Hook mutasi REST API untuk pembuatan & update status Work Item (`POST /api/v1/work-items`, `PUT /api/v1/work-items/:id`) dan Tiket (`POST /api/v1/tickets`, `POST /api/v1/tickets/:id/resolve`).
+2. Mesin sinkronisasi langsung `git-sync.service.ts` yang memanggil API GitHub & GitLab untuk menarik commits/PRs nyata dan memproses evidence linking.
+3. Form input Link Repository + tombol **"Sinkronkan Sekarang"** di UI `GitIntelligenceView`.
+
+**Stories:**
+
+| ID | Slug | Intent | Status |
+|----|------|--------|--------|
+| 24.1 | client-crud-mutations-wiring | Hubungkan seluruh mutasi UI Work Items & Tickets ke REST API PostgreSQL | ready-for-dev |
+| 24.2 | direct-repo-sync-engine | Backend Git Sync Engine (Fetch commits/PRs on-demand dari GitHub & GitLab) | ready-for-dev |
+| 24.3 | direct-repo-sync-ui | Input Link Repository & Tombol Sinkronisasi On-Demand di UI Git | ready-for-dev |
+
+**Dependencies:** 24.2 → 24.1 · 24.3 → 24.2 — sequential waves 32–34 (shared `App.tsx`, `git` module, `GitIntelligenceView`)
+
+---
+
 ## Delivery Tracking (Count-Based)
 
 Tidak ada story points, velocity, maupun burndown chart. Pelacakan murni berbasis HITUNGAN CERITA:
 
-- **Total Stories:** 65 (61 laporan sebelumnya + 4 Epic 23 CC-8)
-- **Done:** 65 (Epic 23 tuntas 4/4 di hari yang sama, 2026-09-22)
-- **Remaining:** 0
-- **Completion Rate:** 100% (65 / 65) — Sisa Fase V2 \"multi-provider Git\" (Master PRD §30) tuntas penuh (433/433 test)
+- **Total Stories:** 68 (65 laporan sebelumnya + 3 Epic 24 CC-9)
+- **Done:** 65 (Epic 1–23 tuntas penuh)
+- **Remaining:** 3 (Epic 24 CC-9 — 24.1 s.d. 24.3, ready-for-dev)
+- **Completion Rate:** 95.6% (65 / 68) — CC-9 membuka Full Real CRUD Persistence & Direct Repo Sync
 - **Koreksi 2026-09-19 (CC-4):** angka lama (33/35, remaining 13.2–13.3) tidak mencerminkan penyelesaian Waves 12–14; factual: 43/43 done sebelum Epic 17.
 - **Koreksi 2026-09-19 (CC-5):** Epic 17 tuntas 3/3 (46/46 done, 100%) sebelum Epic 18 dibuka; Epic 18 tuntas 6/6 di hari yang sama.
 
@@ -744,6 +767,15 @@ Wave 30 (Canonical Processing) [COURSE-CORRECTION-8]:
 
 Wave 31 (Provider UI) [COURSE-CORRECTION-8]:
   └── Story 23.4 (Badge Provider + Registry Form + Hydration)
+
+Wave 32 (Client CRUD Mutations) [COURSE-CORRECTION-9]:
+  └── Story 24.1 (Client CRUD Mutations Wiring — Work Items & Tickets)
+
+Wave 33 (Direct Repo Sync Engine) [COURSE-CORRECTION-9]:
+  └── Story 24.2 (Backend Git Sync Engine — GitHub & GitLab Fetcher)
+
+Wave 34 (Direct Repo Sync UI) [COURSE-CORRECTION-9]:
+  └── Story 24.3 (Repo Link Input & On-Demand Sync Button)
 ```
 
 ---
